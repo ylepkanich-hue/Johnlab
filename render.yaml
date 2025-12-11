@@ -11,14 +11,6 @@ services:
         value: production
       - key: PORT
         value: 3000
-      - key: ADMIN_PASSWORD
-        value: ваш_пароль_адміна
-      - key: WALLET_ADDRESS
-        value: ваш_гаманець_TRC20
-      - key: EMAIL_USER
-        value: ваш_email
-      - key: EMAIL_PASS
-        value: пароль_додатку
     disk:
       name: uploads
       mountPath: /opt/render/project/src/uploads

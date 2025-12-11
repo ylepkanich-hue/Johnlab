@@ -1,21 +1,34 @@
 # Залежності
 node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Змінні середовища
+# Environment variables
 .env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Файли завантажень (не комітити)
+# Uploads
 uploads/
+!uploads/.gitkeep
+
+# Data files
 data/
+!data/.gitkeep
 
-# Системні файли
-.DS_Store
-Thumbs.db
-
-# Ідеї редакторів
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Логи
+logs/
+*.log

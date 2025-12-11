@@ -1,7 +1,7 @@
 {
-  "name": "usdt-shop",
+  "name": "johns-lab-templates",
   "version": "1.0.0",
-  "description": "Premium USDT Shop - Digital Goods",
+  "description": "JOHN'S LAB TEMPLATES - Premium Digital Products",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,8 +10,9 @@
   "dependencies": {
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.7",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "tronweb": "^4.1.0",
+    "dotenv": "^16.3.1"
   },
   "engines": {
     "node": ">=16.0.0"

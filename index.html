@@ -3,181 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT Shop | Цифрові товари</title>
+    <title>USDT Shop | Цифрові товари за криптовалюту</title>
+    
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --gold: #D4AF37; --gold-light: #F4D03F; --gold-dark: #B8860B;
-            --black: #000000; --black-light: #1a1a1a; --gray: #2d2d2d;
-        }
-        body {
-            font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
-            color: white; min-height: 100vh; margin: 0; padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header {
-            background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px;
-            border: 2px solid var(--gold); margin-bottom: 30px; display: flex;
-            justify-content: space-between; align-items: center; flex-wrap: wrap;
-        }
-        .logo-text {
-            font-size: 32px; font-weight: bold;
-            background: linear-gradient(to right, var(--gold), var(--gold-light));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .search-box { position: relative; width: 300px; }
-        .search-box input {
-            width: 100%; padding: 12px 40px 12px 15px; background: var(--gray);
-            border: 2px solid var(--gold); border-radius: 30px; color: white;
-            font-size: 16px; outline: none;
-        }
-        .search-btn {
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-            background: none; border: none; color: var(--gold); cursor: pointer;
-            font-size: 18px;
-        }
-        .btn {
-            padding: 12px 24px; border: 2px solid var(--gold); border-radius: 8px;
-            cursor: pointer; font-weight: 600; transition: all 0.3s ease;
-            background: transparent; color: var(--gold); margin: 5px;
-            font-family: 'Cinzel', serif;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-            color: var(--black); border: none;
-        }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
-        .section { display: none; background: rgba(0,0,0,0.8); padding: 30px;
-            border-radius: 15px; border: 1px solid var(--gold); margin-top: 20px; }
-        .active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-        .products-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px; margin-top: 20px;
-        }
-        .product-card {
-            background: var(--gray); border-radius: 12px; overflow: hidden;
-            transition: all 0.3s ease; border: 1px solid transparent;
-        }
-        .product-card:hover {
-            transform: translateY(-10px); border-color: var(--gold);
-            box-shadow: 0 15px 30px rgba(212,175,55,0.2);
-        }
-        .product-image {
-            width: 100%; height: 200px; object-fit: cover;
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-        }
-        .product-info { padding: 20px; }
-        .product-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-        .product-price { color: var(--gold); font-size: 24px; font-weight: bold; margin: 10px 0; }
-        .cart-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; background: var(--gray); border-radius: 10px;
-            margin-bottom: 10px; border-left: 4px solid var(--gold);
-        }
-        .hidden { display: none !important; }
-    </style>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
+    <!-- Модальні вікна -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+    
+    <div id="admin-modal" class="modal">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+
     <div class="container">
+        <!-- Header -->
         <header>
-            <div class="logo-text">USDT SHOP</div>
+            <div class="logo">
+                <i class="fas fa-coins logo-icon"></i>
+                <div class="logo-text">USDT SHOP</div>
+            </div>
+            
             <div class="search-box">
                 <input type="text" id="search-input" placeholder="Пошук товарів...">
                 <button class="search-btn"><i class="fas fa-search"></i></button>
             </div>
-            <div>
-                <button class="btn btn-secondary" onclick="showSection('home')">Головна</button>
-                <button class="btn btn-secondary" onclick="showSection('products')">Товари</button>
-                <button class="btn btn-secondary" onclick="showSection('cart')">Кошик (<span id="cart-count">0</span>)</button>
-                <button class="btn btn-primary" onclick="showSection('admin')">Адмін</button>
+            
+            <div class="nav-buttons">
+                <button class="btn nav-btn" data-section="home">
+                    <i class="fas fa-home"></i> Головна
+                </button>
+                <button class="btn nav-btn" data-section="products">
+                    <i class="fas fa-store"></i> Товари
+                </button>
+                <button class="btn nav-btn" data-section="cart">
+                    <i class="fas fa-shopping-cart"></i> Кошик (<span id="cart-count">0</span>)
+                </button>
+                <button class="btn btn-primary nav-btn" data-section="admin">
+                    <i class="fas fa-user-shield"></i> Адмін
+                </button>
             </div>
         </header>
 
+        <!-- Головна секція -->
         <section id="home" class="section active">
-            <h2>Ласкаво просимо до USDT Shop!</h2>
-            <p>Преміальні цифрові товари за криптовалюту USDT (TRC20).</p>
-            <button class="btn btn-primary" onclick="showSection('products')">Переглянути товари</button>
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 64px; color: var(--gold); margin-bottom: 20px;">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h1 class="section-title">USDT SHOP</h1>
+                <p style="font-size: 18px; max-width: 600px; margin: 0 auto 30px;">
+                    Преміальні цифрові товари за криптовалюту USDT (TRC20). 
+                    Швидко, безпечно, анонімно.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" data-section="products">
+                        <i class="fas fa-shopping-bag"></i> Купити зараз
+                    </button>
+                    <button class="btn" onclick="showSection('cart')">
+                        <i class="fas fa-shopping-cart"></i> Перейти в кошик
+                    </button>
+                </div>
+            </div>
         </section>
 
+        <!-- Секція товарів -->
         <section id="products" class="section">
-            <h2>Всі товари</h2>
+            <h2 class="section-title">Каталог товарів</h2>
             <div class="products-grid" id="products-container">
-                <!-- Товари з'являться тут -->
+                <!-- Товари будуть завантажені через JavaScript -->
             </div>
         </section>
 
+        <!-- Секція кошика -->
         <section id="cart" class="section">
-            <h2>Ваш кошик</h2>
-            <div id="cart-items"></div>
-            <div id="cart-total" style="margin-top: 20px; font-size: 20px;"></div>
-            <button class="btn btn-primary" onclick="checkout()">Оформити замовлення</button>
+            <h2 class="section-title">Ваш кошик</h2>
+            <div id="cart-items">
+                <!-- Вміст кошика буде сформований через JavaScript -->
+            </div>
+            <div id="cart-total"></div>
         </section>
 
+        <!-- Секція адміністрування -->
         <section id="admin" class="section">
-            <h2>Адмін-панель</h2>
-            <div class="form-group">
-                <label>Пароль адміна:</label>
-                <input type="password" id="admin-password" class="form-control">
+            <div id="admin-login">
+                <h2 class="section-title">Вхід в адмін-панель</h2>
+                <div class="form-group">
+                    <label>Пароль адміністратора:</label>
+                    <input type="password" id="admin-password" class="form-control" 
+                           placeholder="Введіть пароль">
+                </div>
+                <button class="btn btn-primary" onclick="adminLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Увійти
+                </button>
             </div>
-            <button class="btn btn-primary" onclick="adminLogin()">Увійти</button>
+            
             <div id="admin-panel" class="hidden">
-                <h3>Панель керування</h3>
-                <!-- Тут буде адмін-інтерфейс -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title">Панель управління</h2>
+                    <button class="btn btn-danger" onclick="adminLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Вийти
+                    </button>
+                </div>
+                
+                <div class="admin-tabs">
+                    <div class="admin-tab active" data-tab="products">Товари</div>
+                    <div class="admin-tab" data-tab="orders">Замовлення</div>
+                    <div class="admin-tab" data-tab="stats">Статистика</div>
+                </div>
+                
+                <!-- Вкладка товарів -->
+                <div id="admin-products" class="admin-tab-content">
+                    <button class="btn btn-primary mb-20" onclick="showAddProductModal()">
+                        <i class="fas fa-plus"></i> Додати товар
+                    </button>
+                    <div id="admin-products-list">
+                        <!-- Список товарів -->
+                    </div>
+                </div>
+                
+                <!-- Вкладка замовлень -->
+                <div id="admin-orders" class="admin-tab-content hidden">
+                    <p>Тут будуть відображатися замовлення...</p>
+                </div>
+                
+                <!-- Вкладка статистики -->
+                <div id="admin-stats" class="admin-tab-content hidden">
+                    <p>Тут буде статистика магазину...</p>
+                </div>
             </div>
         </section>
     </div>
 
-    <script>
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-        }
-        function updateCartCount() {
-            document.getElementById('cart-count').textContent = cart.length;
-        }
-        function addToCart(productName, price) {
-            cart.push({name: productName, price: price});
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            alert(productName + ' додано в кошик!');
-        }
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            const totalEl = document.getElementById('cart-total');
-            if (cart.length === 0) {
-                container.innerHTML = '<p>Кошик порожній</p>';
-                totalEl.textContent = '';
-                return;
-            }
-            let html = ''; let total = 0;
-            cart.forEach(item => {
-                total += item.price;
-                html += `<div class="cart-item">${item.name} - ${item.price} USDT</div>`;
-            });
-            container.innerHTML = html;
-            totalEl.textContent = 'Загальна сума: ' + total + ' USDT';
-        }
-        function checkout() {
-            if (cart.length === 0) return alert('Кошик порожній!');
-            alert('Перехід до оплати USDT...');
-            // Тут буде логіка оплати
-        }
-        function adminLogin() {
-            const password = document.getElementById('admin-password').value;
-            if (password === 'admin123') {
-                document.getElementById('admin-panel').classList.remove('hidden');
-                alert('Успішний вхід!');
-            } else {
-                alert('Невірний пароль!');
-            }
-        }
-        // Ініціалізація
-        updateCartCount();
-        if (window.location.hash) showSection(window.location.hash.replace('#', ''));
-    </script>
+    <!-- JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>

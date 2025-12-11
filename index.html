@@ -3,148 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USDT Shop | Цифрові товари за криптовалюту</title>
-    
-    <!-- Fonts & Icons -->
+    <title>USDT SHOP | Premium Digital Goods</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
     <!-- Модальні вікна -->
-    <div id="checkout-modal" class="modal">
-        <div class="modal-content" id="modal-content"></div>
-    </div>
+    <div id="modals-container"></div>
     
-    <div id="admin-modal" class="modal">
-        <div class="modal-content" id="modal-content"></div>
-    </div>
+    <!-- Сповіщення -->
+    <div id="alerts-container"></div>
 
+    <!-- Контейнер -->
     <div class="container">
-        <!-- Header -->
+        <!-- Хедер -->
         <header>
-            <div class="logo">
-                <i class="fas fa-coins logo-icon"></i>
-                <div class="logo-text">USDT SHOP</div>
-            </div>
-            
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="Пошук товарів...">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-            </div>
-            
-            <div class="nav-buttons">
-                <button class="btn nav-btn" data-section="home">
-                    <i class="fas fa-home"></i> Головна
-                </button>
-                <button class="btn nav-btn" data-section="products">
-                    <i class="fas fa-store"></i> Товари
-                </button>
-                <button class="btn nav-btn" data-section="cart">
-                    <i class="fas fa-shopping-cart"></i> Кошик (<span id="cart-count">0</span>)
-                </button>
-                <button class="btn btn-primary nav-btn" data-section="admin">
-                    <i class="fas fa-user-shield"></i> Адмін
-                </button>
+            <div class="header-content">
+                <!-- Лого -->
+                <div class="logo-container">
+                    <img id="logo-image" src="" alt="USDT SHOP Logo" onclick="changeLogo()" 
+                         onerror="this.src='https://via.placeholder.com/60?text=LOGO'">
+                    <div class="logo-text">USDT SHOP</div>
+                </div>
+
+                <!-- Пошук -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Пошук товарів...">
+                        <button class="search-btn" onclick="searchProducts()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Навігація -->
+                <div class="nav-buttons">
+                    <button class="btn btn-secondary" onclick="showSection('home')">
+                        <i class="fas fa-home"></i> Головна
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSection('products')">
+                        <i class="fas fa-store"></i> Товари
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSection('cart')">
+                        <i class="fas fa-shopping-cart"></i> Кошик (<span id="cart-count">0</span>)
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSection('contacts')">
+                        <i class="fas fa-address-card"></i> Контакти
+                    </button>
+                    <button class="btn btn-primary" onclick="showAdminLogin()">
+                        <i class="fas fa-lock"></i> Адмін
+                    </button>
+                </div>
             </div>
         </header>
 
-        <!-- Головна секція -->
+        <!-- Головна сторінка -->
         <section id="home" class="section active">
-            <div style="text-align: center; padding: 40px 20px;">
-                <div style="font-size: 64px; color: var(--gold); margin-bottom: 20px;">
-                    <i class="fas fa-gem"></i>
-                </div>
-                <h1 class="section-title">USDT SHOP</h1>
-                <p style="font-size: 18px; max-width: 600px; margin: 0 auto 30px;">
-                    Преміальні цифрові товари за криптовалюту USDT (TRC20). 
-                    Швидко, безпечно, анонімно.
-                </p>
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-primary" data-section="products">
-                        <i class="fas fa-shopping-bag"></i> Купити зараз
-                    </button>
-                    <button class="btn" onclick="showSection('cart')">
-                        <i class="fas fa-shopping-cart"></i> Перейти в кошик
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Секція товарів -->
-        <section id="products" class="section">
-            <h2 class="section-title">Каталог товарів</h2>
-            <div class="products-grid" id="products-container">
-                <!-- Товари будуть завантажені через JavaScript -->
-            </div>
-        </section>
-
-        <!-- Секція кошика -->
-        <section id="cart" class="section">
-            <h2 class="section-title">Ваш кошик</h2>
-            <div id="cart-items">
-                <!-- Вміст кошика буде сформований через JavaScript -->
-            </div>
-            <div id="cart-total"></div>
-        </section>
-
-        <!-- Секція адміністрування -->
-        <section id="admin" class="section">
-            <div id="admin-login">
-                <h2 class="section-title">Вхід в адмін-панель</h2>
-                <div class="form-group">
-                    <label>Пароль адміністратора:</label>
-                    <input type="password" id="admin-password" class="form-control" 
-                           placeholder="Введіть пароль">
-                </div>
-                <button class="btn btn-primary" onclick="adminLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Увійти
+            <div class="hero">
+                <h1>USDT SHOP</h1>
+                <p>Преміальні цифрові товари за криптовалюту USDT (TRC20)</p>
+                <button class="btn btn-primary" onclick="showSection('products')">
+                    <i class="fas fa-shopping-bag"></i> Перейти до покупок
                 </button>
             </div>
             
-            <div id="admin-panel" class="hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 class="section-title">Панель управління</h2>
-                    <button class="btn btn-danger" onclick="adminLogout()">
-                        <i class="fas fa-sign-out-alt"></i> Вийти
-                    </button>
+            <!-- Статистика -->
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-products">0</span>
+                    <span class="stat-label">Товарів</span>
                 </div>
-                
-                <div class="admin-tabs">
-                    <div class="admin-tab active" data-tab="products">Товари</div>
-                    <div class="admin-tab" data-tab="orders">Замовлення</div>
-                    <div class="admin-tab" data-tab="stats">Статистика</div>
+                <div class="stat-item">
+                    <span class="stat-number" id="total-sales">0</span>
+                    <span class="stat-label">Продажів</span>
                 </div>
-                
-                <!-- Вкладка товарів -->
-                <div id="admin-products" class="admin-tab-content">
-                    <button class="btn btn-primary mb-20" onclick="showAddProductModal()">
-                        <i class="fas fa-plus"></i> Додати товар
-                    </button>
-                    <div id="admin-products-list">
-                        <!-- Список товарів -->
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="total-users">0</span>
+                    <span class="stat-label">Клієнтів</span>
                 </div>
-                
-                <!-- Вкладка замовлень -->
-                <div id="admin-orders" class="admin-tab-content hidden">
-                    <p>Тут будуть відображатися замовлення...</p>
-                </div>
-                
-                <!-- Вкладка статистики -->
-                <div id="admin-stats" class="admin-tab-content hidden">
-                    <p>Тут буде статистика магазину...</p>
+                <div class="stat-item">
+                    <span class="stat-number" id="total-orders">0</span>
+                    <span class="stat-label">Замовлень</span>
                 </div>
             </div>
+            
+            <!-- Популярні товари -->
+            <div class="section-title">Популярні товари</div>
+            <div class="products-grid" id="featured-products"></div>
         </section>
-    </div>
 
-    <!-- JavaScript -->
-    <script src="app.js"></script>
-</body>
-</html>
+        <!-- Товари -->
+        <section id="products" class="section">
+            <div class="section-title">Каталог товарів</div>
+            
+            <!-- Фільтри -->
+            <div class="filters">
+                <div class="filter-group">
+                    <button class="btn-filter active" onclick="filterProducts('all')">Всі</button>
+                    <button class="btn-filter" onclick="filterProducts('PSD Templates')">PSD</button>
+                    <button class="btn-filter" onclick="filterProducts('UI Kits')">UI Kits</button>
+                    <button class="btn-filter" onclick="filterProducts('Dashboards')">Dashboards</button>
+                </div>
+                <select class="sort-select" onchange="sortProducts(this.value)">
+                    <option value="newest">Спочатку нові</option>
+                    <option value="popular">Популярні</option>
+                    <option value="price-low">Від дешевих

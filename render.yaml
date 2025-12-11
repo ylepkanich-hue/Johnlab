@@ -7,19 +7,19 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: ADMIN_PASSWORD
         sync: false
       - key: WALLET_ADDRESS
+        sync: false
+      - key: TRON_API_KEY
         sync: false
       - key: EMAIL_USER
         sync: false
       - key: EMAIL_PASS
         sync: false
-      - key: TELEGRAM_BOT_TOKEN
+      - key: SITE_URL
         sync: false
     disk:
-      name: uploads
+      name: johns-lab-data
       mountPath: /opt/render/project/src/uploads
       sizeGB: 10

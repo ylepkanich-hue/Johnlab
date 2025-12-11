@@ -1,31 +1,30 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const TronWeb = require('tronweb');
-require('dotenv').config();
+const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ===== CONFIGURATION =====
+// ===== КОНФІГУРАЦІЯ =====
 const CONFIG = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
     WALLET_ADDRESS: process.env.WALLET_ADDRESS || 'Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    EMAIL_USER: process.env.EMAIL_USER || '',
+    EMAIL_PASS: process.env.EMAIL_PASS || '',
     SITE_NAME: "JOHN'S LAB TEMPLATES",
+    SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
     TELEGRAM_LINK: "https://t.me/John_refund",
-    CURRENCY: "USDT",
-    NETWORK: "TRC20"
+    // TRON API конфігурація
+    TRONGRID_API: 'https://api.trongrid.io',
+    TRONSCAN_API: 'https://apilist.tronscan.org/api'
 };
 
-// ===== TRON WEB3 =====
-const tronWeb = new TronWeb({
-    fullHost: 'https://api.trongrid.io',
-    headers: { "TRON-PRO-API-KEY": process.env.TRON_API_KEY || '' }
-});
-
-// ===== FILE UPLOAD CONFIG =====
+// ===== НАЛАШТУВАННЯ ЗАВАНТАЖЕННЯ ФАЙЛІВ =====
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
         try {
@@ -33,7 +32,7 @@ const storage = multer.diskStorage({
             if (file.fieldname === 'productFile') uploadPath = 'uploads/products/';
             if (file.fieldname === 'productImage') uploadPath = 'uploads/images/';
             if (file.fieldname === 'ownerPhoto') uploadPath = 'uploads/owner/';
-            if (file.fieldname === 'logo') uploadPath = 'uploads/logo/';
+            if (file.fieldname === 'logo') uploadPath = 'uploads/logos/';
             
             await fs.mkdir(uploadPath, { recursive: true });
             cb(null, uploadPath);
@@ -51,8 +50,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage,
-    limits: { fileSize: 100 * 1024 * 1024 }
+    limits: { fileSize: 100 * 1024 * 1024 } // 100MB
 });
+
+// ===== EMAIL ТРАНСПОРТ =====
+let transporter;
+if (CONFIG.EMAIL_USER && CONFIG.EMAIL_PASS) {
+    transporter = nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE || 'gmail',
+        auth: {
+            user: CONFIG.EMAIL_USER,
+            pass: CONFIG.EMAIL_PASS
+        }
+    });
+}
 
 // ===== MIDDLEWARE =====
 app.use(express.json());
@@ -60,25 +71,44 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('.'));
 app.use('/uploads', express.static('uploads'));
 
-// ===== DATA INITIALIZATION =====
+// Дозволити CORS для фронтенду
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
+// ===== ІНІЦІАЛІЗАЦІЯ ДАНИХ =====
 async function initData() {
     try {
-        const folders = ['uploads/products', 'uploads/images', 'uploads/owner', 'uploads/logo', 'data'];
+        // Створюємо папки
+        const folders = [
+            'uploads/products', 
+            'uploads/images', 
+            'uploads/owner', 
+            'uploads/logos', 
+            'data',
+            'logs'
+        ];
+        
         for (const folder of folders) {
             await fs.mkdir(folder, { recursive: true });
         }
 
-        const initialData = {
-            products: [
+        // Перевіряємо файли даних
+        const dataFiles = {
+            'products': [
                 {
                     id: 1,
                     name: "Premium PSD Website Template",
                     price: 25.99,
-                    category: "PSD Templates",
-                    description: "Modern website template with clean design and responsive layout",
+                    category: "PSD",
+                    description: "Modern website template with clean design and fully layered PSD",
                     image: "",
                     file: "",
-                    downloads: 0,
+                    fileName: "premium-template.psd",
+                    fileSize: "45.2 MB",
+                    downloads: 42,
                     createdAt: new Date().toISOString()
                 },
                 {
@@ -86,10 +116,12 @@ async function initData() {
                     name: "E-commerce UI Kit",
                     price: 19.99,
                     category: "UI Kits",
-                    description: "Complete UI kit for online stores and shopping platforms",
+                    description: "Complete UI kit for online stores with 50+ screens",
                     image: "",
                     file: "",
-                    downloads: 0,
+                    fileName: "ecommerce-ui-kit.fig",
+                    fileSize: "32.1 MB",
+                    downloads: 28,
                     createdAt: new Date().toISOString()
                 },
                 {
@@ -97,40 +129,47 @@ async function initData() {
                     name: "Crypto Dashboard Design",
                     price: 34.99,
                     category: "Dashboards",
-                    description: "Professional dashboard design for cryptocurrency platforms",
+                    description: "Professional dashboard for crypto platforms with dark/light themes",
                     image: "",
                     file: "",
-                    downloads: 0,
+                    fileName: "crypto-dashboard.zip",
+                    fileSize: "67.8 MB",
+                    downloads: 15,
                     createdAt: new Date().toISOString()
                 }
             ],
-            categories: [
-                { id: 1, name: "PSD Templates", icon: "fa-palette" },
-                { id: 2, name: "UI Kits", icon: "fa-layer-group" },
-                { id: 3, name: "Dashboards", icon: "fa-chart-line" },
-                { id: 4, name: "Illustrations", icon: "fa-paint-brush" },
-                { id: 5, name: "Fonts", icon: "fa-font" },
-                { id: 6, name: "3D Models", icon: "fa-cube" }
+            'categories': [
+                { id: 1, name: "PSD", icon: "fa-palette", description: "Photoshop templates" },
+                { id: 2, name: "UI Kits", icon: "fa-layer-group", description: "UI kits for designers" },
+                { id: 3, name: "Dashboards", icon: "fa-chart-line", description: "Dashboard designs" },
+                { id: 4, name: "Illustrations", icon: "fa-paint-brush", description: "Vector illustrations" },
+                { id: 5, name: "Fonts", icon: "fa-font", description: "Premium fonts" },
+                { id: 6, name: "3D Models", icon: "fa-cube", description: "3D models and assets" }
             ],
-            orders: [],
-            settings: {
+            'orders': [],
+            'settings': {
                 shopName: CONFIG.SITE_NAME,
                 walletAddress: CONFIG.WALLET_ADDRESS,
+                adminEmail: process.env.ADMIN_EMAIL || CONFIG.EMAIL_USER,
                 adminPassword: CONFIG.ADMIN_PASSWORD,
-                telegram: CONFIG.TELEGRAM_LINK,
-                currency: CONFIG.CURRENCY,
-                network: CONFIG.NETWORK
+                telegramLink: CONFIG.TELEGRAM_LINK,
+                currency: "USDT",
+                network: "TRC20",
+                paymentTimeout: 60, // хвилини
+                emailNotifications: true
             },
-            contacts: {
-                ownerName: "John",
-                ownerDescription: "Professional digital product designer with 5+ years of experience. Creating premium templates for designers and developers.",
+            'contacts': {
+                ownerName: "John's Lab",
+                ownerDescription: "Premium digital template creator with 5+ years experience",
                 ownerPhoto: "",
-                telegram: CONFIG.TELEGRAM_LINK,
-                about: "Welcome to my digital template shop! All products are carefully crafted and tested. For any questions or support, contact me on Telegram."
+                telegram: "@John_refund",
+                telegramLink: CONFIG.TELEGRAM_LINK,
+                about: "Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive digital products. If you have any questions, feel free to contact me!"
             }
         };
 
-        for (const [key, data] of Object.entries(initialData)) {
+        // Створюємо файли, якщо не існують
+        for (const [key, data] of Object.entries(dataFiles)) {
             const filePath = `data/${key}.json`;
             try {
                 await fs.access(filePath);
@@ -140,14 +179,83 @@ async function initData() {
         }
 
         console.log('✅ Data initialized successfully');
+        return true;
     } catch (error) {
         console.error('❌ Initialization error:', error);
+        return false;
     }
 }
 
-// ===== API ROUTES =====
+// ===== ФУНКЦІЇ ДЛЯ РОБОТИ З TRON БЛОКЧЕЙНОМ =====
 
-// Get all products
+// Генерація унікальної суми з копійками для ідентифікації
+function generateUniqueAmount(baseAmount) {
+    const randomCents = Math.floor(Math.random() * 99) + 1; // 1-99 копійок
+    return parseFloat((baseAmount + randomCents / 100).toFixed(2));
+}
+
+// Перевірка транзакцій в TRON мережі
+async function checkTronTransaction(walletAddress, expectedAmount, timeoutMinutes = 60) {
+    try {
+        // Використовуємо TronGrid API для перевірки транзакцій
+        const response = await axios.get(`${CONFIG.TRONGRID_API}/v1/accounts/${walletAddress}/transactions`, {
+            params: {
+                only_confirmed: true,
+                limit: 50,
+                order_by: 'block_timestamp,desc'
+            }
+        });
+
+        const transactions = response.data.data || [];
+        
+        // Перевіряємо останні транзакції
+        for (const tx of transactions) {
+            if (tx.raw_data.contract[0].type === 'TransferContract') {
+                const contract = tx.raw_data.contract[0];
+                const toAddress = contract.parameter.value.to_address;
+                const amount = contract.parameter.value.amount / 1000000; // Конвертуємо з sun в USDT
+                
+                // Перевіряємо адресу одержувача та суму
+                const targetAddress = CONFIG.WALLET_ADDRESS.replace(/^T/, '0x').toLowerCase();
+                const txToAddress = toAddress.toLowerCase();
+                
+                if (txToAddress === targetAddress && Math.abs(amount - expectedAmount) < 0.01) {
+                    // Перевіряємо час транзакції
+                    const txTime = tx.block_timestamp;
+                    const currentTime = Date.now();
+                    const timeDiff = (currentTime - txTime) / (1000 * 60); // в хвилинах
+                    
+                    if (timeDiff <= timeoutMinutes) {
+                        return {
+                            success: true,
+                            found: true,
+                            transaction: tx,
+                            amount: amount,
+                            timestamp: txTime
+                        };
+                    }
+                }
+            }
+        }
+        
+        return {
+            success: true,
+            found: false,
+            message: 'Transaction not found'
+        };
+        
+    } catch (error) {
+        console.error('TRON API error:', error.message);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// ===== API РОУТИ =====
+
+// Отримати всі товари
 app.get('/api/products', async (req, res) => {
     try {
         const data = await fs.readFile('data/products.json', 'utf8');
@@ -157,24 +265,24 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// Get product by ID
+// Отримати товар по ID
 app.get('/api/products/:id', async (req, res) => {
     try {
         const data = await fs.readFile('data/products.json', 'utf8');
         const products = JSON.parse(data);
         const product = products.find(p => p.id === parseInt(req.params.id));
         
-        if (product) {
-            res.json(product);
-        } else {
-            res.status(404).json({ error: 'Product not found' });
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
         }
+        
+        res.json(product);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Add new product
+// Додати товар
 app.post('/api/products', upload.fields([
     { name: 'productImage', maxCount: 1 },
     { name: 'productFile', maxCount: 1 }
@@ -190,13 +298,16 @@ app.post('/api/products', upload.fields([
             category: req.body.category,
             description: req.body.description,
             downloads: 0,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
         };
 
+        // Зберегти зображення
         if (req.files?.productImage) {
             newProduct.image = `/uploads/images/${req.files.productImage[0].filename}`;
         }
 
+        // Зберегти файл
         if (req.files?.productFile) {
             newProduct.file = `/uploads/products/${req.files.productFile[0].filename}`;
             newProduct.fileName = req.files.productFile[0].originalname;
@@ -212,7 +323,7 @@ app.post('/api/products', upload.fields([
     }
 });
 
-// Update product
+// Оновити товар
 app.put('/api/products/:id', upload.fields([
     { name: 'productImage', maxCount: 1 },
     { name: 'productFile', maxCount: 1 }
@@ -226,33 +337,37 @@ app.put('/api/products/:id', upload.fields([
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        products[productIndex] = {
+        const updatedProduct = {
             ...products[productIndex],
             name: req.body.name || products[productIndex].name,
-            price: parseFloat(req.body.price) || products[productIndex].price,
+            price: req.body.price ? parseFloat(req.body.price) : products[productIndex].price,
             category: req.body.category || products[productIndex].category,
             description: req.body.description || products[productIndex].description,
             updatedAt: new Date().toISOString()
         };
 
+        // Оновити зображення
         if (req.files?.productImage) {
-            products[productIndex].image = `/uploads/images/${req.files.productImage[0].filename}`;
+            updatedProduct.image = `/uploads/images/${req.files.productImage[0].filename}`;
         }
 
+        // Оновити файл
         if (req.files?.productFile) {
-            products[productIndex].file = `/uploads/products/${req.files.productFile[0].filename}`;
-            products[productIndex].fileName = req.files.productFile[0].originalname;
-            products[productIndex].fileSize = formatFileSize(req.files.productFile[0].size);
+            updatedProduct.file = `/uploads/products/${req.files.productFile[0].filename}`;
+            updatedProduct.fileName = req.files.productFile[0].originalname;
+            updatedProduct.fileSize = formatFileSize(req.files.productFile[0].size);
         }
 
+        products[productIndex] = updatedProduct;
         await fs.writeFile('data/products.json', JSON.stringify(products, null, 2));
-        res.json({ success: true, product: products[productIndex] });
+        
+        res.json({ success: true, product: updatedProduct });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Delete product
+// Видалити товар
 app.delete('/api/products/:id', async (req, res) => {
     try {
         const data = await fs.readFile('data/products.json', 'utf8');
@@ -266,7 +381,7 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// Get all categories
+// Категорії
 app.get('/api/categories', async (req, res) => {
     try {
         const data = await fs.readFile('data/categories.json', 'utf8');
@@ -276,7 +391,6 @@ app.get('/api/categories', async (req, res) => {
     }
 });
 
-// Add category
 app.post('/api/categories', async (req, res) => {
     try {
         const data = await fs.readFile('data/categories.json', 'utf8');
@@ -285,7 +399,8 @@ app.post('/api/categories', async (req, res) => {
         const newCategory = {
             id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
             name: req.body.name,
-            icon: req.body.icon || 'fa-folder'
+            icon: req.body.icon || 'fa-folder',
+            description: req.body.description || ''
         };
 
         categories.push(newCategory);
@@ -297,7 +412,6 @@ app.post('/api/categories', async (req, res) => {
     }
 });
 
-// Update category
 app.put('/api/categories/:id', async (req, res) => {
     try {
         const data = await fs.readFile('data/categories.json', 'utf8');
@@ -311,7 +425,8 @@ app.put('/api/categories/:id', async (req, res) => {
         categories[categoryIndex] = {
             ...categories[categoryIndex],
             name: req.body.name || categories[categoryIndex].name,
-            icon: req.body.icon || categories[categoryIndex].icon
+            icon: req.body.icon || categories[categoryIndex].icon,
+            description: req.body.description || categories[categoryIndex].description
         };
 
         await fs.writeFile('data/categories.json', JSON.stringify(categories, null, 2));
@@ -321,7 +436,6 @@ app.put('/api/categories/:id', async (req, res) => {
     }
 });
 
-// Delete category
 app.delete('/api/categories/:id', async (req, res) => {
     try {
         const data = await fs.readFile('data/categories.json', 'utf8');
@@ -335,152 +449,219 @@ app.delete('/api/categories/:id', async (req, res) => {
     }
 });
 
-// Create order
+// Створити замовлення з унікальною сумою
 app.post('/api/orders', async (req, res) => {
     try {
-        const { email, items, total } = req.body;
+        const { email, items, total, wallet } = req.body;
         
+        if (!email || !items || !total || !wallet) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Перевірити email
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        // Перевірити TRON адресу
+        if (!isValidTronAddress(wallet)) {
+            return res.status(400).json({ error: 'Invalid TRON address' });
+        }
+
         const data = await fs.readFile('data/orders.json', 'utf8');
         const orders = JSON.parse(data);
         
-        // Generate unique amount with cents for identification
-        const baseAmount = parseFloat(total);
-        const uniqueCents = Math.floor(Math.random() * 99) + 1; // 1-99 cents
-        const uniqueAmount = baseAmount + (uniqueCents / 100);
+        // Генеруємо унікальну суму з копійками
+        const uniqueTotal = generateUniqueAmount(parseFloat(total));
         
-        const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        const orderId = 'ORD-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
         
         const newOrder = {
             id: orderId,
-            email: email,
-            items: items,
-            originalAmount: baseAmount,
-            payableAmount: uniqueAmount,
+            email,
+            wallet,
+            items,
+            total: uniqueTotal,
+            baseTotal: parseFloat(total),
+            uniqueAmount: uniqueTotal,
             status: 'pending',
-            wallet: CONFIG.WALLET_ADDRESS,
             createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 60 minutes
             paidAt: null,
-            transactionHash: '',
-            downloadToken: uuidv4()
+            filesSent: false,
+            downloadLink: null,
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 60 хвилин
         };
 
         orders.push(newOrder);
         await fs.writeFile('data/orders.json', JSON.stringify(orders, null, 2));
 
+        // Відправити email з деталями оплати
+        if (transporter) {
+            await sendPaymentEmail(email, orderId, uniqueTotal);
+        }
+        
         res.json({ 
             success: true, 
             order: newOrder,
-            paymentDetails: {
-                wallet: CONFIG.WALLET_ADDRESS,
-                network: CONFIG.NETWORK,
-                amount: uniqueAmount,
-                orderId: orderId,
-                expiresAt: newOrder.expiresAt
-            }
+            wallet: CONFIG.WALLET_ADDRESS,
+            network: 'TRC20',
+            uniqueAmount: uniqueTotal,
+            timeout: 60
         });
     } catch (error) {
+        console.error('Order creation error:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Check payment status
-app.get('/api/orders/:id/status', async (req, res) => {
+// Перевірити оплату замовлення
+app.get('/api/orders/:id/check', async (req, res) => {
     try {
         const data = await fs.readFile('data/orders.json', 'utf8');
         const orders = JSON.parse(data);
         const order = orders.find(o => o.id === req.params.id);
-
+        
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        // Check if order expired
-        if (new Date(order.expiresAt) < new Date()) {
+        // Перевіряємо, чи не минув час
+        const now = new Date();
+        const expiresAt = new Date(order.expiresAt);
+        
+        if (now > expiresAt) {
             order.status = 'expired';
             await fs.writeFile('data/orders.json', JSON.stringify(orders, null, 2));
             return res.json({ 
-                success: false, 
+                success: true, 
                 status: 'expired',
+                paid: false,
                 message: 'Payment time expired'
             });
         }
 
-        // Check blockchain for payment
-        const isPaid = await checkBlockchainPayment(order.wallet, order.payableAmount);
-        
-        if (isPaid.paid && order.status === 'pending') {
+        // Перевіряємо транзакцію в блокчейні
+        const paymentCheck = await checkTronTransaction(
+            CONFIG.WALLET_ADDRESS,
+            order.uniqueAmount,
+            60
+        );
+
+        if (paymentCheck.success && paymentCheck.found) {
+            // Оплата знайдена!
             order.status = 'paid';
             order.paidAt = new Date().toISOString();
-            order.transactionHash = isPaid.txHash;
             
-            // Update product downloads
-            const productsData = await fs.readFile('data/products.json', 'utf8');
-            let products = JSON.parse(productsData);
+            // Генеруємо посилання для завантаження
+            const downloadToken = uuidv4();
+            const downloadLink = `${CONFIG.SITE_URL}/api/download/${order.id}/${downloadToken}`;
+            order.downloadLink = downloadLink;
+            order.downloadToken = downloadToken;
+            order.filesSent = true;
             
-            order.items.forEach(item => {
-                const product = products.find(p => p.id === item.id);
-                if (product) {
-                    product.downloads = (product.downloads || 0) + 1;
-                }
-            });
-            
-            await fs.writeFile('data/products.json', JSON.stringify(products, null, 2));
             await fs.writeFile('data/orders.json', JSON.stringify(orders, null, 2));
+            
+            // Відправити файли на email
+            if (transporter) {
+                await sendDownloadEmail(order.email, order.id, downloadLink);
+            }
+            
+            // Оновити кількість завантажень товарів
+            await updateProductDownloads(order.items);
+            
+            return res.json({ 
+                success: true, 
+                status: 'paid',
+                paid: true,
+                filesSent: true,
+                downloadLink: downloadLink,
+                transaction: paymentCheck.transaction
+            });
         }
 
+        // Оплата не знайдена
         res.json({ 
             success: true, 
-            status: order.status,
-            paid: order.status === 'paid',
-            downloadToken: order.downloadToken,
-            transactionHash: order.transactionHash,
-            expiresAt: order.expiresAt
+            status: 'pending',
+            paid: false,
+            message: 'Waiting for payment...',
+            uniqueAmount: order.uniqueAmount
         });
+        
     } catch (error) {
+        console.error('Payment check error:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Get order by token
-app.get('/api/download/:token', async (req, res) => {
+// Завантаження файлів
+app.get('/api/download/:orderId/:token', async (req, res) => {
     try {
-        const data = await fs.readFile('data/orders.json', 'utf8');
-        const orders = JSON.parse(data);
-        const order = orders.find(o => o.downloadToken === req.params.token);
-
+        const { orderId, token } = req.params;
+        
+        const ordersData = await fs.readFile('data/orders.json', 'utf8');
+        const orders = JSON.parse(ordersData);
+        const order = orders.find(o => o.id === orderId && o.downloadToken === token);
+        
         if (!order) {
-            return res.status(404).json({ error: 'Download not found' });
+            return res.status(404).send('Download link expired or invalid');
         }
 
         if (order.status !== 'paid') {
-            return res.status(403).json({ error: 'Order not paid' });
+            return res.status(403).send('Order not paid');
         }
 
-        // Get product files
+        // Перевіряємо, чи не минув час завантаження
+        const now = new Date();
+        const paidAt = new Date(order.paidAt);
+        const hoursDiff = (now - paidAt) / (1000 * 60 * 60);
+        
+        if (hoursDiff > 24) { // 24 години на завантаження
+            return res.status(403).send('Download link expired');
+        }
+
+        // Знаходимо файли товарів
         const productsData = await fs.readFile('data/products.json', 'utf8');
         const products = JSON.parse(productsData);
         
-        const files = [];
-        order.items.forEach(item => {
+        const orderProducts = order.items.map(item => {
             const product = products.find(p => p.id === item.id);
-            if (product && product.file) {
-                files.push({
-                    name: product.name,
-                    fileName: product.fileName || `product_${product.id}`,
-                    fileUrl: product.file,
-                    fileSize: product.fileSize
-                });
-            }
-        });
+            return product ? {
+                ...item,
+                fileName: product.fileName,
+                filePath: product.file
+            } : null;
+        }).filter(p => p !== null);
 
-        res.json({ success: true, files });
+        if (orderProducts.length === 0) {
+            return res.status(404).send('Files not found');
+        }
+
+        // Якщо тільки один файл - віддаємо його напряму
+        if (orderProducts.length === 1) {
+            const filePath = path.join(__dirname, orderProducts[0].filePath);
+            const fileName = orderProducts[0].fileName;
+            
+            return res.download(filePath, fileName);
+        }
+
+        // Якщо декілька файлів - створюємо ZIP (потрібна додаткова бібліотека)
+        res.json({
+            success: true,
+            message: 'Multiple files available',
+            files: orderProducts.map(p => ({
+                name: p.fileName,
+                url: `${CONFIG.SITE_URL}${p.filePath}`
+            }))
+        });
+        
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Download error:', error);
+        res.status(500).send('Download error');
     }
 });
 
-// Get settings
+// Налаштування
 app.get('/api/settings', async (req, res) => {
     try {
         const data = await fs.readFile('data/settings.json', 'utf8');
@@ -490,17 +671,31 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// Update settings
 app.put('/api/settings', async (req, res) => {
     try {
-        await fs.writeFile('data/settings.json', JSON.stringify(req.body, null, 2));
-        res.json({ success: true });
+        const data = await fs.readFile('data/settings.json', 'utf8');
+        const currentSettings = JSON.parse(data);
+        
+        const updatedSettings = {
+            ...currentSettings,
+            ...req.body,
+            updatedAt: new Date().toISOString()
+        };
+
+        await fs.writeFile('data/settings.json', JSON.stringify(updatedSettings, null, 2));
+        
+        // Оновити глобальну конфігурацію
+        if (req.body.walletAddress) {
+            CONFIG.WALLET_ADDRESS = req.body.walletAddress;
+        }
+        
+        res.json({ success: true, settings: updatedSettings });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Get contacts
+// Контакти
 app.get('/api/contacts', async (req, res) => {
     try {
         const data = await fs.readFile('data/contacts.json', 'utf8');
@@ -510,20 +705,22 @@ app.get('/api/contacts', async (req, res) => {
     }
 });
 
-// Update contacts
 app.put('/api/contacts', upload.single('ownerPhoto'), async (req, res) => {
     try {
-        const data = await fs.readFile('data/contacts.json', 'utf8');
+                const data = await fs.readFile('data/contacts.json', 'utf8');
         let contacts = JSON.parse(data);
         
+        // Оновити текстові поля
         contacts = {
             ...contacts,
             ownerName: req.body.ownerName || contacts.ownerName,
             ownerDescription: req.body.ownerDescription || contacts.ownerDescription,
+            about: req.body.about || contacts.about,
             telegram: req.body.telegram || contacts.telegram,
-            about: req.body.about || contacts.about
+            telegramLink: req.body.telegramLink || contacts.telegramLink
         };
 
+        // Оновити фото якщо завантажено
         if (req.file) {
             contacts.ownerPhoto = `/uploads/owner/${req.file.filename}`;
         }
@@ -535,37 +732,80 @@ app.put('/api/contacts', upload.single('ownerPhoto'), async (req, res) => {
     }
 });
 
-// Update logo
+// Оновити логотип
 app.post('/api/upload-logo', upload.single('logo'), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Оновити налаштування з новим лого
+        const settingsData = await fs.readFile('data/settings.json', 'utf8');
+        const settings = JSON.parse(settingsData);
+        
+        settings.logoUrl = `/uploads/logos/${req.file.filename}`;
+        await fs.writeFile('data/settings.json', JSON.stringify(settings, null, 2));
+        
         res.json({ 
             success: true, 
-            logoUrl: `/uploads/logo/${req.file.filename}` 
+            logoUrl: settings.logoUrl 
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Search products
+// Пошук товарів
 app.get('/api/search', async (req, res) => {
     try {
-        const query = req.query.q?.toLowerCase() || '';
-        const category = req.query.category || '';
+        const { q, category, minPrice, maxPrice, sort } = req.query;
         
         const data = await fs.readFile('data/products.json', 'utf8');
         let products = JSON.parse(data);
         
-        if (query) {
+        // Фільтр по категорії
+        if (category && category !== 'all') {
+            products = products.filter(p => p.category === category);
+        }
+        
+        // Пошук по тексту
+        if (q) {
+            const searchTerm = q.toLowerCase();
             products = products.filter(p => 
-                p.name.toLowerCase().includes(query) || 
-                p.description.toLowerCase().includes(query) ||
-                p.category.toLowerCase().includes(query)
+                p.name.toLowerCase().includes(searchTerm) ||
+                p.description.toLowerCase().includes(searchTerm) ||
+                p.category.toLowerCase().includes(searchTerm)
             );
         }
         
-        if (category && category !== 'all') {
-            products = products.filter(p => p.category === category);
+        // Фільтр по ціні
+        if (minPrice) {
+            products = products.filter(p => p.price >= parseFloat(minPrice));
+        }
+        
+        if (maxPrice) {
+            products = products.filter(p => p.price <= parseFloat(maxPrice));
+        }
+        
+        // Сортування
+        if (sort) {
+            switch(sort) {
+                case 'price-asc':
+                    products.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-desc':
+                    products.sort((a, b) => b.price - a.price);
+                    break;
+                case 'popular':
+                    products.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+                    break;
+                case 'newest':
+                    products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    break;
+                case 'name':
+                    products.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+            }
         }
         
         res.json(products);
@@ -574,31 +814,52 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
-// ===== BLOCKCHAIN FUNCTIONS =====
-
-async function checkBlockchainPayment(walletAddress, amount) {
+// Статистика
+app.get('/api/stats', async (req, res) => {
     try {
-        // For demo purposes - in production use real API
-        // This is a simplified version
-        console.log(`Checking payment: ${amount} USDT to ${walletAddress}`);
+        const productsData = await fs.readFile('data/products.json', 'utf8');
+        const ordersData = await fs.readFile('data/orders.json', 'utf8');
+        const categoriesData = await fs.readFile('data/categories.json', 'utf8');
         
-        // Simulate payment check (replace with real API call)
-        // Example using TronGrid API:
-        // const transactions = await tronWeb.trx.getTransactionsRelated(walletAddress, 'to', { only_confirmed: true });
+        const products = JSON.parse(productsData);
+        const orders = JSON.parse(ordersData);
+        const categories = JSON.parse(categoriesData);
         
-        return {
-            paid: false, // Change to true when payment detected
-            txHash: '',
-            amount: amount,
-            timestamp: new Date().toISOString()
+        const paidOrders = orders.filter(o => o.status === 'paid');
+        const totalRevenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
+        const totalDownloads = products.reduce((sum, product) => sum + (product.downloads || 0), 0);
+        
+        const stats = {
+            totalProducts: products.length,
+            totalCategories: categories.length,
+            totalOrders: orders.length,
+            totalPaidOrders: paidOrders.length,
+            totalRevenue: totalRevenue,
+            totalDownloads: totalDownloads,
+            averageOrderValue: paidOrders.length > 0 ? totalRevenue / paidOrders.length : 0,
+            topProducts: [...products].sort((a, b) => (b.downloads || 0) - (a.downloads || 0)).slice(0, 5),
+            recentOrders: orders.slice(-5).reverse()
         };
+        
+        res.json({ success: true, stats });
     } catch (error) {
-        console.error('Blockchain check error:', error);
-        return { paid: false, txHash: '', amount: amount };
+        res.status(500).json({ error: error.message });
     }
+});
+
+// ===== ДОПОМІЖНІ ФУНКЦІЇ =====
+
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
 }
 
-// ===== HELPER FUNCTIONS =====
+function isValidTronAddress(address) {
+    if (!address) return false;
+    if (address.startsWith('T') && address.length === 34) return true;
+    if (address.startsWith('0x') && address.length === 42) return true;
+    return false;
+}
 
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -608,40 +869,224 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// ===== SERVER START =====
-app.listen(PORT, async () => {
-    await initData();
-    console.log(`
-    ╔═══════════════════════════════════════════════════════╗
-    ║          🚀 JOHN'S LAB TEMPLATES STARTED!             ║
-    ╠═══════════════════════════════════════════════════════╣
-    ║ 🌐 Website:   http://localhost:${PORT}                ║
-    ║ 📁 Uploads:   http://localhost:${PORT}/uploads/       ║
-    ║ 👑 Admin:     Password: ${CONFIG.ADMIN_PASSWORD}      ║
-    ║ 💰 Wallet:    ${CONFIG.WALLET_ADDRESS}                ║
-    ║ 📞 Telegram:  ${CONFIG.TELEGRAM_LINK}                 ║
-    ╚═══════════════════════════════════════════════════════╝
-    `);
+async function sendPaymentEmail(email, orderId, amount) {
+    try {
+        if (!transporter) {
+            console.log('Email transporter not configured');
+            return false;
+        }
+
+        const mailOptions = {
+            from: `"JOHN'S LAB TEMPLATES" <${CONFIG.EMAIL_USER}>`,
+            to: email,
+            subject: `💳 Payment Details for Order #${orderId}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+                    <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h2 style="color: #D4AF37; text-align: center; margin-bottom: 30px;">JOHN'S LAB TEMPLATES - Payment Details</h2>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <p>Order: <strong>#${orderId}</strong></p>
+                            <p>Date: ${new Date().toLocaleDateString()}</p>
+                            <h1 style="color: #D4AF37; font-size: 36px; margin: 20px 0; text-align: center;">
+                                ${amount} USDT
+                            </h1>
+                        </div>
+                        
+                        <div style="background: #1a1a1a; color: #D4AF37; padding: 15px; border-radius: 8px; font-family: monospace; word-break: break-all; margin: 20px 0;">
+                            ${CONFIG.WALLET_ADDRESS}
+                        </div>
+                        
+                        <p><strong>Network:</strong> TRON (TRC20)</p>
+                        <p><strong>Payment Timeout:</strong> 60 minutes</p>
+                        
+                        <div style="margin-top: 30px; padding: 20px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #D4AF37;">
+                            <p><strong>📌 Instructions:</strong></p>
+                            <ol style="margin-left: 20px;">
+                                <li>Send exactly <strong>${amount} USDT</strong> to the address above</li>
+                                <li>Use <strong>TRC20 network only</strong></li>
+                                <li>Complete payment within 60 minutes</li>
+                                <li>Files will be sent automatically after payment confirmation</li>
+                                <li>Check your order status on our website</li>
+                            </ol>
+                        </div>
+                        
+                        <p style="margin-top: 30px; text-align: center; color: #666;">
+                            Need help? Contact us: <a href="${CONFIG.TELEGRAM_LINK}" style="color: #D4AF37;">Telegram</a>
+                        </p>
+                        
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                            <p style="color: #999; font-size: 12px;">
+                                © ${new Date().getFullYear()} JOHN'S LAB TEMPLATES. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Payment email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Error sending payment email:', error);
+        return false;
+    }
+}
+
+async function sendDownloadEmail(email, orderId, downloadLink) {
+    try {
+        if (!transporter) {
+            console.log('Email transporter not configured');
+            return false;
+        }
+
+        const mailOptions = {
+            from: `"JOHN'S LAB TEMPLATES" <${CONFIG.EMAIL_USER}>`,
+            to: email,
+            subject: `🎉 Your Order #${orderId} is Ready!`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+                    <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h2 style="color: #27ae60; text-align: center; margin-bottom: 30px;">🎉 Payment Confirmed!</h2>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <div style="font-size: 72px; color: #27ae60; margin-bottom: 20px;">✓</div>
+                            <h3 style="color: #333; margin-bottom: 10px;">Order #${orderId} Paid Successfully</h3>
+                            <p style="color: #666;">Your files are ready for download</p>
+                        </div>
+                        
+                        <div style="background: #f0f8ff; padding: 25px; border-radius: 8px; margin: 30px 0; text-align: center; border: 2px solid #D4AF37;">
+                            <p style="margin-bottom: 15px;"><strong>Download Link:</strong></p>
+                            <a href="${downloadLink}" 
+                               style="display: inline-block; background: #D4AF37; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+                                📥 Download Files
+                            </a>
+                            <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                                Link valid for 24 hours
+                            </p>
+                        </div>
+                        
+                        <div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+                            <p><strong>📋 Order Details:</strong></p>
+                            <p>Order ID: ${orderId}</p>
+                            <p>Date: ${new Date().toLocaleDateString()}</p>
+                            <p>Download Link: <a href="${downloadLink}">${downloadLink}</a></p>
+                        </div>
+                        
+                        <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p><strong>⚠️ Important:</strong></p>
+                            <ul style="margin-left: 20px;">
+                                <li>Download link is valid for 24 hours</li>
+                                <li>Keep your order ID for reference</li>
+                                <li>If you have issues, contact us immediately</li>
+                            </ul>
+                        </div>
+                        
+                        <p style="margin-top: 30px; text-align: center;">
+                            <a href="${CONFIG.TELEGRAM_LINK}" 
+                               style="color: #D4AF37; text-decoration: none;">
+                                💬 Need help? Contact us on Telegram
+                            </a>
+                        </p>
+                        
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+                            <p style="color: #999; font-size: 12px;">
+                                © ${new Date().getFullYear()} JOHN'S LAB TEMPLATES. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Download email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Error sending download email:', error);
+        return false;
+    }
+}
+
+async function updateProductDownloads(items) {
+    try {
+        const data = await fs.readFile('data/products.json', 'utf8');
+        let products = JSON.parse(data);
+        
+        items.forEach(item => {
+            const productIndex = products.findIndex(p => p.id === item.id);
+            if (productIndex !== -1) {
+                products[productIndex].downloads = (products[productIndex].downloads || 0) + 1;
+            }
+        });
+        
+        await fs.writeFile('data/products.json', JSON.stringify(products, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error updating product downloads:', error);
+        return false;
+    }
+}
+
+// ===== HTML РОУТИ =====
+
+// Головна сторінка
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Handle 404
-app.use((req, res) => {
-    res.status(404).send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>404 - JOHN'S LAB TEMPLATES</title>
-            <style>
-                body { background: #000; color: #D4AF37; font-family: Arial; text-align: center; padding: 50px; }
-                h1 { font-size: 48px; }
-                a { color: #D4AF37; text-decoration: none; }
-            </style>
-        </head>
-        <body>
-            <h1>404</h1>
-            <p>Page not found</p>
-            <a href="/">Go to homepage</a>
-        </body>
-        </html>
-    `);
+// Сторінка завантаження
+app.get('/download/:orderId/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Сторінка адміна
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ===== ЗАПУСК СЕРВЕРА =====
+
+async function startServer() {
+    try {
+        await initData();
+        
+        app.listen(PORT, () => {
+            console.log(`
+╔═══════════════════════════════════════════════════════╗
+║           🚀 JOHN'S LAB TEMPLATES STARTED!            ║
+╠═══════════════════════════════════════════════════════╣
+║ 🌐 Website:    http://localhost:${PORT}                ║
+║ 📁 Uploads:    http://localhost:${PORT}/uploads/       ║
+║ 💰 Wallet:     ${CONFIG.WALLET_ADDRESS}                ║
+║ 📧 Email:      ${CONFIG.EMAIL_USER || 'Not configured'} ║
+║ 📞 Telegram:   ${CONFIG.TELEGRAM_LINK}                ║
+╚═══════════════════════════════════════════════════════╝
+            `);
+            
+            // Перевірити конфігурацію
+            if (!CONFIG.EMAIL_USER || !CONFIG.EMAIL_PASS) {
+                console.warn('⚠️  Email not configured - some features will be limited');
+            }
+            
+            if (CONFIG.WALLET_ADDRESS.startsWith('Txxxx')) {
+                console.warn('⚠️  Please update your USDT wallet address in .env file');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+startServer();
+
+// Обробка помилок
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });

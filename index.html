@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JOHN'S LAB TEMPLATES | Premium Digital Products</title>
+    <title>JOHN'S LAB TEMPLATES | Premium Digital Templates</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* === ROOT VARIABLES === */
         :root {
             --gold: #D4AF37;
             --gold-light: #F4D03F;
@@ -13,19 +15,45 @@
             --black-light: #0a0a0a;
             --black-lighter: #1a1a1a;
             --gray: #2d2d2d;
+            --gray-light: #3d3d3d;
             --success: #27ae60;
             --danger: #e74c3c;
             --warning: #f39c12;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--black);
             color: #fff;
             min-height: 100vh;
-            line-height: 1.6;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(212, 175, 55, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 75%, rgba(212, 175, 55, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body.custom-background::before {
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
         }
 
         .container {
@@ -34,14 +62,16 @@
             padding: 0 20px;
         }
 
+        /* === HEADER === */
         header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
             border-bottom: 2px solid var(--gold);
             position: sticky;
             top: 0;
             z-index: 1000;
             padding: 15px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
         .header-content {
@@ -56,38 +86,45 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            text-decoration: none;
         }
 
         .logo-icon {
             width: 50px;
             height: 50px;
             background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-            border-radius: 50%;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--black);
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.05);
         }
 
         .logo-icon img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 12px;
         }
 
         .logo-text {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
-            background: linear-gradient(to right, var(--gold), var(--gold-light));
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
+        /* === SEARCH === */
         .search-box {
             flex: 1;
             max-width: 500px;
@@ -96,9 +133,9 @@
 
         .search-box input {
             width: 100%;
-            padding: 12px 45px 12px 20px;
+            padding: 14px 50px 14px 20px;
             background: var(--black-lighter);
-            border: 1px solid var(--gold);
+            border: 2px solid var(--gray);
             border-radius: 30px;
             color: #fff;
             font-size: 16px;
@@ -107,7 +144,8 @@
         }
 
         .search-box input:focus {
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
         }
 
         .search-btn {
@@ -120,17 +158,24 @@
             color: var(--gold);
             cursor: pointer;
             font-size: 18px;
+            transition: transform 0.3s;
         }
 
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* === NAVIGATION === */
         .nav-buttons {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
+        /* === BUTTONS === */
         .btn {
             padding: 12px 24px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -140,12 +185,37 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn > * {
+            position: relative;
+            z-index: 1;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
             color: var(--black);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
         }
 
         .btn-secondary {
@@ -154,29 +224,31 @@
             border: 2px solid var(--gold);
         }
 
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
 
         .btn-small {
             padding: 8px 16px;
             font-size: 13px;
         }
 
-        .btn:hover:not(:disabled) {
+        .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
         }
 
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
+        /* === SECTIONS === */
         .section {
             display: none;
             padding: 40px 0;
             animation: fadeIn 0.5s ease;
         }
 
-        .section.active { display: block; }
+        .section.active {
+            display: block;
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -184,12 +256,14 @@
         }
 
         .section-title {
-            font-size: 36px;
+            font-size: 42px;
             color: var(--gold);
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             position: relative;
-            padding-bottom: 15px;
+            padding-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .section-title::after {
@@ -198,15 +272,16 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 3px;
+            width: 150px;
+            height: 4px;
             background: linear-gradient(90deg, transparent, var(--gold), transparent);
         }
 
+        /* === HERO === */
         .hero {
             text-align: center;
-            padding: 80px 20px;
-            background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95));
+            padding: 100px 20px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(26,26,26,0.95));
             border-radius: 20px;
             margin: 30px 0;
             border: 2px solid var(--gold);
@@ -217,53 +292,80 @@
         .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
         .hero h1 {
-            font-size: 48px;
+            font-size: 56px;
             color: var(--gold);
             margin-bottom: 20px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+            font-weight: 900;
+            letter-spacing: 3px;
         }
 
         .hero p {
-            font-size: 20px;
+            font-size: 22px;
             color: #ccc;
-            max-width: 700px;
-            margin: 0 auto 30px;
-            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
         }
 
+        /* === STATISTICS === */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin: 50px 0;
         }
 
         .stat-card {
-            background: var(--black-lighter);
-            padding: 25px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 35px;
+            border-radius: 20px;
             text-align: center;
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            border: 1px solid var(--gold);
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
         }
 
         .stat-card:hover {
-            border-color: var(--gold);
-            transform: translateY(-5px);
+            border-color: var(--gold-light);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
         }
 
         .stat-number {
-            font-size: 42px;
+            font-size: 48px;
             color: var(--gold);
-            font-weight: 800;
+            font-weight: 900;
             display: block;
             margin-bottom: 10px;
         }
@@ -272,40 +374,98 @@
             color: #aaa;
             font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        /* === PRODUCTS === */
+        .filters-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .btn-filter {
+            padding: 10px 20px;
+            background: var(--black-lighter);
+            border: 2px solid var(--gray);
+            color: #fff;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-filter:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .btn-filter.active {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--black);
+            border-color: var(--gold);
+        }
+
+        .sort-select {
+            padding: 10px 20px;
+            background: var(--black-lighter);
+            border: 2px solid var(--gray);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .sort-select:focus {
+            border-color: var(--gold);
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 30px;
             margin-top: 30px;
         }
 
         .product-card {
-            background: var(--black-lighter);
-            border-radius: 15px;
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            border-radius: 20px;
             overflow: hidden;
-            transition: all 0.3s;
+            transition: all 0.4s;
             border: 1px solid transparent;
             position: relative;
         }
 
         .product-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-15px);
             border-color: var(--gold);
-            box-shadow: 0 15px 30px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
         }
 
         .product-image {
             width: 100%;
-            height: 200px;
+            height: 220px;
             background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--black);
-            font-size: 48px;
+            font-size: 64px;
+            position: relative;
             overflow: hidden;
         }
 
@@ -313,6 +473,11 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.1);
         }
 
         .product-badge {
@@ -321,19 +486,21 @@
             right: 15px;
             background: var(--gold);
             color: var(--black);
-            padding: 5px 15px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
-            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
-        .product-info { padding: 25px; }
+        .product-info {
+            padding: 25px;
+        }
 
         .product-title {
             font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-weight: 700;
+            margin-bottom: 12px;
             color: #fff;
         }
 
@@ -342,13 +509,13 @@
             font-size: 14px;
             line-height: 1.6;
             margin-bottom: 15px;
-            min-height: 60px;
+            min-height: 65px;
         }
 
         .product-price {
-            font-size: 28px;
+            font-size: 32px;
             color: var(--gold);
-            font-weight: 700;
+            font-weight: 900;
             margin: 15px 0;
         }
 
@@ -358,54 +525,78 @@
             color: #777;
             font-size: 13px;
             margin-bottom: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray);
         }
 
-        .product-actions { display: flex; gap: 10px; }
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
 
+        /* === CART === */
         .cart-item {
             display: flex;
             align-items: center;
             padding: 20px;
             background: var(--black-lighter);
-            border-radius: 10px;
+            border-radius: 15px;
             margin-bottom: 15px;
             border-left: 4px solid var(--gold);
+            transition: all 0.3s;
+        }
+
+        .cart-item:hover {
+            background: var(--gray-light);
         }
 
         .cart-item-image {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 10px;
             object-fit: cover;
             margin-right: 20px;
         }
 
-        .cart-item-info { flex: 1; }
-
-        .cart-item-title {
-            font-weight: 600;
-            margin-bottom: 5px;
+        .cart-item-info {
+            flex: 1;
         }
 
-        .cart-item-price { color: var(--gold); font-weight: 600; }
+        .cart-item-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .cart-item-price {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 20px;
+        }
 
         .cart-remove {
             background: var(--danger);
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .cart-remove:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
         }
 
         .cart-total {
-            background: var(--black-lighter);
-            padding: 25px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 30px;
+            border-radius: 20px;
             margin-top: 30px;
             border: 2px solid var(--gold);
         }
@@ -413,115 +604,128 @@
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 18px;
         }
 
         .total-amount {
-            font-size: 36px;
+            font-size: 42px;
             color: var(--gold);
-            font-weight: 800;
+            font-weight: 900;
         }
 
+        /* === PAYMENT === */
         .payment-card {
-            background: var(--black-lighter);
-            padding: 30px;
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 40px;
             border-radius: 20px;
             border: 2px solid var(--gold);
             margin: 30px 0;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .wallet-address {
             background: var(--black);
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             margin: 20px 0;
-            border: 1px solid var(--gold);
-            font-family: monospace;
+            border: 2px solid var(--gold);
+            font-family: 'Courier New', monospace;
             word-break: break-all;
             color: var(--gold);
             font-size: 18px;
+            font-weight: 600;
         }
 
         .qr-code {
-            width: 200px;
-            height: 200px;
-            margin: 20px auto;
+            width: 250px;
+            height: 250px;
+            margin: 30px auto;
             background: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .payment-status {
-            text-align: center;
-            padding: 20px;
-            background: rgba(212, 175, 55, 0.1);
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .contacts-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 40px;
-            margin-top: 30px;
-        }
-
-        @media (min-width: 992px) {
-            .contacts-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        .owner-card {
-            background: var(--black-lighter);
-            padding: 30px;
+        /* === CONTACTS === */
+        .contact-card {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 50px;
             border-radius: 20px;
             text-align: center;
             border: 2px solid var(--gold);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .owner-photo {
-            width: 200px;
-            height: 200px;
+            width: 220px;
+            height: 220px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid var(--gold);
-            margin: 0 auto 25px;
+            border: 5px solid var(--gold);
+            margin: 0 auto 30px;
+            display: block;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
         }
 
         .owner-name {
-            font-size: 24px;
+            font-size: 32px;
             color: var(--gold);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: 900;
         }
 
         .owner-description {
             color: #aaa;
-            line-height: 1.6;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #0088cc, #00a6e3);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.3);
+        }
+
+        .telegram-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.5);
+        }
+
+        /* === FORMS === */
+        .form-group {
             margin-bottom: 25px;
         }
 
-        .owner-about {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 25px 0;
-        }
-
-        .form-group { margin-bottom: 25px; }
-
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--gold);
             font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .form-control {
             width: 100%;
             padding: 15px;
             background: var(--black);
-            border: 1px solid var(--gray);
-            border-radius: 8px;
+            border: 2px solid var(--gray);
+            border-radius: 10px;
             color: #fff;
             font-size: 16px;
             transition: all 0.3s;
@@ -530,7 +734,7 @@
         .form-control:focus {
             border-color: var(--gold);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
         textarea.form-control {
@@ -538,13 +742,16 @@
             resize: vertical;
         }
 
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* === ADMIN PANEL === */
         .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
         }
 
         .admin-menu {
@@ -557,37 +764,40 @@
         .admin-tab-btn {
             padding: 15px 25px;
             background: var(--black-lighter);
-            border: 1px solid var(--gold);
+            border: 2px solid var(--gold);
             color: var(--gold);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
-            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .admin-tab-btn:hover {
+            background: var(--gray);
         }
 
         .admin-tab-btn.active {
-            background: var(--gold);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
             color: var(--black);
         }
 
         .admin-content {
-            background: var(--black-lighter);
-            padding: 30px;
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 40px;
             border-radius: 20px;
             border: 2px solid var(--gold);
             min-height: 500px;
         }
 
-        .admin-tab { display: none; }
-        .admin-tab.active { display: block; }
-
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .admin-tab {
+            display: none;
         }
 
+        .admin-tab.active {
+            display: block;
+        }
+
+        /* === MODAL === */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -600,119 +810,130 @@
             justify-content: center;
             z-index: 10000;
             padding: 20px;
+            backdrop-filter: blur(5px);
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+        }
 
         .modal {
-            background: var(--black-lighter);
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
             border-radius: 20px;
             padding: 40px;
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             border: 3px solid var(--gold);
             position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
 
         .modal-close {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: none;
+            background: var(--danger);
             border: none;
-            color: var(--gold);
+            color: white;
             font-size: 24px;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
         }
 
-        .modal-close:hover { background: rgba(212, 175, 55, 0.1); }
+        .modal-close:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
 
         .modal-title {
-            font-size: 28px;
+            font-size: 32px;
             color: var(--gold);
             margin-bottom: 30px;
             text-align: center;
+            font-weight: 900;
         }
 
+        /* === ALERTS === */
         .alert {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 25px;
-            border-radius: 10px;
+            padding: 18px 28px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             z-index: 10001;
             animation: slideIn 0.3s ease;
-            max-width: 400px;
+            max-width: 450px;
             backdrop-filter: blur(10px);
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
+            from { transform: translateX(120%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
 
         .alert-success {
-            background: rgba(39, 174, 96, 0.9);
-            border: 1px solid var(--success);
+            background: rgba(39, 174, 96, 0.95);
+            border: 2px solid var(--success);
         }
 
         .alert-error {
-            background: rgba(231, 76, 60, 0.9);
-            border: 1px solid var(--danger);
+            background: rgba(231, 76, 60, 0.95);
+            border: 2px solid var(--danger);
         }
 
         .alert-warning {
-            background: rgba(243, 156, 18, 0.9);
-            border: 1px solid var(--warning);
+            background: rgba(243, 156, 18, 0.95);
+            border: 2px solid var(--warning);
         }
 
-        .filters {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
+        /* === TABLE === */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--black);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .category-filters {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-filter {
-            padding: 10px 20px;
-            background: var(--black-lighter);
-            border: 1px solid var(--gray);
-            color: #ccc;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-filter.active {
+        .admin-table thead {
             background: var(--gold);
             color: var(--black);
-            border-color: var(--gold);
         }
 
+        .admin-table th,
+        .admin-table td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .admin-table tbody tr {
+            border-bottom: 1px solid var(--gray);
+            transition: background 0.3s;
+        }
+
+        .admin-table tbody tr:hover {
+            background: var(--gray-light);
+        }
+
+        /* === FOOTER === */
         footer {
             background: var(--black-light);
             border-top: 2px solid var(--gold);
-            margin-top: 60px;
-            padding: 40px 0 20px;
+            margin-top: 80px;
+            padding: 50px 0 25px;
         }
 
         .footer-content {
@@ -730,7 +951,7 @@
         .footer-links {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .footer-links a {
@@ -739,45 +960,70 @@
             transition: color 0.3s;
         }
 
-        .footer-links a:hover { color: var(--gold); }
+        .footer-links a:hover {
+            color: var(--gold);
+        }
 
         .footer-bottom {
             text-align: center;
-            padding-top: 20px;
+            padding-top: 25px;
             border-top: 1px solid var(--gray);
             color: #777;
             font-size: 14px;
         }
 
+        /* === RESPONSIVE === */
         @media (max-width: 768px) {
-            .header-content { flex-direction: column; text-align: center; }
-            .search-box { max-width: 100%; }
-            .nav-buttons { justify-content: center; }
-            .products-grid { grid-template-columns: 1fr; }
-            .hero h1 { font-size: 36px; }
-            .hero p { font-size: 18px; }
-            .section-title { font-size: 28px; }
-            .admin-header { flex-direction: column; text-align: center; }
-            .cart-item { flex-direction: column; text-align: center; }
-            .cart-item-image { margin-right: 0; margin-bottom: 15px; }
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .nav-buttons {
+                justify-content: center;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .section-title {
+                font-size: 32px;
+            }
+
+            .filters-container {
+                flex-direction: column;
+            }
+
+            .category-filters {
+                justify-content: center;
+            }
         }
 
-        .hidden { display: none !important; }
-        .text-center { text-align: center; }
-        .text-gold { color: var(--gold) !important; }
-        .mt-4 { margin-top: 40px; }
-        .mb-4 { margin-bottom: 40px; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .w-100 { width: 100%; }
+        /* === UTILITIES === */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
 
         .loader {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border: 4px solid var(--gray);
             border-top: 4px solid var(--gold);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
         }
 
         @keyframes spin {
@@ -785,95 +1031,30 @@
             100% { transform: rotate(360deg); }
         }
 
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--black);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .admin-table th {
-            background: var(--gold);
-            color: var(--black);
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        .admin-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--gray);
-        }
-
-        .admin-table tr:hover { background: rgba(212, 175, 55, 0.1); }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: rgba(243, 156, 18, 0.2);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .status-paid {
-            background: rgba(39, 174, 96, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        .status-expired {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .download-link {
-            display: inline-block;
-            background: var(--gold);
-            color: var(--black);
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .download-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .logo-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 10px;
-            border: 2px solid var(--gold);
-            margin: 10px auto;
+        .countdown {
+            font-size: 24px;
+            color: var(--gold);
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div id="alerts"></div>
     <div id="modals"></div>
 
     <div class="container">
+        <!-- HEADER -->
         <header>
             <div class="header-content">
-                <a href="#" class="logo" onclick="showSection('home'); return false;">
-                    <div class="logo-icon" id="logo-icon">JL</div>
-                    <div class="logo-text">JOHN'S LAB TEMPLATES</div>
-                </a>
+                <div class="logo">
+                    <div class="logo-icon" id="main-logo">JL</div>
+                    <div class="logo-text" id="site-name">JOHN'S LAB TEMPLATES</div>
+                </div>
 
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Search products...">
+                    <input type="text" id="search-input" placeholder="Search templates...">
                     <button class="search-btn" onclick="searchProducts()">
                         <i class="fas fa-search"></i>
                     </button>
@@ -884,7 +1065,7 @@
                         <i class="fas fa-home"></i> Home
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('products')">
-                        <i class="fas fa-store"></i> Products
+                        <i class="fas fa-store"></i> Shop
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('cart')">
                         <i class="fas fa-shopping-cart"></i> Cart (<span id="cart-count">0</span>)
@@ -899,23 +1080,24 @@
             </div>
         </header>
 
+        <!-- HOME -->
         <section id="home" class="section active">
             <div class="hero">
                 <h1>JOHN'S LAB TEMPLATES</h1>
-                <p>Premium digital products for USDT. Fast, secure, and anonymous purchases of high-quality templates and design assets.</p>
-                <button class="btn btn-primary" onclick="showSection('products')">
-                    <i class="fas fa-shopping-bag"></i> Browse Products
+                <p>Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.</p>
+                <button class="btn btn-primary" onclick="showSection('products')" style="font-size: 18px; padding: 15px 35px;">
+                    <i class="fas fa-shopping-bag"></i> Explore Templates
                 </button>
             </div>
 
-            <div class="stats-grid" id="stats">
+            <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-number" id="total-products">0</span>
-                    <span class="stat-label">Products</span>
+                    <span class="stat-label">Templates</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="total-sales">0</span>
-                    <span class="stat-label">Sales</span>
+                    <span class="stat-label">Downloads</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="total-orders">0</span>
@@ -927,266 +1109,115 @@
                 </div>
             </div>
 
-            <div class="section-title">Featured Products</div>
+            <div class="section-title">Featured Templates</div>
             <div class="products-grid" id="featured-products"></div>
         </section>
 
+        <!-- PRODUCTS -->
         <section id="products" class="section">
-            <div class="section-title">Product Catalog</div>
+            <div class="section-title">Template Catalog</div>
             
-            <div class="filters">
-                <div class="category-filters" id="category-filters"></div>
-                <select class="form-control" style="width: auto; min-width: 200px;" onchange="sortProducts(this.value)">
+            <div class="filters-container">
+                <div class="category-filters" id="category-filters">
+                    <button class="btn-filter active" onclick="filterProducts('all', this)">All</button>
+                </div>
+                <select class="sort-select" onchange="sortProducts(this.value)">
                     <option value="newest">Newest First</option>
                     <option value="price-low">Price: Low to High</option>
                     <option value="price-high">Price: High to Low</option>
                     <option value="popular">Most Popular</option>
-                    <option value="name">Name A-Z</option>
                 </select>
             </div>
             
             <div class="products-grid" id="products-container"></div>
         </section>
 
+        <!-- CART -->
         <section id="cart" class="section">
-            <div class="section-title">Your Shopping Cart</div>
+            <div class="section-title">Shopping Cart</div>
             <div id="cart-items"></div>
             <div id="cart-total"></div>
         </section>
 
+        <!-- PAYMENT -->
         <section id="payment" class="section">
             <div class="section-title">USDT Payment</div>
             <div class="payment-card">
-                <h3 style="color: var(--gold); margin-bottom: 20px;">Payment Details</h3>
+                <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 24px;">Payment Details</h3>
                 <div id="payment-details"></div>
             </div>
         </section>
 
+        <!-- CONTACTS -->
         <section id="contacts" class="section">
-            <div class="section-title">Contact Information</div>
-            <div class="contacts-grid">
-                <div class="owner-card">
-                    <img id="owner-photo" src="" alt="Owner" class="owner-photo" onerror="this.style.display='none'">
-                    <h3 id="owner-name" class="owner-name">John's Lab</h3>
-                    <p id="owner-description" class="owner-description">Premium digital template creator</p>
-                    
-                    <div id="owner-about" class="owner-about">
-                        Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive digital products.
-                    </div>
-                    
-                    <a href="https://t.me/John_refund" target="_blank" class="btn btn-primary" style="margin-top: 20px;">
-                        <i class="fab fa-telegram"></i> Contact on Telegram
-                    </a>
-                </div>
-                
-                <div class="owner-card">
-                    <h3 style="color: var(--gold); margin-bottom: 20px;">Store Information</h3>
-                    <div style="text-align: left; margin-bottom: 25px;">
-                        <p><strong>Payment Method:</strong> USDT (TRC20)</p>
-                        <p><strong>Delivery:</strong> Instant digital download</p>
-                        <p><strong>Support:</strong> 24/7 via Telegram</p>
-                        <p><strong>Refunds:</strong> Contact within 24 hours</p>
-                    </div>
-                    
-                    <div style="background: var(--black); padding: 15px; border-radius: 10px; margin: 20px 0;">
-                        <p style="color: var(--gold); margin-bottom: 10px;"><strong>⚠️ Important:</strong></p>
-                        <ul style="text-align: left; padding-left: 20px; color: #aaa;">
-                            <li>All sales are final</li>
-                            <li>Files are delivered instantly after payment</li>
-                            <li>Keep your order ID for reference</li>
-                            <li>Download links expire in 24 hours</li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="section-title">Contact</div>
+            <div class="contact-card">
+                <img id="owner-photo" src="" alt="Owner" class="owner-photo" style="display: none;">
+                <h3 id="owner-name" class="owner-name">John</h3>
+                <p id="owner-description" class="owner-description">Premium digital templates creator</p>
+                <div id="owner-about" style="color: #aaa; margin-bottom: 30px; line-height: 1.8;"></div>
+                <a href="https://t.me/John_refund" target="_blank" class="telegram-btn" id="telegram-link">
+                    <i class="fab fa-telegram"></i> Contact on Telegram
+                </a>
             </div>
         </section>
 
+        <!-- ADMIN LOGIN -->
         <section id="admin-login" class="section">
-            <div class="section-title">Admin Login</div>
-            <div style="max-width: 400px; margin: 0 auto;">
+            <div class="section-title">Admin Panel</div>
+            <div style="max-width: 450px; margin: 0 auto; background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 40px; border-radius: 20px; border: 2px solid var(--gold);">
                 <div class="form-group">
                     <label for="admin-password"><i class="fas fa-key"></i> Admin Password:</label>
-                    <input type="password" id="admin-password" class="form-control" placeholder="Enter admin password">
+                    <input type="password" id="admin-password" class="form-control" placeholder="Enter password">
                 </div>
-                <button class="btn btn-primary" onclick="adminLogin()" style="width: 100%;">
+                <button class="btn btn-primary" onclick="adminLogin()" style="width: 100%; padding: 15px; font-size: 16px;">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
             </div>
         </section>
 
+        <!-- ADMIN PANEL -->
         <section id="admin-panel" class="section">
             <div class="admin-header">
-                <h2 class="section-title">Admin Panel</h2>
+                <h2 class="section-title" style="margin-bottom: 0;">Admin Panel</h2>
                 <button class="btn btn-danger" onclick="adminLogout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
             
             <div class="admin-menu">
-                <button class="admin-tab-btn active" onclick="showAdminTab('dashboard')">
+                <button class="admin-tab-btn active" onclick="showAdminTab('dashboard', this)">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('products')">
+                <button class="admin-tab-btn" onclick="showAdminTab('products', this)">
                     <i class="fas fa-box"></i> Products
                 </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('categories')">
+                <button class="admin-tab-btn" onclick="showAdminTab('categories', this)">
                     <i class="fas fa-folder"></i> Categories
                 </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('orders')">
+                <button class="admin-tab-btn" onclick="showAdminTab('orders', this)">
                     <i class="fas fa-shopping-cart"></i> Orders
                 </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('logo')">
-                    <i class="fas fa-image"></i> Logo
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('settings')">
+                <button class="admin-tab-btn" onclick="showAdminTab('settings', this)">
                     <i class="fas fa-cog"></i> Settings
                 </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('contacts-admin')">
+                <button class="admin-tab-btn" onclick="showAdminTab('contacts-admin', this)">
                     <i class="fas fa-user"></i> Contact Info
                 </button>
             </div>
             
             <div class="admin-content">
-                <div id="admin-dashboard" class="admin-tab active">
-                    <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-chart-bar"></i> Statistics</h3>
-                    <div class="admin-stats">
-                        <div class="stat-card">
-                            <span class="stat-number" id="admin-products-count">0</span>
-                            <span class="stat-label">Products</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number" id="admin-orders-count">0</span>
-                            <span class="stat-label">Orders</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number" id="admin-revenue">0</span>
-                            <span class="stat-label">USDT Revenue</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number" id="admin-downloads">0</span>
-                            <span class="stat-label">Downloads</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="admin-products" class="admin-tab">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                        <h3 style="color: var(--gold);"><i class="fas fa-box"></i> Product Management</h3>
-                        <button class="btn btn-primary" onclick="showAddProductModal()">
-                            <i class="fas fa-plus"></i> Add Product
-                        </button>
-                    </div>
-                    <div id="admin-products-list"><div class="loader"></div></div>
-                </div>
-                
-                <div id="admin-categories" class="admin-tab">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                        <h3 style="color: var(--gold);"><i class="fas fa-folder"></i> Category Management</h3>
-                        <button class="btn btn-primary" onclick="showAddCategoryModal()">
-                            <i class="fas fa-plus"></i> Add Category
-                        </button>
-                    </div>
-                    <div id="admin-categories-list"><div class="loader"></div></div>
-                </div>
-                
-                <div id="admin-orders" class="admin-tab">
-                    <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-shopping-cart"></i> Orders</h3>
-                    <div id="admin-orders-list"><div class="loader"></div></div>
-                </div>
-                
-                <div id="admin-logo" class="admin-tab">
-                    <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-image"></i> Logo Management</h3>
-                    
-                    <div style="background: var(--black); padding: 30px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
-                        <h4 style="color: var(--gold); margin-bottom: 20px;">Current Logo</h4>
-                        <div id="current-logo-container" style="margin-bottom: 20px;"></div>
-                        <div id="logo-upload-form">
-                            <div class="form-group">
-                                <label for="logo-file"><i class="fas fa-upload"></i> Upload New Logo:</label>
-                                <input type="file" id="logo-file" class="form-control" accept="image/*" onchange="previewLogo(this)">
-                                <small style="color: #aaa;">Recommended: 200x200px PNG with transparent background</small>
-                            </div>
-                            <div id="logo-preview" style="margin: 20px 0; display: none;">
-                                <img id="logo-preview-img" class="logo-preview">
-                            </div>
-                            <div style="display: flex; gap: 15px; justify-content: center;">
-                                <button class="btn btn-primary" onclick="uploadLogo()" id="upload-logo-btn">
-                                    <i class="fas fa-upload"></i> Upload Logo
-                                </button>
-                                <button class="btn btn-danger" onclick="removeLogo()" id="remove-logo-btn" style="display: none;">
-                                    <i class="fas fa-trash"></i> Remove Logo
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="admin-settings" class="admin-tab">
-                    <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-cog"></i> Store Settings</h3>
-                    <form id="settings-form">
-                        <div class="form-group">
-                            <label>Store Name:</label>
-                            <input type="text" id="setting-shop-name" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>USDT Wallet Address:</label>
-                            <input type="text" id="setting-wallet" class="form-control" placeholder="Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-                        </div>
-                        <div class="form-group">
-                            <label>Admin Email:</label>
-                            <input type="email" id="setting-email" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Telegram Link:</label>
-                            <input type="text" id="setting-telegram" class="form-control" placeholder="https://t.me/username">
-                        </div>
-                        <div class="form-group">
-                            <label>New Admin Password:</label>
-                            <input type="password" id="setting-password" class="form-control" placeholder="Leave empty to keep current">
-                        </div>
-                        <div class="form-group">
-                            <label>Payment Timeout (minutes):</label>
-                            <input type="number" id="setting-timeout" class="form-control" min="1" max="180" value="60">
-                        </div>
-                        <button type="button" class="btn btn-primary" onclick="saveSettings()">
-                            <i class="fas fa-save"></i> Save Settings
-                        </button>
-                    </form>
-                </div>
-                
-                <div id="admin-contacts" class="admin-tab">
-                    <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-user"></i> Contact Information</h3>
-                    <form id="contact-form">
-                        <div class="form-group">
-                            <label>Your Name:</label>
-                            <input type="text" id="contact-admin-name" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Description:</label>
-                            <input type="text" id="contact-admin-description" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>About Text:</label>
-                            <textarea id="contact-admin-about" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Telegram Username:</label>
-                            <input type="text" id="contact-admin-telegram" class="form-control" placeholder="@username">
-                        </div>
-                        <div class="form-group">
-                            <label>Upload Profile Photo:</label>
-                            <input type="file" id="contact-admin-photo" class="form-control" accept="image/*">
-                            <small style="color: #aaa;">Leave empty to keep current photo</small>
-                        </div>
-                        <button type="button" class="btn btn-primary" onclick="saveContactSettings()">
-                            <i class="fas fa-save"></i> Save Contact Info
-                        </button>
-                    </form>
-                </div>
+                <div id="admin-dashboard" class="admin-tab active"></div>
+                <div id="admin-products" class="admin-tab"></div>
+                <div id="admin-categories" class="admin-tab"></div>
+                <div id="admin-orders" class="admin-tab"></div>
+                <div id="admin-settings" class="admin-tab"></div>
+                <div id="admin-contacts" class="admin-tab"></div>
             </div>
         </section>
     </div>
 
+    <!-- FOOTER -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1195,974 +1226,19 @@
                     <p style="color: #aaa; margin-top: 10px;">Premium digital templates for USDT</p>
                 </div>
                 <div class="footer-links">
-                    <a href="#" onclick="showSection('home'); return false;">Home</a>
-                    <a href="#" onclick="showSection('products'); return false;">Products</a>
-                    <a href="#" onclick="showSection('contacts'); return false;">Contact</a>
-                    <a href="#" onclick="showAdminLogin(); return false;">Admin</a>
-                </div>
-                <div>
-                    <p style="color: #aaa; margin-bottom: 10px;">Need help?</p>
-                    <a href="https://t.me/John_refund" target="_blank" class="btn btn-secondary btn-small">
-                        <i class="fab fa-telegram"></i> Telegram Support
-                    </a>
+                    <a href="#" onclick="showSection('home')">Home</a>
+                    <a href="#" onclick="showSection('products')">Shop</a>
+                    <a href="#" onclick="showSection('contacts')">Contact</a>
+                    <a href="#" onclick="showAdminLogin()">Admin</a>
                 </div>
             </div>
             <div class="footer-bottom">
                 <p>© 2024 JOHN'S LAB TEMPLATES. All rights reserved.</p>
-                <p>Payment: USDT (TRC20) | Instant digital delivery | 24/7 Support</p>
+                <p>Payment: USDT (TRC20) | Instant Digital Delivery</p>
             </div>
         </div>
     </footer>
 
-    <script>
-        const API_URL = window.location.origin;
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let products = [];
-        let categories = [];
-        let orders = [];
-        let settings = {};
-        let contacts = {};
-        let isAdmin = false;
-        let paymentCheckIntervals = {};
-
-        // ===== ІНІЦІАЛІЗАЦІЯ =====
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadData();
-            updateCartCount();
-            renderHomePage();
-            renderProducts();
-            renderCategories();
-            renderContacts();
-            loadLogo();
-            
-            if (localStorage.getItem('admin_logged_in') === 'true') {
-                isAdmin = true;
-                showAdminPanel();
-            }
-            
-            document.getElementById('search-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchProducts();
-            });
-        });
-
-        // ===== ЗАВАНТАЖЕННЯ ДАНИХ =====
-        async function loadData() {
-            try {
-                const [productsRes, categoriesRes, settingsRes, contactsRes] = await Promise.all([
-                    fetch(`${API_URL}/api/products`),
-                    fetch(`${API_URL}/api/categories`),
-                    fetch(`${API_URL}/api/settings`),
-                    fetch(`${API_URL}/api/contacts`)
-                ]);
-                
-                products = await productsRes.json();
-                categories = await categoriesRes.json();
-                settings = await settingsRes.json();
-                contacts = await contactsRes.json();
-                
-                try {
-                    const ordersRes = await fetch(`${API_URL}/api/orders`);
-                    orders = await ordersRes.json();
-                } catch { orders = []; }
-                
-                updateContactsDisplay();
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showAlert('Error loading data', 'error');
-            }
-        }
-
-        async function loadLogo() {
-            try {
-                const response = await fetch(`${API_URL}/api/logo`);
-                const result = await response.json();
-                const logoIcon = document.getElementById('logo-icon');
-                
-                if (result.logoUrl) {
-                    logoIcon.innerHTML = `<img src="${API_URL}${result.logoUrl}" alt="Logo">`;
-                    document.getElementById('remove-logo-btn').style.display = 'block';
-                }
-            } catch (error) {
-                console.log('No logo loaded');
-            }
-        }
-
-        // ===== ОСНОВНІ ФУНКЦІЇ =====
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.classList.add('active');
-                window.scrollTo(0, 0);
-                if (sectionId === 'home') renderHomePage();
-                if (sectionId === 'cart') renderCart();
-            }
-        }
-
-        function showAlert(message, type = 'success') {
-            const container = document.getElementById('alerts');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i><span>${message}</span>`;
-            container.appendChild(alert);
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 3000);
-        }
-
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-            document.getElementById('cart-count').textContent = totalItems;
-        }
-
-        function closeModal() {
-            document.getElementById('modals').innerHTML = '';
-        }
-
-        // ===== ТОВАРИ =====
-        function renderHomePage() {
-            document.getElementById('total-products').textContent = products.length;
-            document.getElementById('total-sales').textContent = products.reduce((sum, p) => sum + (p.downloads || 0), 0);
-            document.getElementById('total-orders').textContent = orders.length;
-            document.getElementById('total-users').textContent = new Set(orders.map(o => o.email)).size;
-
-            const featured = [...products].sort((a, b) => (b.downloads || 0) - (a.downloads || 0)).slice(0, 4);
-            const container = document.getElementById('featured-products');
-            container.innerHTML = featured.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${product.image ? `<img src="${API_URL}${product.image}" alt="${product.name}" class="product-img">` : `<i class="fas fa-box"></i>`}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-meta">
-                            <span><i class="fas fa-download"></i> ${product.downloads || 0}</span>
-                            <span><i class="fas fa-folder"></i> ${product.category}</span>
-                        </div>
-                        <div class="product-price">${product.price} USDT</div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderProducts() {
-            const container = document.getElementById('products-container');
-            container.innerHTML = products.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${product.image ? `<img src="${API_URL}${product.image}" alt="${product.name}" class="product-img">` : `<i class="fas fa-box"></i>`}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-meta">
-                            <span><i class="fas fa-download"></i> ${product.downloads || 0}</span>
-                            <span><i class="fas fa-folder"></i> ${product.category}</span>
-                        </div>
-                        <div class="product-price">${product.price} USDT</div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('category-filters');
-            const uniqueCategories = [...new Set(products.map(p => p.category))];
-            container.innerHTML = `
-                <button class="btn-filter active" onclick="filterProducts('all')">All</button>
-                ${uniqueCategories.map(category => `
-                    <button class="btn-filter" onclick="filterProducts('${category}')">${category}</button>
-                `).join('')}
-            `;
-        }
-
-        function filterProducts(category) {
-            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const container = document.getElementById('products-container');
-            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-            
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
-                        <i class="fas fa-search fa-3x" style="color: var(--gold); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--gold); margin-bottom: 10px;">No products found</h3>
-                        <p>Try another category</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = filtered.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${product.image ? `<img src="${API_URL}${product.image}" alt="${product.name}" class="product-img">` : `<i class="fas fa-box"></i>`}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-meta">
-                            <span><i class="fas fa-download"></i> ${product.downloads || 0}</span>
-                            <span><i class="fas fa-folder"></i> ${product.category}</span>
-                        </div>
-                        <div class="product-price">${product.price} USDT</div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ===== ПОШУК =====
-        function searchProducts() {
-            const searchTerm = document.getElementById('search-input').value.trim();
-            if (!searchTerm) {
-                renderProducts();
-                return;
-            }
-            
-            // Пошук на фронтенді
-            const filtered = products.filter(p => {
-                if (!p) return false;
-                const name = p.name ? p.name.toLowerCase() : '';
-                const description = p.description ? p.description.toLowerCase() : '';
-                const category = p.category ? p.category.toLowerCase() : '';
-                return name.includes(searchTerm.toLowerCase()) || 
-                       description.includes(searchTerm.toLowerCase()) ||
-                       category.includes(searchTerm.toLowerCase());
-            });
-            
-            const container = document.getElementById('products-container');
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
-                        <i class="fas fa-search fa-3x" style="color: var(--gold); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--gold); margin-bottom: 10px;">No products found</h3>
-                        <p>Try another search term</p>
-                        <button class="btn btn-secondary" onclick="renderProducts(); document.getElementById('search-input').value='';" style="margin-top: 20px;">
-                            <i class="fas fa-times"></i> Clear Search
-                        </button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = filtered.map(product => `
-                    <div class="product-card">
-                        <div class="product-image">
-                            ${product.image ? `<img src="${API_URL}${product.image}" alt="${product.name}" class="product-img">` : `<i class="fas fa-box"></i>`}
-                        </div>
-                        <div class="product-info">
-                            <div class="product-title">${product.name}</div>
-                            <div class="product-description">${product.description}</div>
-                            <div class="product-meta">
-                                <span><i class="fas fa-download"></i> ${product.downloads || 0}</span>
-                                <span><i class="fas fa-folder"></i> ${product.category}</span>
-                            </div>
-                            <div class="product-price">${product.price} USDT</div>
-                            <div class="product-actions">
-                                <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                                    <i class="fas fa-cart-plus"></i> Add to Cart
-                                </button>
-                                <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function sortProducts(sortType) {
-            let sorted = [...products];
-            switch(sortType) {
-                case 'price-low': sorted.sort((a, b) => a.price - b.price); break;
-                case 'price-high': sorted.sort((a, b) => b.price - a.price); break;
-                case 'popular': sorted.sort((a, b) => (b.downloads || 0) - (a.downloads || 0)); break;
-                case 'newest': sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); break;
-                case 'name': sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
-            }
-            
-            const container = document.getElementById('products-container');
-            container.innerHTML = sorted.map(product => `
-                <div class="product-card">
-                    <div class="product-image">
-                        ${product.image ? `<img src="${API_URL}${product.image}" alt="${product.name}" class="product-img">` : `<i class="fas fa-box"></i>`}
-                    </div>
-                    <div class="product-info">
-                        <div class="product-title">${product.name}</div>
-                        <div class="product-description">${product.description}</div>
-                        <div class="product-meta">
-                            <span><i class="fas fa-download"></i> ${product.downloads || 0}</span>
-                            <span><i class="fas fa-folder"></i> ${product.category}</span>
-                        </div>
-                        <div class="product-price">${product.price} USDT</div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ===== ЛОГОТИП =====
-        function previewLogo(input) {
-            const preview = document.getElementById('logo-preview');
-            const previewImg = document.getElementById('logo-preview-img');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function uploadLogo() {
-            const fileInput = document.getElementById('logo-file');
-            if (!fileInput.files[0]) {
-                showAlert('Please select a file first', 'error');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('logo', fileInput.files[0]);
-            
-            try {
-                document.getElementById('upload-logo-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-                document.getElementById('upload-logo-btn').disabled = true;
-                
-                const response = await fetch(`${API_URL}/api/upload-logo`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showAlert('Logo uploaded successfully!');
-                    await loadLogo();
-                    fileInput.value = '';
-                    document.getElementById('logo-preview').style.display = 'none';
-                } else {
-                    showAlert('Error uploading logo', 'error');
-                }
-            } catch (error) {
-                showAlert('Network error', 'error');
-            } finally {
-                document.getElementById('upload-logo-btn').innerHTML = '<i class="fas fa-upload"></i> Upload Logo';
-                document.getElementById('upload-logo-btn').disabled = false;
-            }
-        }
-
-        async function removeLogo() {
-            if (!confirm('Remove the current logo?')) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/settings`);
-                const settings = await response.json();
-                delete settings.logoUrl;
-                delete settings.logoFileName;
-                
-                const updateResponse = await fetch(`${API_URL}/api/settings`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(settings)
-                });
-                
-                const result = await updateResponse.json();
-                
-                if (result.success) {
-                    showAlert('Logo removed successfully');
-                    const logoIcon = document.getElementById('logo-icon');
-                    logoIcon.innerHTML = 'JL';
-                    document.getElementById('remove-logo-btn').style.display = 'none';
-                }
-            } catch (error) {
-                showAlert('Error removing logo', 'error');
-            }
-        }
-
-        // ===== КОШИК =====
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            const existingItem = cart.find(item => item.id === productId);
-            if (existingItem) {
-                existingItem.quantity = (existingItem.quantity || 1) + 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    category: product.category,
-                    quantity: 1
-                });
-            }
-            
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            renderCart();
-            showAlert(`${product.name} added to cart!`);
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items');
-            const totalContainer = document.getElementById('cart-total');
-            
-            if (cart.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 60px;">
-                        <i class="fas fa-shopping-cart fa-3x" style="color: var(--gold); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--gold); margin-bottom: 10px;">Your cart is empty</h3>
-                        <p>Add products from the catalog</p>
-                        <button class="btn btn-primary" onclick="showSection('products')" style="margin-top: 20px;">
-                            <i class="fas fa-shopping-bag"></i> Browse Products
-                        </button>
-                    </div>
-                `;
-                totalContainer.innerHTML = '';
-                return;
-            }
-            
-            let html = '';
-            let total = 0;
-            
-            cart.forEach((item, index) => {
-                const itemTotal = item.price * (item.quantity || 1);
-                total += itemTotal;
-                html += `
-                    <div class="cart-item">
-                        <img src="${item.image ? API_URL + item.image : 'https://via.placeholder.com/80'}" class="cart-item-image" alt="${item.name}">
-                        <div class="cart-item-info">
-                            <div class="cart-item-title">${item.name}</div>
-                            <div class="cart-item-price">${item.price} USDT × ${item.quantity || 1}</div>
-                            <div style="color: #aaa; font-size: 14px;">${item.category}</div>
-                        </div>
-                        <button class="cart-remove" onclick="removeFromCart(${index})"><i class="fas fa-times"></i></button>
-                    </div>
-                `;
-            });
-
-                    function removeFromCart(index) {
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount();
-            renderCart();
-            showAlert('Product removed from cart', 'warning');
-        }
-
-        function showPayment() {
-            if (cart.length === 0) {
-                showAlert('Your cart is empty!', 'error');
-                return;
-            }
-            
-            showSection('payment');
-            const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-            
-            const paymentHtml = `
-                <div id="payment-step-1">
-                    <div style="background: var(--black); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Amount to pay:</span>
-                            <span style="font-weight: 600; color: var(--gold);">${total.toFixed(2)} USDT</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Network:</span>
-                            <span>TRON (TRC20)</span>
-                        </div>
-                    </div>
-                    
-                    <div style="margin: 30px 0;">
-                        <div class="form-group">
-                            <label for="payment-email"><i class="fas fa-envelope"></i> Your email:</label>
-                            <input type="email" id="payment-email" class="form-control" placeholder="your@email.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="payment-wallet"><i class="fas fa-wallet"></i> Your USDT address:</label>
-                            <input type="text" id="payment-wallet" class="form-control" placeholder="Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" required>
-                        </div>
-                        <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; padding: 15px;">
-                            <i class="fas fa-check-circle"></i> Create Order
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="payment-step-2" style="display: none;">
-                    <div style="text-align: center; padding: 30px;">
-                        <div style="font-size: 72px; color: var(--gold); margin-bottom: 20px;">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <h3 style="color: var(--gold); margin-bottom: 15px;">Send <span id="unique-amount">${total.toFixed(2)}</span> USDT</h3>
-                        <p>to address:</p>
-                        <div class="wallet-address" id="display-wallet">${settings.walletAddress || 'Loading...'}</div>
-                        <div class="qr-code" id="qr-code"></div>
-                        <button class="btn btn-secondary" onclick="copyWalletAddress()" style="width: 100%; margin-top: 20px;">
-                            <i class="fas fa-copy"></i> Copy Address
-                        </button>
-                    </div>
-                    <div id="payment-status" class="payment-status">
-                        <div class="loader"></div>
-                        <p style="margin-top: 10px;">Waiting for payment...</p>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('payment-details').innerHTML = paymentHtml;
-        }
-
-        async function createOrder() {
-            const email = document.getElementById('payment-email').value;
-            const wallet = document.getElementById('payment-wallet').value;
-            
-            if (!email || !wallet) {
-                showAlert('Please fill all fields', 'error');
-                return;
-            }
-            
-            if (!isValidEmail(email)) {
-                showAlert('Please enter a valid email', 'error');
-                return;
-            }
-            
-            if (!isValidTronAddress(wallet)) {
-                showAlert('Please enter a valid TRON address', 'error');
-                return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-            const items = cart.map(item => ({
-                id: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity || 1
-            }));
-            
-            try {
-                const response = await fetch(`${API_URL}/api/orders`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, wallet, items, total })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('payment-step-1').style.display = 'none';
-                    document.getElementById('payment-step-2').style.display = 'block';
-                    document.getElementById('display-wallet').textContent = result.wallet || settings.walletAddress;
-                    document.getElementById('unique-amount').textContent = result.uniqueAmount.toFixed(2);
-                    
-                    generateQRCode(result.uniqueAmount, result.wallet || settings.walletAddress);
-                    startPaymentCheck(result.order.id, result.uniqueAmount);
-                    
-                    showAlert(`Order #${result.order.id} created! Check your email.`);
-                } else {
-                    showAlert('Error creating order', 'error');
-                }
-            } catch (error) {
-                showAlert('Network error', 'error');
-            }
-        }
-
-        function generateQRCode(amount, wallet) {
-            const qrData = `tron:${wallet}?amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`;
-            document.getElementById('qr-code').innerHTML = `
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=D4AF37" 
-                     alt="QR Code" style="width: 100%; height: 100%;">
-            `;
-        }
-
-        function copyWalletAddress() {
-            const wallet = document.getElementById('display-wallet').textContent;
-            navigator.clipboard.writeText(wallet).then(() => {
-                showAlert('Address copied to clipboard');
-            });
-        }
-
-        async function startPaymentCheck(orderId, uniqueAmount) {
-            const statusEl = document.getElementById('payment-status');
-            
-            if (paymentCheckIntervals[orderId]) {
-                clearInterval(paymentCheckIntervals[orderId]);
-            }
-            
-            const checkPayment = async () => {
-                try {
-                    const response = await fetch(`${API_URL}/api/orders/${orderId}/check`);
-                    const result = await response.json();
-                    
-                    if (result.paid) {
-                        clearInterval(paymentCheckIntervals[orderId]);
-                        delete paymentCheckIntervals[orderId];
-                        
-                        statusEl.innerHTML = `
-                            <div style="background: rgba(39, 174, 96, 0.1); padding: 20px; border-radius: 10px; color: #27ae60;">
-                                <i class="fas fa-check-circle"></i> Payment received! Files sent to your email.
-                            </div>
-                        `;
-                        
-                        if (result.downloadLink) {
-                            statusEl.innerHTML += `
-                                <div style="margin-top: 20px; text-align: center;">
-                                    <a href="${result.downloadLink}" class="download-link" target="_blank">
-                                        <i class="fas fa-download"></i> Download Files Now
-                                    </a>
-                                </div>
-                            `;
-                        }
-                        
-                        cart = [];
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        updateCartCount();
-                        
-                        setTimeout(() => showSection('home'), 5000);
-                    } else if (result.status === 'expired') {
-                        clearInterval(paymentCheckIntervals[orderId]);
-                        delete paymentCheckIntervals[orderId];
-                        
-                        statusEl.innerHTML = `
-                            <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 10px; color: #e74c3c;">
-                                <i class="fas fa-exclamation-triangle"></i> Payment time expired
-                            </div>
-                        `;
-                    }
-                } catch (error) {
-                    console.error('Payment check error:', error);
-                }
-            };
-            
-            await checkPayment();
-            paymentCheckIntervals[orderId] = setInterval(checkPayment, 10000);
-        }
-
-        function isValidEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        function isValidTronAddress(address) {
-            if (!address) return false;
-            if (address.startsWith('T') && address.length === 34) return true;
-            if (address.startsWith('0x') && address.length === 42) return true;
-            return false;
-        }
-
-        function updateContactsDisplay() {
-            if (contacts.ownerName) {
-                document.getElementById('owner-name').textContent = contacts.ownerName;
-                document.getElementById('contact-admin-name').value = contacts.ownerName;
-            }
-            
-            if (contacts.ownerDescription) {
-                document.getElementById('owner-description').textContent = contacts.ownerDescription;
-                document.getElementById('contact-admin-description').value = contacts.ownerDescription;
-            }
-            
-            if (contacts.ownerPhoto) {
-                document.getElementById('owner-photo').src = API_URL + contacts.ownerPhoto;
-                document.getElementById('owner-photo').style.display = 'block';
-            }
-            
-            if (contacts.about) {
-                document.getElementById('owner-about').textContent = contacts.about;
-                document.getElementById('contact-admin-about').value = contacts.about;
-            }
-            
-            if (contacts.telegram) {
-                document.getElementById('contact-admin-telegram').value = contacts.telegram;
-            }
-            
-            if (settings.telegramLink) {
-                document.getElementById('setting-telegram').value = settings.telegramLink;
-            }
-        }
-
-        // ===== АДМІН ПАНЕЛЬ =====
-        function showAdminLogin() {
-            showSection('admin-login');
-        }
-
-        async function adminLogin() {
-            const password = document.getElementById('admin-password').value;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/settings`);
-                const settingsData = await response.json();
-                const correctPassword = settingsData.adminPassword || 'admin123';
-                
-                if (password === correctPassword) {
-                    isAdmin = true;
-                    localStorage.setItem('admin_logged_in', 'true');
-                    showAdminPanel();
-                    showAlert('Successfully logged into admin panel');
-                } else {
-                    showAlert('Incorrect password!', 'error');
-                }
-            } catch (error) {
-                showAlert('Error verifying password', 'error');
-            }
-        }
-
-        function showAdminPanel() {
-            showSection('admin-panel');
-            showAdminTab('dashboard');
-        }
-
-        function adminLogout() {
-            isAdmin = false;
-            localStorage.removeItem('admin_logged_in');
-            showSection('home');
-            showAlert('Logged out from admin panel', 'warning');
-        }
-
-        function showAdminTab(tabName) {
-            document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(`admin-${tabName}`).classList.add('active');
-            
-            switch(tabName) {
-                case 'dashboard': loadAdminDashboard(); break;
-                case 'products': loadAdminProducts(); break;
-                case 'categories': loadAdminCategories(); break;
-                case 'orders': loadAdminOrders(); break;
-                case 'logo': loadCurrentLogo(); break;
-                case 'settings': loadAdminSettings(); break;
-                case 'contacts-admin': loadAdminContacts(); break;
-            }
-        }
-
-        async function loadAdminDashboard() {
-            try {
-                const response = await fetch(`${API_URL}/api/stats`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('admin-products-count').textContent = result.stats.totalProducts;
-                    document.getElementById('admin-orders-count').textContent = result.stats.totalOrders;
-                    document.getElementById('admin-revenue').textContent = result.stats.totalRevenue.toFixed(2);
-                    document.getElementById('admin-downloads').textContent = result.stats.totalDownloads;
-                }
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
-        }
-
-        async function loadAdminProducts() {
-            const container = document.getElementById('admin-products-list');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/products`);
-                const productsData = await response.json();
-                
-                if (productsData.length === 0) {
-                    container.innerHTML = '<p>No products yet</p>';
-                    return;
-                }
-                
-                container.innerHTML = `
-                    <div style="overflow-x: auto;">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Image</th>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Category</th>
-                                    <th>Downloads</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productsData.map(product => `
-                                    <tr>
-                                        <td>${product.id}</td>
-                                        <td>
-                                            ${product.image ? 
-                                                `<img src="${API_URL}${product.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">` :
-                                                `<div style="width: 50px; height: 50px; background: var(--gray); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                                                    <i class="fas fa-box"></i>
-                                                </div>`
-                                            }
-                                        </td>
-                                        <td>${product.name}</td>
-                                        <td style="color: var(--gold); font-weight: 600;">${product.price} USDT</td>
-                                        <td>${product.category}</td>
-                                        <td>${product.downloads || 0}</td>
-                                        <td>
-                                            <button class="btn btn-secondary btn-small" onclick="editProduct(${product.id})" style="margin-right: 5px;">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-small" onclick="deleteProduct(${product.id})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } catch (error) {
-                container.innerHTML = '<p>Error loading products</p>';
-            }
-        }
-
-        function showAddProductModal() {
-            const modal = `
-                <div class="modal-overlay active" onclick="closeModal()">
-                    <div class="modal" onclick="event.stopPropagation()">
-                        <button class="modal-close" onclick="closeModal()">&times;</button>
-                        <div class="modal-title">Add New Product</div>
-                        <form id="add-product-form">
-                            <div class="form-group">
-                                <label>Product Name:</label>
-                                <input type="text" name="name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Description:</label>
-                                <textarea name="description" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Price (USDT):</label>
-                                <input type="number" name="price" class="form-control" step="0.01" min="0" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Category:</label>
-                                <select name="category" class="form-control" required>
-                                    ${categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Product Image:</label>
-                                <input type="file" name="productImage" class="form-control" accept="image/*">
-                            </div>
-                            <div class="form-group">
-                                <label>Product File:</label>
-                                <input type="file" name="productFile" class="form-control" required>
-                            </div>
-                            <div style="display: flex; gap: 15px; margin-top: 30px;">
-                                <button type="button" class="btn btn-primary" onclick="submitProductForm()" style="flex: 1;">
-                                    <i class="fas fa-plus"></i> Add Product
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('modals').innerHTML = modal;
-        }
-
-        async function submitProductForm() {
-            const form = document.getElementById('add-product-form');
-            const formData = new FormData(form);
-            
-            try {
-                const response = await fetch(`${API_URL}/api/products`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showAlert('Product added successfully!');
-                    closeModal();
-                    await loadData();
-                    loadAdminProducts();
-                    renderProducts();
-                    renderHomePage();
-                    renderCategories();
-                } else {
-                    showAlert('Error adding product', 'error');
-                }
-            } catch (error) {
-                showAlert('Network error', 'error');
-            }
-        }
-
-        // Додайте решту адмін-функцій за аналогією
-        // ... (editProduct, deleteProduct, loadAdminCategories тощо)
-
-        function loadCurrentLogo() {
-            const container = document.getElementById('current-logo-container');
-            const logoIcon = document.getElementById('logo-icon');
-            
-            if (logoIcon.querySelector('img')) {
-                const logoUrl = logoIcon.querySelector('img').src.replace(API_URL, '');
-                container.innerHTML = `
-                    <img src="${API_URL}${logoUrl}" class="logo-preview">
-                    <p style="margin-top: 10px; color: #aaa;">Current logo</p>
-                `;
-                document.getElementById('remove-logo-btn').style.display = 'block';
-            } else {
-                container.innerHTML = `
-                    <div style="width: 200px; height: 200px; background: var(--gray); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="fas fa-image fa-3x" style="color: #555;"></i>
-                    </div>
-                    <p style="margin-top: 10px; color: #aaa;">No logo uploaded</p>
-                `;
-                document.getElementById('remove-logo-btn').style.display = 'none';
-            }
-        }
-    </script>
-    
-            container.innerHTML = html;
-            totalContainer.innerHTML = `
-                <div class="cart-total">
-                    <div class="total-row"><span>Products:</span><span>${total.toFixed(2)} USDT</span></div>
-                    <div class="total-row"><span>Network fee:</span><span>0.00 USDT</span></div>
-                    <div class="total-row" style="border-top: 2px solid var(--gold); padding-top: 15px; margin-top: 15px;">
-                        <span>Total:</span><span class="total-amount">${total.toFixed(2)} USDT</span>
-                    </div>
-                    <button class="btn btn-primary" onclick="showPayment()" style="width: 100%; margin-top: 20px; padding: 15px;">
-                        <i class="fas fa-lock"></i> Proceed to Payment
-                    </button>
-                </div>
-            `;
-        }
-
-        // Інші функції (адмін, оплата, контакти) будуть аналогічні, але через обмеження символів не можу вмістити все тут.
-        // Основна структура готова.
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

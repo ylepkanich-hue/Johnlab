@@ -1,0 +1,488 @@
+/* style.css */
+:root {
+    --gold: #D4AF37; 
+    --gold-light: #F4D03F; 
+    --gold-dark: #B8860B;
+    --black: #000000; 
+    --black-light: #1a1a1a; 
+    --black-lighter: #2a2a2a;
+    --gray: #2d2d2d;
+    --gray-light: #444;
+    --success: #28a745;
+    --danger: #dc3545;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Cinzel', 'Playfair Display', serif;
+    background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
+    color: white; 
+    min-height: 100vh; 
+    line-height: 1.6;
+}
+
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 0 20px;
+}
+
+/* Header стилі */
+header {
+    background: rgba(0,0,0,0.95); 
+    padding: 20px; 
+    border-radius: 15px;
+    border: 2px solid var(--gold); 
+    margin: 20px 0 30px;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    font-size: 28px;
+    color: var(--gold);
+}
+
+.logo-text {
+    font-size: 28px; 
+    font-weight: bold;
+    background: linear-gradient(to right, var(--gold), var(--gold-light));
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.search-box { 
+    position: relative; 
+    flex: 1;
+    max-width: 400px;
+    min-width: 250px;
+}
+
+.search-box input {
+    width: 100%; 
+    padding: 12px 40px 12px 15px; 
+    background: var(--gray);
+    border: 2px solid var(--gold); 
+    border-radius: 30px; 
+    color: white;
+    font-size: 16px; 
+    outline: none;
+    font-family: inherit;
+}
+
+.search-btn {
+    position: absolute; 
+    right: 15px; 
+    top: 50%; 
+    transform: translateY(-50%);
+    background: none; 
+    border: none; 
+    color: var(--gold); 
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Кнопки */
+.btn {
+    padding: 12px 24px; 
+    border: 2px solid var(--gold); 
+    border-radius: 8px;
+    cursor: pointer; 
+    font-weight: 600; 
+    transition: all 0.3s ease;
+    background: transparent; 
+    color: var(--gold); 
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--black); 
+    border: none;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.btn:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 5px 15px rgba(212,175,55,0.3); 
+}
+
+.btn:active { 
+    transform: translateY(-1px); 
+}
+
+/* Секції */
+.section { 
+    display: none; 
+    background: rgba(0,0,0,0.85); 
+    padding: 30px;
+    border-radius: 15px; 
+    border: 1px solid var(--gold); 
+    margin: 20px 0;
+    animation: fadeIn 0.5s ease;
+}
+
+.section.active { 
+    display: block; 
+}
+
+@keyframes fadeIn { 
+    from {opacity:0; transform: translateY(10px);} 
+    to {opacity:1; transform: translateY(0);} 
+}
+
+.section-title {
+    color: var(--gold);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--gold);
+}
+
+/* Картки товарів */
+.products-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px; 
+    margin-top: 20px;
+}
+
+.product-card {
+    background: var(--gray); 
+    border-radius: 12px; 
+    overflow: hidden;
+    transition: all 0.3s ease; 
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-10px); 
+    border-color: var(--gold);
+    box-shadow: 0 15px 30px rgba(212,175,55,0.2);
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--gold);
+    color: var(--black);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.product-image {
+    width: 100%; 
+    height: 200px; 
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--black-light), var(--gray));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-image i {
+    font-size: 48px;
+    color: var(--gold-light);
+}
+
+.product-info { 
+    padding: 20px; 
+}
+
+.product-title { 
+    font-size: 18px; 
+    font-weight: bold; 
+    margin-bottom: 10px;
+    color: white;
+}
+
+.product-description {
+    color: #ccc;
+    font-size: 14px;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.product-price { 
+    color: var(--gold); 
+    font-size: 24px; 
+    font-weight: bold; 
+    margin: 10px 0;
+}
+
+.product-category {
+    display: inline-block;
+    background: var(--black-light);
+    color: var(--gold-light);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+/* Кошик */
+.cart-item {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 15px; 
+    background: var(--gray); 
+    border-radius: 10px;
+    margin-bottom: 10px; 
+    border-left: 4px solid var(--gold);
+}
+
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: var(--black-light);
+    color: var(--gold);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-total {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--gold);
+}
+
+.total-amount {
+    color: var(--gold);
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Форми */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--gold-light);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    background: var(--black-light);
+    border: 1px solid var(--gray-light);
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Адмін панель */
+.admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray-light);
+    padding-bottom: 10px;
+}
+
+.admin-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    background: var(--black-light);
+}
+
+.admin-tab.active {
+    background: var(--gold);
+    color: var(--black);
+}
+
+.admin-content {
+    background: var(--black-light);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--gray-light);
+}
+
+.product-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: var(--gray);
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.product-row-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Утиліти */
+.hidden { 
+    display: none !important; 
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-gold {
+    color: var(--gold);
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+/* Модальні вікна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--black-light);
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid var(--gold);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .search-box {
+        max-width: 100%;
+    }
+    
+    .nav-buttons {
+        justify-content: center;
+    }
+    
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .btn {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}

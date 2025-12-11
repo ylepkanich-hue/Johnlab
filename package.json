@@ -1,7 +1,7 @@
 {
   "name": "usdt-shop",
   "version": "1.0.0",
-  "description": "Магазин цифрових товарів з оплатою USDT TRC20",
+  "description": "Магазин цифрових товарів з оплатою USDT TRC20 та автовідправкою файлів",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,12 +9,29 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "nodemailer": "^6.9.7",
+    "uuid": "^9.0.1",
+    "axios": "^1.5.0",
+    "tronweb": "^4.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
-  "keywords": ["usdt", "shop", "digital", "crypto"],
+  "keywords": [
+    "usdt",
+    "shop",
+    "crypto",
+    "digital",
+    "ecommerce",
+    "tron",
+    "trc20"
+  ],
   "author": "USDT Shop",
   "license": "MIT"
 }

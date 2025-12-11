@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: usdt-shop
+    name: Johnlab
     env: node
-    plan: starter  # ДОДАЙТЕ ЦЕЙ РЯДОК!
-    region: oregon  # або frankfurt, singapore
+    plan: starter
+    region: frankfurt
     buildCommand: npm install
     startCommand: node server.js
     envVars:

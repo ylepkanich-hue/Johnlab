@@ -80,6 +80,18 @@ function updateSiteSettings() {
         const heroSubtitleEl = document.getElementById('hero-subtitle');
         if (heroSubtitleEl) heroSubtitleEl.textContent = settings.heroSubtitle;
     }
+    if (settings.footerTagline) {
+        const footerTaglineEl = document.getElementById('footer-tagline');
+        if (footerTaglineEl) footerTaglineEl.textContent = settings.footerTagline;
+    }
+    if (settings.footerCopyright) {
+        const footerCopyrightEl = document.getElementById('footer-copyright');
+        if (footerCopyrightEl) footerCopyrightEl.textContent = settings.footerCopyright;
+    }
+    if (settings.footerPayment) {
+        const footerPaymentEl = document.getElementById('footer-payment');
+        if (footerPaymentEl) footerPaymentEl.textContent = settings.footerPayment;
+    }
     if (settings.backgroundImage) {
         document.body.classList.add('custom-background');
         document.body.style.setProperty('--bg-image', `url(${API_URL}${settings.backgroundImage})`);
@@ -1385,6 +1397,27 @@ function loadAdminSettings() {
                 </div>
             </div>
             
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
+                <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> Footer Text</h3>
+                <p style="color: #aaa; margin-bottom: 20px;">Configure the text displayed in the footer section.</p>
+                
+                <div class="form-group">
+                    <label>Footer Tagline:</label>
+                    <input type="text" id="setting-footer-tagline" class="form-control" value="${settings.footerTagline || ''}" placeholder="Premium digital templates for USDT">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Text shown below the logo in footer</small>
+                </div>
+                <div class="form-group">
+                    <label>Footer Copyright:</label>
+                    <input type="text" id="setting-footer-copyright" class="form-control" value="${settings.footerCopyright || ''}" placeholder="© 2024 JOHN'S LAB TEMPLATES. All rights reserved.">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Copyright text in footer</small>
+                </div>
+                <div class="form-group">
+                    <label>Footer Payment Info:</label>
+                    <input type="text" id="setting-footer-payment" class="form-control" value="${settings.footerPayment || ''}" placeholder="Payment: USDT (TRC20) | Instant Digital Delivery">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Payment information text in footer</small>
+                </div>
+            </div>
+            
             <button type="button" class="btn btn-primary" onclick="saveSettings()" style="width: 100%; padding: 15px; margin-top: 30px;">
                 <i class="fas fa-save"></i> Save Settings
             </button>
@@ -1398,7 +1431,10 @@ async function saveSettings() {
         walletAddress: document.getElementById('setting-wallet').value,
         adminEmail: document.getElementById('setting-email').value,
         heroTitle: document.getElementById('setting-hero-title').value,
-        heroSubtitle: document.getElementById('setting-hero-subtitle').value
+        heroSubtitle: document.getElementById('setting-hero-subtitle').value,
+        footerTagline: document.getElementById('setting-footer-tagline').value,
+        footerCopyright: document.getElementById('setting-footer-copyright').value,
+        footerPayment: document.getElementById('setting-footer-payment').value
     };
     
     const newPassword = document.getElementById('setting-password').value;

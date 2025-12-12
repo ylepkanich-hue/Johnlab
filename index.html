@@ -341,6 +341,41 @@
             overflow: hidden;
         }
 
+        .category-card {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--gold);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold-light);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .category-icon {
+            font-size: 48px;
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .category-card h3 {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .category-card p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
         .stat-card::before {
             content: '';
             position: absolute;
@@ -1148,6 +1183,9 @@
                 </div>
             </div>
 
+            <div class="section-title">Browse by Category</div>
+            <div class="categories-grid" id="home-categories" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin: 40px 0;"></div>
+
             <div class="section-title">Featured Templates</div>
             <div class="products-grid" id="featured-products"></div>
         </section>
@@ -1167,6 +1205,8 @@
                     <option value="popular">Most Popular</option>
                 </select>
             </div>
+            
+            <div id="country-filters" style="margin: 20px 0;"></div>
             
             <div class="products-grid" id="products-container"></div>
         </section>

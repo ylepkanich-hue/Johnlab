@@ -313,6 +313,8 @@ async function initData() {
                 walletAddress: CONFIG.WALLET_ADDRESS,
                 adminEmail: CONFIG.EMAIL_USER,
                 adminPassword: CONFIG.ADMIN_PASSWORD,
+                heroTitle: "JOHN'S LAB TEMPLATES",
+                heroSubtitle: "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.",
                 telegram: "John_refund",
                 logo: "",
                 backgroundImage: ""

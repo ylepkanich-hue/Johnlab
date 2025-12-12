@@ -1038,6 +1038,48 @@
             text-align: center;
             margin: 20px 0;
         }
+
+        /* === ADMIN CONTACT EDITOR === */
+        .admin-contact-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .contact-textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .contact-photo-card {
+            background: var(--gray);
+            border: 1px solid var(--gray-light);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .contact-photo-preview {
+            width: 100%;
+            max-width: 260px;
+            border-radius: 12px;
+            border: 2px dashed var(--gold);
+            padding: 12px;
+            background: var(--black-light);
+            object-fit: cover;
+            display: block;
+        }
+
+        .contact-photo-input {
+            margin-top: 12px;
+            padding: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .admin-contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>

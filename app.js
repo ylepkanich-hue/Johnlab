@@ -15,6 +15,7 @@ let currentSort = 'newest';
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', async () => {
     await loadData();
+    await loadCountries();
     updateCartCount();
     renderHomePage();
     renderProducts();
@@ -147,6 +148,9 @@ function renderHomePage() {
     document.getElementById('total-orders').textContent = stats.totalOrders !== undefined ? stats.totalOrders : orders.length;
     document.getElementById('total-users').textContent = stats.totalCustomers !== undefined ? stats.totalCustomers : new Set(orders.map(o => o.email)).size;
 
+    // Render categories on home page
+    renderHomeCategories();
+
     const featured = [...products]
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
         .slice(0, 3);
@@ -154,21 +158,122 @@ function renderHomePage() {
     document.getElementById('featured-products').innerHTML = featured.map(renderProductCard).join('');
 }
 
+function renderHomeCategories() {
+    const container = document.getElementById('home-categories');
+    if (!container) return;
+    
+    const mainCategories = categories.filter(c => !c.isCountry).slice(0, 8);
+    
+    container.innerHTML = mainCategories.map(cat => {
+        const productCount = products.filter(p => p.category === cat.name).length;
+        return `
+            <div class="category-card" onclick="viewCategory('${cat.name}')">
+                <div class="category-icon">
+                    <i class="fas ${cat.icon || 'fa-folder'}"></i>
+                </div>
+                <h3>${cat.name}</h3>
+                <p>${productCount} ${productCount === 1 ? 'template' : 'templates'}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+function viewCategory(categoryName) {
+    currentFilter = categoryName;
+    showSection('products');
+    renderCategoryView(categoryName);
+}
+
 // ===== PRODUCTS =====
+let currentCountryFilter = null;
+let allCountries = [];
+
+async function loadCountries() {
+    try {
+        const response = await fetch(`${API_URL}/api/countries`);
+        allCountries = await response.json();
+    } catch (error) {
+        console.error('Error loading countries:', error);
+    }
+}
+
 function renderCategoryFilters() {
     const container = document.getElementById('category-filters');
+    const mainCategories = categories.filter(c => !c.isCountry);
     const allButton = '<button class="btn-filter active" onclick="filterProducts(\'all\', this)">All</button>';
-    const categoryButtons = categories.map(cat => {
-        const displayName = `${cat.flag ? `${cat.flag} ` : ''}${cat.name}`;
-        const iconHtml = cat.flag ? '' : `<i class="fas ${cat.icon || 'fa-folder'}"></i> `;
+    const categoryButtons = mainCategories.map(cat => {
         const safeName = (cat.name || '').replace(/"/g, '&quot;');
-        
         return `<button class="btn-filter" data-category="${safeName}" onclick="filterProducts(this.dataset.category, this)">
-            ${iconHtml}${displayName}
+            <i class="fas ${cat.icon || 'fa-folder'}"></i> ${cat.name}
         </button>`;
     }).join('');
     
     container.innerHTML = allButton + categoryButtons;
+}
+
+function renderCategoryView(categoryName) {
+    currentFilter = categoryName;
+    currentCountryFilter = null;
+    
+    // Update category filter buttons
+    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = Array.from(document.querySelectorAll('.btn-filter')).find(btn => 
+        btn.dataset.category === categoryName || (categoryName === 'all' && btn.textContent.trim() === 'All')
+    );
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Render country filters for this category
+    renderCountryFilters(categoryName);
+    
+    // Render products
+    renderProducts();
+}
+
+function renderCountryFilters(categoryName) {
+    const container = document.getElementById('country-filters');
+    if (!container) return;
+    
+    // Get unique countries from products in this category
+    const categoryProducts = categoryName === 'all' ? products : products.filter(p => p.category === categoryName);
+    const productCountries = new Set();
+    categoryProducts.forEach(p => {
+        if (p.countries && Array.isArray(p.countries)) {
+            p.countries.forEach(c => productCountries.add(c));
+        }
+    });
+    
+    if (productCountries.size === 0) {
+        container.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">No countries available for this category</p>';
+        return;
+    }
+    
+    const countryList = Array.from(productCountries).sort();
+    const allCountriesButton = `<button class="btn-filter ${currentCountryFilter === null ? 'active' : ''}" onclick="filterByCountry(null, '${categoryName}')">All Countries</button>`;
+    
+    const countryButtons = countryList.map(countryName => {
+        const country = allCountries.find(c => c.name === countryName);
+        const flag = country ? country.flag : '';
+        return `<button class="btn-filter ${currentCountryFilter === countryName ? 'active' : ''}" onclick="filterByCountry('${countryName}', '${categoryName}')">
+            ${flag} ${countryName}
+        </button>`;
+    }).join('');
+    
+    container.innerHTML = `
+        <div style="margin-bottom: 15px;">
+            <h4 style="color: var(--gold); margin-bottom: 10px;"><i class="fas fa-globe"></i> Filter by Country</h4>
+            <div class="category-filters">
+                ${allCountriesButton}${countryButtons}
+            </div>
+        </div>
+    `;
+}
+
+function filterByCountry(countryName, categoryName) {
+    currentCountryFilter = countryName;
+    if (categoryName) {
+        currentFilter = categoryName;
+    }
+    renderProducts();
 }
 
 function renderProductCard(product) {
@@ -204,8 +309,17 @@ function renderProductCard(product) {
 function renderProducts() {
     let filtered = products;
     
+    // Filter by category
     if (currentFilter !== 'all') {
-        filtered = products.filter(p => p.category === currentFilter);
+        filtered = filtered.filter(p => p.category === currentFilter);
+    }
+    
+    // Filter by country
+    if (currentCountryFilter) {
+        filtered = filtered.filter(p => {
+            if (!p.countries || !Array.isArray(p.countries)) return false;
+            return p.countries.includes(currentCountryFilter);
+        });
     }
     
     switch(currentSort) {
@@ -240,9 +354,13 @@ function renderProducts() {
 
 function filterProducts(category, button) {
     currentFilter = category;
+    currentCountryFilter = null; // Reset country filter when changing category
     
     document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
     if (button) button.classList.add('active');
+    
+    // Render country filters for the selected category
+    renderCountryFilters(category);
     
     renderProducts();
 }
@@ -925,7 +1043,8 @@ function renderAdminProductsList() {
 }
 
 function showAddProductModal() {
-    const categoryOptions = categories.map(cat => 
+    const mainCategories = categories.filter(c => !c.isCountry);
+    const categoryOptions = mainCategories.map(cat => 
         `<option value="${cat.name}">${cat.name}</option>`
     ).join('');
     
@@ -954,6 +1073,15 @@ function showAddProductModal() {
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Countries (select multiple):</label>
+                        <select name="countries" id="product-countries" class="form-control" multiple style="min-height: 150px;" required>
+                            ${allCountries.map(country => 
+                                `<option value="${country.name}">${country.flag} ${country.name}</option>`
+                            ).join('')}
+                        </select>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Hold Ctrl/Cmd to select multiple countries</small>
+                    </div>
+                    <div class="form-group">
                         <label>Product Image:</label>
                         <input type="file" name="productImage" class="form-control" accept="image/*">
                     </div>
@@ -980,6 +1108,11 @@ function showAddProductModal() {
 async function submitProductForm(isEdit = false, productId = null) {
     const form = document.getElementById(isEdit ? 'edit-product-form' : 'add-product-form');
     const formData = new FormData(form);
+    
+    // Get selected countries from multi-select
+    const countriesSelect = document.getElementById(isEdit ? 'edit-product-countries' : 'product-countries');
+    const selectedCountries = Array.from(countriesSelect.selectedOptions).map(option => option.value);
+    formData.append('countries', JSON.stringify(selectedCountries));
     
     try {
         const url = isEdit ? `${API_URL}/api/products/${productId}` : `${API_URL}/api/products`;
@@ -1012,7 +1145,8 @@ function editProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    const categoryOptions = categories.map(cat => 
+    const mainCategories = categories.filter(c => !c.isCountry);
+    const categoryOptions = mainCategories.map(cat => 
         `<option value="${cat.name}" ${cat.name === product.category ? 'selected' : ''}>${cat.name}</option>`
     ).join('');
     
@@ -1039,6 +1173,16 @@ function editProduct(productId) {
                         <select name="category" class="form-control" required>
                             ${categoryOptions}
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Countries (select multiple):</label>
+                        <select name="countries" id="edit-product-countries" class="form-control" multiple style="min-height: 150px;" required>
+                            ${allCountries.map(country => {
+                                const selected = product.countries && product.countries.includes(country.name) ? 'selected' : '';
+                                return `<option value="${country.name}" ${selected}>${country.flag} ${country.name}</option>`;
+                            }).join('')}
+                        </select>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Hold Ctrl/Cmd to select multiple countries</small>
                     </div>
                     <div class="form-group">
                         <label>Product Image (leave empty to keep current):</label>

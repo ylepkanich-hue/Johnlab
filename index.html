@@ -1227,6 +1227,187 @@
             </div>
         </section>
 
+        <!-- MRZ GENERATOR -->
+        <section id="mrz-generator" class="section">
+            <div class="section-title">MRZ Generator</div>
+            <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
+                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;">
+                        Generate Machine Readable Zone (MRZ) codes for passports and ID cards. Fill in the required information below to generate accurate MRZ codes that meet international standards.
+                    </p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                    <!-- Main Generator Form -->
+                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
+                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-barcode"></i> Document Information</h3>
+                        
+                        <form id="mrz-form">
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Document Type:</label>
+                                <select id="mrz-type" class="form-control" required>
+                                    <option value="1">Passport</option>
+                                    <option value="2">ID Card</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Country:</label>
+                                <select id="mrz-country" class="form-control" required>
+                                    <option value="0">Choose Country</option>
+                                </select>
+                            </div>
+
+                            <div id="mrz-form-fields" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">Sex:</label>
+                                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                            <input type="radio" name="mrz-sex" value="0" id="mrz-female">
+                                            <span>Female</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                            <input type="radio" name="mrz-sex" value="1" id="mrz-male">
+                                            <span>Male</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                            <input type="radio" name="mrz-sex" value="2" id="mrz-none">
+                                            <span>Unspecified</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">First Name:</label>
+                                    <input type="text" id="mrz-first-name" class="form-control" placeholder="John" autocomplete="off">
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">Last Name:</label>
+                                    <input type="text" id="mrz-last-name" class="form-control" placeholder="Johnson" autocomplete="off">
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
+                                        <input type="checkbox" id="mrz-sur-check">
+                                        <span>Sur Name (Optional)</span>
+                                    </label>
+                                    <input type="text" id="mrz-sur-name" class="form-control" placeholder="Smith" autocomplete="off" disabled style="margin-top: 10px;">
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Birth Year:</label>
+                                        <input type="text" id="mrz-birth-year" class="form-control" placeholder="1992" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Expiry Year:</label>
+                                        <input type="text" id="mrz-expir-year" class="form-control" placeholder="2030" autocomplete="off" required>
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Birth Month:</label>
+                                        <input type="text" id="mrz-birth-month" class="form-control" placeholder="02" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Expiry Month:</label>
+                                        <input type="text" id="mrz-expir-month" class="form-control" placeholder="05" autocomplete="off" required>
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Birth Day:</label>
+                                        <input type="text" id="mrz-birth-day" class="form-control" placeholder="18" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: var(--gold);">Expiry Day:</label>
+                                        <input type="text" id="mrz-expir-day" class="form-control" placeholder="18" autocomplete="off" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">Document Number:</label>
+                                    <input type="text" id="mrz-number" class="form-control" placeholder="22 34 234234" autocomplete="off">
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
+                                        <input type="checkbox" id="mrz-code-check">
+                                        <span>Optional Data (Ident. Num., Dep. Code)</span>
+                                    </label>
+                                    <input type="text" id="mrz-code" class="form-control" placeholder="220-102" autocomplete="off" disabled style="margin-top: 10px;">
+                                </div>
+
+                                <div id="mrz-passport-options" style="display: none;">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
+                                        <input type="checkbox" id="mrz-code-check-digit">
+                                        <span>One check digit at the end</span>
+                                    </label>
+                                </div>
+
+                                <div id="mrz-id-options" style="display: none;">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
+                                        <input type="checkbox" id="mrz-code-check-digit-1">
+                                        <span>Move to the second line</span>
+                                    </label>
+                                </div>
+
+                                <button type="button" class="btn btn-primary" onclick="generateMRZ()" style="width: 100%; padding: 15px; margin-top: 20px;">
+                                    <i class="fas fa-barcode"></i> Generate MRZ
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Results Panel -->
+                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
+                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> Generated MRZ</h3>
+                        
+                        <div id="mrz-results" style="display: none;">
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Result:</label>
+                                <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px;">
+                                    <input type="text" id="mrz-result1" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
+                                </div>
+                                <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px;">
+                                    <input type="text" id="mrz-result2" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
+                                </div>
+                                <div id="mrz-result3-container" style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px; display: none;">
+                                    <input type="text" id="mrz-result3" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="copyMRZ()" style="width: 100%;">
+                                    <i class="fas fa-copy"></i> Copy MRZ Code
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="mrz-no-results" style="text-align: center; padding: 40px; color: #aaa;">
+                            <i class="fas fa-barcode" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
+                            <p>Fill in the form and click "Generate MRZ" to see results here</p>
+                        </div>
+
+                        <!-- Control Digit Generator -->
+                        <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
+                            <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 20px;"><i class="fas fa-calculator"></i> Control Digit Generator</h3>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Input String:</label>
+                                <input type="text" id="mrz-control-input" class="form-control" placeholder="Some string..." autocomplete="off">
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="generateControlDigit()" style="width: 100%; margin-top: 10px;">
+                                <i class="fas fa-calculator"></i> Generate Control Digit
+                            </button>
+                            <div id="mrz-control-result" style="margin-top: 15px; padding: 15px; background: var(--black); border-radius: 10px; border: 1px solid var(--gold); display: none;">
+                                <p style="color: var(--gold); font-size: 18px; margin: 0;" id="mrz-control-value"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- CONTACTS -->
         <section id="contacts" class="section">
             <div class="section-title">Contact</div>

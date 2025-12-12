@@ -126,11 +126,15 @@ function renderHomePage() {
 function renderCategoryFilters() {
     const container = document.getElementById('category-filters');
     const allButton = '<button class="btn-filter active" onclick="filterProducts(\'all\', this)">All</button>';
-    const categoryButtons = categories.map(cat => 
-        `<button class="btn-filter" onclick="filterProducts('${cat.name}', this)">
-            <i class="fas ${cat.icon}"></i> ${cat.name}
-        </button>`
-    ).join('');
+    const categoryButtons = categories.map(cat => {
+        const displayName = `${cat.flag ? `${cat.flag} ` : ''}${cat.name}`;
+        const iconHtml = cat.flag ? '' : `<i class="fas ${cat.icon || 'fa-folder'}"></i> `;
+        const safeName = (cat.name || '').replace(/"/g, '&quot;');
+        
+        return `<button class="btn-filter" data-category="${safeName}" onclick="filterProducts(this.dataset.category, this)">
+            ${iconHtml}${displayName}
+        </button>`;
+    }).join('');
     
     container.innerHTML = allButton + categoryButtons;
 }
@@ -980,9 +984,9 @@ function loadAdminCategories() {
             ${categories.map(cat => `
                 <div class="stat-card">
                     <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
-                        <i class="fas ${cat.icon}"></i>
+                        ${cat.flag ? `<span>${cat.flag}</span>` : `<i class="fas ${cat.icon || 'fa-folder'}"></i>`}
                     </div>
-                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">${cat.name}</div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">${cat.flag ? `${cat.flag} ${cat.name}` : cat.name}</div>
                     <div style="color: #777; margin-bottom: 20px;">${products.filter(p => p.category === cat.name).length} products</div>
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <button class="btn btn-secondary btn-small" onclick="editCategory(${cat.id})">
@@ -1016,6 +1020,13 @@ function showAddCategoryModal() {
                             Examples: fa-palette, fa-layer-group, fa-chart-line, fa-mobile-alt
                         </small>
                     </div>
+                    <div class="form-group">
+                        <label>Flag Emoji (optional):</label>
+                        <input type="text" name="flag" class="form-control" placeholder="🇺🇸">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">
+                            Add a country flag emoji or leave empty for non-country categories.
+                        </small>
+                    </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
                         <button type="button" class="btn btn-primary" onclick="submitCategoryForm()" style="flex: 1;">
                             <i class="fas fa-plus"></i> Add Category
@@ -1038,7 +1049,8 @@ async function submitCategoryForm(isEdit = false, categoryId = null) {
     
     const data = {
         name: formData.get('name'),
-        icon: formData.get('icon')
+        icon: formData.get('icon'),
+        flag: formData.get('flag') || ''
     };
     
     try {
@@ -1086,6 +1098,13 @@ function editCategory(categoryId) {
                         <input type="text" name="icon" class="form-control" value="${category.icon}" required>
                         <small style="color: #aaa; display: block; margin-top: 5px;">
                             Examples: fa-palette, fa-layer-group, fa-chart-line, fa-mobile-alt
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>Flag Emoji (optional):</label>
+                        <input type="text" name="flag" class="form-control" value="${category.flag || ''}" placeholder="🇺🇸">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">
+                            Use this to show a country flag next to the category name.
                         </small>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
@@ -1295,31 +1314,34 @@ async function saveSettings() {
 function loadAdminContacts() {
     document.getElementById('admin-contacts').innerHTML = `
         <h3 style="color: var(--gold); margin-bottom: 30px; font-size: 24px;"><i class="fas fa-user"></i> Contact Information</h3>
-        <form id="contacts-form">
+        <form id="contacts-form" class="admin-contact-grid">
             <div class="form-group">
                 <label>Your Name:</label>
                 <input type="text" id="contact-admin-name" class="form-control" value="${contacts.ownerName || ''}">
-            </div>
-            <div class="form-group">
-                <label>Description:</label>
-                <textarea id="contact-admin-description" class="form-control" rows="3">${contacts.ownerDescription || ''}</textarea>
-            </div>
-            <div class="form-group">
-                <label>About Text:</label>
-                <textarea id="contact-admin-about" class="form-control" rows="4">${contacts.about || ''}</textarea>
             </div>
             <div class="form-group">
                 <label>Telegram Username:</label>
                 <input type="text" id="contact-admin-telegram" class="form-control" value="${contacts.telegram || ''}" placeholder="John_refund">
             </div>
             <div class="form-group">
-                <label>Your Photo:</label>
-                ${contacts.ownerPhoto ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${contacts.ownerPhoto}" style="max-width: 150px; border-radius: 50%;"></div>` : ''}
-                <input type="file" id="contact-admin-photo" class="form-control" accept="image/*">
+                <label>Description:</label>
+                <textarea id="contact-admin-description" class="form-control contact-textarea" rows="5">${contacts.ownerDescription || ''}</textarea>
             </div>
-            <button type="button" class="btn btn-primary" onclick="saveContactSettings()" style="width: 100%; padding: 15px;">
-                <i class="fas fa-save"></i> Save Contact Info
-            </button>
+            <div class="form-group">
+                <label>About Text:</label>
+                <textarea id="contact-admin-about" class="form-control contact-textarea" rows="7">${contacts.about || ''}</textarea>
+            </div>
+            <div class="form-group contact-photo-card">
+                <label>Your Photo:</label>
+                ${contacts.ownerPhoto ? `<div style="margin-bottom: 12px;"><img src="${API_URL}${contacts.ownerPhoto}" class="contact-photo-preview"></div>` : ''}
+                <input type="file" id="contact-admin-photo" class="form-control contact-photo-input" accept="image/*">
+                <small style="color: #aaa; display: block; margin-top: 8px;">Use a clear, high-resolution image. Square images look best.</small>
+            </div>
+            <div style="grid-column: span 2;">
+                <button type="button" class="btn btn-primary" onclick="saveContactSettings()" style="width: 100%; padding: 15px;">
+                    <i class="fas fa-save"></i> Save Contact Info
+                </button>
+            </div>
         </form>
     `;
 }

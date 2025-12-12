@@ -829,6 +829,22 @@ app.put('/api/settings', async (req, res) => {
     }
 });
 
+// Admin login (password validation only)
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const settings = await readData('settings');
+        const correctPassword = settings.adminPassword || CONFIG.ADMIN_PASSWORD;
+
+        if (req.body.password && req.body.password === correctPassword) {
+            return res.json({ success: true });
+        }
+
+        res.status(401).json({ success: false, error: 'Invalid password' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Upload logo
 app.post('/api/upload-logo', upload.single('logo'), async (req, res) => {
     try {

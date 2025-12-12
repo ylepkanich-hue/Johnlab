@@ -307,7 +307,7 @@ async function initData() {
                 { id: 5, name: "Landing Pages", slug: "landing-pages", icon: "fa-file-alt" },
                 { id: 6, name: "E-commerce", slug: "ecommerce", icon: "fa-shopping-cart" },
                 { id: 7, name: "Portfolio", slug: "portfolio", icon: "fa-briefcase" },
-                { id: 8, name: "Blog & News", slug: "blog-news", icon: "fa-newspaper" }
+                { id: 8, name: "MRZ Generator", slug: "mrz-generator", icon: "fa-barcode" }
             ],
             orders: [],
             settings: {
@@ -1159,6 +1159,252 @@ app.listen(PORT, async () => {
 ║ ⏱️  Timeout:  ${CONFIG.PAYMENT_TIMEOUT} minutes payment window${' '.repeat(24)} ║
 ╚════════════════════════════════════════════════════════════╝
     `);
+});
+
+// ===== MRZ GENERATOR ENDPOINTS =====
+
+// Map 2-letter country codes to 3-letter ISO codes for MRZ
+const countryCodeMap = {
+    'US': 'USA', 'RU': 'RUS', 'GB': 'GBR', 'DE': 'D', 'FR': 'FRA', 'IT': 'ITA',
+    'ES': 'ESP', 'CA': 'CAN', 'AU': 'AUS', 'JP': 'JPN', 'CN': 'CHN', 'IN': 'IND',
+    'BR': 'BRA', 'MX': 'MEX', 'KR': 'KOR', 'NL': 'NLD', 'SE': 'SWE', 'NO': 'NOR',
+    'DK': 'DNK', 'FI': 'FIN', 'PL': 'POL', 'TR': 'TUR', 'SA': 'SAU', 'AE': 'ARE',
+    'EG': 'EGY', 'ZA': 'ZAF', 'AR': 'ARG', 'CL': 'CHL', 'CO': 'COL', 'PE': 'PER',
+    'VE': 'VEN', 'PH': 'PHL', 'ID': 'IDN', 'TH': 'THA', 'VN': 'VNM', 'MY': 'MYS',
+    'SG': 'SGP', 'NZ': 'NZL', 'IE': 'IRL', 'CH': 'CHE', 'AT': 'AUT', 'BE': 'BEL',
+    'PT': 'PRT', 'GR': 'GRC', 'CZ': 'CZE', 'HU': 'HUN', 'RO': 'ROU', 'BG': 'BGR',
+    'HR': 'HRV', 'RS': 'SRB', 'UA': 'UKR', 'BY': 'BLR', 'KZ': 'KAZ', 'UZ': 'UZB',
+    'PK': 'PAK', 'BD': 'BGD', 'NG': 'NGA', 'KE': 'KEN', 'ET': 'ETH', 'GH': 'GHA',
+    'MA': 'MAR', 'DZ': 'DZA', 'TN': 'TUN', 'LY': 'LBY', 'SD': 'SDN', 'IQ': 'IRQ',
+    'IR': 'IRN', 'IL': 'ISR', 'JO': 'JOR', 'LB': 'LBN', 'SY': 'SYR', 'YE': 'YEM',
+    'AF': 'AFG', 'NP': 'NPL', 'LK': 'LKA', 'MM': 'MMR', 'KH': 'KHM', 'LA': 'LAO',
+    'MN': 'MNG', 'KP': 'PRK', 'TW': 'TWN', 'HK': 'HKG', 'MO': 'MAC', 'BN': 'BRN',
+    'FJ': 'FJI', 'PG': 'PNG', 'NC': 'NCL', 'PF': 'PYF', 'GU': 'GUM', 'AS': 'ASM',
+    'MP': 'MNP', 'VI': 'VIR', 'PR': 'PRI', 'JM': 'JAM', 'HT': 'HTI', 'DO': 'DOM',
+    'CU': 'CUB', 'GT': 'GTM', 'BZ': 'BLZ', 'HN': 'HND', 'SV': 'SLV', 'NI': 'NIC',
+    'CR': 'CRI', 'PA': 'PAN', 'EC': 'ECU', 'BO': 'BOL', 'PY': 'PRY', 'UY': 'URY',
+    'GY': 'GUY', 'SR': 'SUR', 'GF': 'GUF', 'FK': 'FLK', 'IS': 'ISL', 'FO': 'FRO',
+    'GL': 'GRL', 'SJ': 'SJM', 'AX': 'ALA', 'EE': 'EST', 'LV': 'LVA', 'LT': 'LTU',
+    'MD': 'MDA', 'GE': 'GEO', 'AM': 'ARM', 'AZ': 'AZE', 'TM': 'TKM', 'TJ': 'TJK',
+    'KG': 'KGZ', 'AF': 'AFG', 'MV': 'MDV', 'BT': 'BTN', 'TL': 'TLS', 'SB': 'SLB',
+    'VU': 'VUT', 'NC': 'NCL', 'PF': 'PYF', 'WS': 'WSM', 'TO': 'TON', 'TV': 'TUV',
+    'KI': 'KIR', 'NR': 'NRU', 'PW': 'PLW', 'FM': 'FSM', 'MH': 'MHL', 'CK': 'COK',
+    'NU': 'NIU', 'TK': 'TKL', 'PN': 'PCN', 'AQ': 'ATA', 'BV': 'BVT', 'TF': 'ATF',
+    'HM': 'HMD', 'GS': 'SGS', 'IO': 'IOT', 'CC': 'CCK', 'CX': 'CXR', 'NF': 'NFK',
+    'PW': 'PLW', 'PW': 'PLW', 'PW': 'PLW'
+};
+
+// Convert 2-letter code to 3-letter code for MRZ
+function getMRZCountryCode(code2) {
+    return countryCodeMap[code2] || code2.toUpperCase().padEnd(3, '<').substring(0, 3);
+}
+
+// Calculate MRZ check digit
+function calculateMRZCheckDigit(str) {
+    const weights = [7, 3, 1];
+    let sum = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        let value;
+        if (char >= '0' && char <= '9') {
+            value = parseInt(char);
+        } else if (char >= 'A' && char <= 'Z') {
+            value = char.charCodeAt(0) - 55;
+        } else if (char === '<') {
+            value = 0;
+        } else {
+            value = 0;
+        }
+        sum += value * weights[i % 3];
+    }
+    return sum % 10;
+}
+
+// Format name for MRZ (uppercase, replace spaces with <)
+function formatNameForMRZ(name) {
+    return (name || '').toUpperCase().replace(/[^A-Z0-9]/g, '<').substring(0, 39);
+}
+
+// Format date for MRZ (YYMMDD)
+function formatDateForMRZ(year, month, day) {
+    const y = (year || '').toString().padStart(4, '0').substring(2);
+    const m = (month || '').toString().padStart(2, '0');
+    const d = (day || '').toString().padStart(2, '0');
+    return `${y}${m}${d}`;
+}
+
+// Generate passport MRZ
+function generatePassportMRZ(data) {
+    const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck } = data;
+    
+    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
+    const docType = 'P';
+    // Convert country code to 3-letter format if needed
+    const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
+    
+    // Format names
+    const lastNameFormatted = formatNameForMRZ(lastName);
+    const firstNameFormatted = formatNameForMRZ(firstName);
+    const surNameFormatted = surName ? formatNameForMRZ(surName) : '';
+    
+    // Combine names
+    let nameLine = lastNameFormatted;
+    if (surNameFormatted) {
+        nameLine += '<<' + surNameFormatted;
+    }
+    if (firstNameFormatted) {
+        nameLine += '<<' + firstNameFormatted;
+    }
+    nameLine = nameLine.padEnd(44, '<');
+    
+    // First line: Document type, country, name
+    const line1 = `${docType}${countryCode}${nameLine.substring(0, 39)}`;
+    
+    // Second line: Document number, check digit, nationality, birth date, sex, expiry date, optional data
+    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
+    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
+    
+    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay);
+    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
+    
+    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay);
+    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
+    
+    let optionalData = '';
+    if (code) {
+        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(14, '<');
+        if (codeCheck) {
+            optionalData = optionalData.substring(0, 13) + calculateMRZCheckDigit(optionalData.substring(0, 13));
+        }
+    } else {
+        optionalData = '<'.repeat(14);
+    }
+    
+    const line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${optionalData}`;
+    
+    // Calculate final check digit for line 2
+    const line2Check = calculateMRZCheckDigit(line2.substring(0, 42)).toString();
+    const finalLine2 = line2.substring(0, 42) + line2Check;
+    
+    return { gen1: line1, gen2: finalLine2 };
+}
+
+// Generate ID card MRZ
+function generateIDMRZ(data) {
+    const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck, codeCheck1 } = data;
+    
+    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
+    const docType = 'I';
+    // Convert country code to 3-letter format if needed
+    const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
+    
+    // Format names
+    const lastNameFormatted = formatNameForMRZ(lastName);
+    const firstNameFormatted = formatNameForMRZ(firstName);
+    const surNameFormatted = surName ? formatNameForMRZ(surName) : '';
+    
+    // Combine names
+    let nameLine = lastNameFormatted;
+    if (surNameFormatted) {
+        nameLine += '<<' + surNameFormatted;
+    }
+    if (firstNameFormatted) {
+        nameLine += '<<' + firstNameFormatted;
+    }
+    nameLine = nameLine.padEnd(30, '<');
+    
+    // First line: Document type, country, optional data, name
+    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
+    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
+    
+    let optionalData = '';
+    if (code) {
+        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(14, '<');
+        if (codeCheck) {
+            optionalData = optionalData.substring(0, 13) + calculateMRZCheckDigit(optionalData.substring(0, 13));
+        }
+    } else {
+        optionalData = '<'.repeat(14);
+    }
+    
+    const line1 = `${docType}${countryCode}${optionalData}${nameLine.substring(0, 27)}`;
+    
+    // Second line: Document number, check digit, birth date, sex, expiry date
+    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay);
+    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
+    
+    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay);
+    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
+    
+    let line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}`;
+    
+    if (codeCheck1) {
+        // Move optional data to second line
+        line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${optionalData.substring(0, 7)}`;
+    } else {
+        line2 = line2.padEnd(30, '<');
+    }
+    
+    // Calculate final check digit
+    const line2Check = calculateMRZCheckDigit(line2.substring(0, 29)).toString();
+    const finalLine2 = line2.substring(0, 29) + line2Check;
+    
+    // Third line: Additional data if needed
+    let line3 = '';
+    if (codeCheck1 && optionalData.length > 7) {
+        line3 = optionalData.substring(7).padEnd(30, '<');
+        const line3Check = calculateMRZCheckDigit(line3.substring(0, 29)).toString();
+        line3 = line3.substring(0, 29) + line3Check;
+    }
+    
+    return { gen1: line1, gen2: finalLine2, gen3: line3 || null };
+}
+
+// Generate MRZ endpoint
+app.post('/api/mrz/generate', (req, res) => {
+    try {
+        const result = generatePassportMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate Russian passport MRZ (special handling)
+app.post('/api/mrz/generate-ru', (req, res) => {
+    try {
+        // Russian passports may have specific formatting requirements
+        const result = generatePassportMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate ID card MRZ
+app.post('/api/mrz/generate-id', (req, res) => {
+    try {
+        const result = generateIDMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate control digit
+app.post('/api/mrz/control-digit', (req, res) => {
+    try {
+        const { str } = req.body;
+        if (!str) {
+            return res.status(400).json({ success: false, error: 'String is required' });
+        }
+        const digit = calculateMRZCheckDigit(str);
+        res.json({ success: true, digit });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // 404 handler

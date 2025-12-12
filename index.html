@@ -1097,7 +1097,7 @@
 
                 <div class="search-box">
                     <input type="text" id="search-input" placeholder="Search templates...">
-                    <button class="search-btn" onclick="searchProducts()">
+                    <button class="search-btn" onclick="handleSearch()">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -1114,9 +1114,6 @@
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('contacts')">
                         <i class="fas fa-address-card"></i> Contact
-                    </button>
-                    <button class="btn btn-primary" onclick="showAdminLogin()">
-                        <i class="fas fa-lock"></i> Admin
                     </button>
                 </div>
             </div>
@@ -1204,18 +1201,8 @@
             </div>
         </section>
 
-        <!-- ADMIN LOGIN -->
-        <section id="admin-login" class="section">
-            <div class="section-title">Admin Panel</div>
-            <div style="max-width: 450px; margin: 0 auto; background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 40px; border-radius: 20px; border: 2px solid var(--gold);">
-                <div class="form-group">
-                    <label for="admin-password"><i class="fas fa-key"></i> Admin Password:</label>
-                    <input type="password" id="admin-password" class="form-control" placeholder="Enter password">
-                </div>
-                <button class="btn btn-primary" onclick="adminLogin()" style="width: 100%; padding: 15px; font-size: 16px;">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </div>
+        <!-- ADMIN LOGIN (Hidden) -->
+        <section id="admin-login" class="section" style="display: none;">
         </section>
 
         <!-- ADMIN PANEL -->
@@ -1246,6 +1233,9 @@
                 <button class="admin-tab-btn" onclick="showAdminTab('contacts-admin', this)">
                     <i class="fas fa-user"></i> Contact Info
                 </button>
+                <button class="admin-tab-btn" onclick="showAdminTab('database', this)">
+                    <i class="fas fa-database"></i> Customer Database
+                </button>
             </div>
             
             <div class="admin-content">
@@ -1255,6 +1245,7 @@
                 <div id="admin-orders" class="admin-tab"></div>
                 <div id="admin-settings" class="admin-tab"></div>
                 <div id="admin-contacts" class="admin-tab"></div>
+                <div id="admin-database" class="admin-tab"></div>
             </div>
         </section>
     </div>
@@ -1271,7 +1262,6 @@
                     <a href="#" onclick="showSection('home')">Home</a>
                     <a href="#" onclick="showSection('products')">Shop</a>
                     <a href="#" onclick="showSection('contacts')">Contact</a>
-                    <a href="#" onclick="showAdminLogin()">Admin</a>
                 </div>
             </div>
             <div class="footer-bottom">

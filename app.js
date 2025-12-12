@@ -113,6 +113,7 @@ function showSection(sectionId) {
         if (sectionId === 'home') renderHomePage();
         else if (sectionId === 'cart') renderCart();
         else if (sectionId === 'products') renderProducts();
+        else if (sectionId === 'mrz-generator') initializeMRZGenerator();
     }
 }
 
@@ -179,6 +180,13 @@ function renderHomeCategories() {
 }
 
 function viewCategory(categoryName) {
+    // Special handling for MRZ Generator
+    if (categoryName === 'MRZ Generator') {
+        showSection('mrz-generator');
+        initializeMRZGenerator();
+        return;
+    }
+    
     currentFilter = categoryName;
     showSection('products');
     renderCategoryView(categoryName);
@@ -1857,6 +1865,248 @@ async function saveContactSettings() {
         }
     } catch (error) {
         showAlert('Network error', 'error');
+    }
+}
+
+// ===== MRZ GENERATOR =====
+let mrzCountries = [];
+
+async function initializeMRZGenerator() {
+    // Load countries if not already loaded
+    if (allCountries.length === 0) {
+        await loadCountries();
+    }
+    
+    // Populate country dropdown
+    const countrySelect = document.getElementById('mrz-country');
+    if (countrySelect && allCountries.length > 0) {
+        countrySelect.innerHTML = '<option value="0">Choose Country</option>' + 
+            allCountries.map(country => 
+                `<option value="${country.code}">${country.flag} ${country.name}</option>`
+            ).join('');
+    }
+    
+    // Setup form event listeners
+    setupMRZFormListeners();
+}
+
+function setupMRZFormListeners() {
+    const typeSelect = document.getElementById('mrz-type');
+    const countrySelect = document.getElementById('mrz-country');
+    const formFields = document.getElementById('mrz-form-fields');
+    const surCheck = document.getElementById('mrz-sur-check');
+    const codeCheck = document.getElementById('mrz-code-check');
+    const passportOptions = document.getElementById('mrz-passport-options');
+    const idOptions = document.getElementById('mrz-id-options');
+    
+    if (!typeSelect || !countrySelect || !formFields) return;
+    
+    // Show/hide form fields based on type and country selection
+    function checkFormVisibility() {
+        if (typeSelect.value !== '0' && countrySelect.value !== '0') {
+            formFields.style.display = 'block';
+            
+            // Show/hide document-specific options
+            if (typeSelect.value === '1') {
+                passportOptions.style.display = 'block';
+                idOptions.style.display = 'none';
+            } else {
+                passportOptions.style.display = 'none';
+                idOptions.style.display = 'block';
+            }
+        } else {
+            formFields.style.display = 'none';
+        }
+    }
+    
+    typeSelect.addEventListener('change', checkFormVisibility);
+    countrySelect.addEventListener('change', checkFormVisibility);
+    
+    // Sur name checkbox
+    if (surCheck) {
+        surCheck.addEventListener('change', function() {
+            const surNameInput = document.getElementById('mrz-sur-name');
+            if (surNameInput) {
+                surNameInput.disabled = !this.checked;
+            }
+        });
+    }
+    
+    // Optional code checkbox
+    if (codeCheck) {
+        codeCheck.addEventListener('change', function() {
+            const codeInput = document.getElementById('mrz-code');
+            if (codeInput) {
+                codeInput.disabled = !this.checked;
+            }
+        });
+    }
+    
+    // Radio button exclusivity
+    const sexRadios = ['mrz-female', 'mrz-male', 'mrz-none'];
+    sexRadios.forEach(id => {
+        const radio = document.getElementById(id);
+        if (radio) {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    sexRadios.filter(r => r !== id).forEach(otherId => {
+                        const otherRadio = document.getElementById(otherId);
+                        if (otherRadio) otherRadio.checked = false;
+                    });
+                }
+            });
+        }
+    });
+}
+
+async function generateMRZ() {
+    const type = document.getElementById('mrz-type').value;
+    const country = document.getElementById('mrz-country').value;
+    
+    if (country === '0') {
+        showAlert('Please select a country', 'error');
+        return;
+    }
+    
+    // Get form values
+    const sex = document.querySelector('input[name="mrz-sex"]:checked')?.value || '0';
+    const firstName = document.getElementById('mrz-first-name').value.trim();
+    const lastName = document.getElementById('mrz-last-name').value.trim();
+    const surName = document.getElementById('mrz-sur-name').value.trim();
+    const birthYear = document.getElementById('mrz-birth-year').value.trim();
+    const birthMonth = document.getElementById('mrz-birth-month').value.trim();
+    const birthDay = document.getElementById('mrz-birth-day').value.trim();
+    const expirYear = document.getElementById('mrz-expir-year').value.trim();
+    const expirMonth = document.getElementById('mrz-expir-month').value.trim();
+    const expirDay = document.getElementById('mrz-expir-day').value.trim();
+    const number = document.getElementById('mrz-number').value.trim();
+    const code = document.getElementById('mrz-code').value.trim();
+    
+    // Validation
+    if (!expirYear || !expirMonth || !expirDay) {
+        showAlert('Please fill in all expiry date fields', 'error');
+        return;
+    }
+    
+    const codeCheck = document.getElementById('mrz-code-check-digit')?.checked ? 1 : 0;
+    const codeCheck1 = document.getElementById('mrz-code-check-digit-1')?.checked ? 1 : 0;
+    
+    try {
+        let endpoint = '/api/mrz/generate';
+        // Check for Russian passport (RU or RUS)
+        if (type === '1' && (country === 'RU' || country === 'RUS')) {
+            endpoint = '/api/mrz/generate-ru';
+        } else if (type === '2') {
+            endpoint = '/api/mrz/generate-id';
+        }
+        
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: parseInt(type),
+                country,
+                sex: parseInt(sex),
+                firstName,
+                lastName,
+                surName,
+                birthYear,
+                birthMonth,
+                birthDay,
+                expirYear,
+                expirMonth,
+                expirDay,
+                number,
+                code,
+                codeCheck,
+                codeCheck1
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayMRZResults(result.gen1, result.gen2, result.gen3, type);
+        } else {
+            showAlert(result.error || 'Error generating MRZ', 'error');
+        }
+    } catch (error) {
+        console.error('MRZ generation error:', error);
+        showAlert('Network error. Please try again.', 'error');
+    }
+}
+
+function displayMRZResults(gen1, gen2, gen3, type) {
+    const resultsDiv = document.getElementById('mrz-results');
+    const noResultsDiv = document.getElementById('mrz-no-results');
+    const result1 = document.getElementById('mrz-result1');
+    const result2 = document.getElementById('mrz-result2');
+    const result3 = document.getElementById('mrz-result3');
+    const result3Container = document.getElementById('mrz-result3-container');
+    
+    if (resultsDiv) resultsDiv.style.display = 'block';
+    if (noResultsDiv) noResultsDiv.style.display = 'none';
+    
+    if (result1) result1.value = gen1 || '';
+    if (result2) result2.value = gen2 || '';
+    
+    // Show third line only for ID cards
+    if (type === '2' && gen3) {
+        if (result3) result3.value = gen3;
+        if (result3Container) result3Container.style.display = 'block';
+    } else {
+        if (result3Container) result3Container.style.display = 'none';
+    }
+}
+
+function copyMRZ() {
+    const type = document.getElementById('mrz-type').value;
+    const result1 = document.getElementById('mrz-result1')?.value || '';
+    const result2 = document.getElementById('mrz-result2')?.value || '';
+    const result3 = document.getElementById('mrz-result3')?.value || '';
+    
+    let text = '';
+    if (type === '2') {
+        text = `${result1}\n${result2}\n${result3}`;
+    } else {
+        text = `${result1}\n${result2}`;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showAlert('MRZ code copied to clipboard!');
+    }).catch(() => {
+        showAlert('Failed to copy. Please select and copy manually.', 'error');
+    });
+}
+
+async function generateControlDigit() {
+    const input = document.getElementById('mrz-control-input')?.value.trim();
+    
+    if (!input) {
+        showAlert('Please enter a string', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/mrz/control-digit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ str: input })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const resultDiv = document.getElementById('mrz-control-result');
+            const valueDiv = document.getElementById('mrz-control-value');
+            if (resultDiv) resultDiv.style.display = 'block';
+            if (valueDiv) valueDiv.textContent = `Control Digit: ${result.digit}`;
+        } else {
+            showAlert(result.error || 'Error generating control digit', 'error');
+        }
+    } catch (error) {
+        console.error('Control digit error:', error);
+        showAlert('Network error. Please try again.', 'error');
     }
 }
 

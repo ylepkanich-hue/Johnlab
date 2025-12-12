@@ -212,6 +212,42 @@ cron.schedule('*/5 * * * *', () => {
     console.log('🧹 Cleaned up expired payments');
 });
 
+// ===== CATEGORY HELPERS =====
+function buildSlug(name) {
+    return name
+        ?.toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || '';
+}
+
+function countryCodeToFlag(code) {
+    if (!code || code.length !== 2) return '';
+    const base = 127397;
+    return String.fromCodePoint(...code.toUpperCase().split('').map(char => base + char.charCodeAt(0)));
+}
+
+async function buildCountryCategories() {
+    try {
+        const response = await axios.get('https://restcountries.com/v3.1/all?fields=name,cca2,flag');
+        const countries = (response.data || [])
+            .filter(country => country?.name?.common && country.cca2)
+            .sort((a, b) => a.name.common.localeCompare(b.name.common));
+
+        return countries.map(country => ({
+            name: country.name.common,
+            slug: buildSlug(country.name.common),
+            icon: 'fa-flag',
+            flag: country.flag || countryCodeToFlag(country.cca2),
+            isCountry: true
+        }));
+    } catch (error) {
+        console.error('❌ Failed to fetch country list for categories:', error.message);
+        return [];
+    }
+}
+
 // ===== DATA INITIALIZATION =====
 async function initData() {
     try {
@@ -299,6 +335,7 @@ async function initData() {
             }
         }
 
+        await ensureCountryCategories();
         console.log('✅ Data initialized');
     } catch (error) {
         console.error('❌ Initialization error:', error);
@@ -324,6 +361,42 @@ async function writeData(filename, data) {
         console.error(`Error writing ${filename}:`, error);
         return false;
     }
+}
+
+async function ensureCountryCategories() {
+    const categories = await readData('categories') || [];
+    const countryCategories = categories.filter(c => c.isCountry);
+
+    // Avoid re-adding if we already have a full country list with flags
+    if (countryCategories.length >= 190) {
+        return categories;
+    }
+
+    const baseCategories = categories.filter(c => !c.isCountry).map((cat, index) => ({
+        ...cat,
+        id: cat.id || index + 1,
+        slug: cat.slug || buildSlug(cat.name)
+    }));
+
+    const countries = await buildCountryCategories();
+    if (!countries.length) {
+        return categories;
+    }
+
+    const startingId = baseCategories.length
+        ? Math.max(...baseCategories.map(c => c.id))
+        : 0;
+
+    const mergedCategories = [
+        ...baseCategories,
+        ...countries.map((country, idx) => ({
+            ...country,
+            id: startingId + idx + 1
+        }))
+    ];
+
+    await writeData('categories', mergedCategories);
+    return mergedCategories;
 }
 
 function formatFileSize(bytes) {
@@ -456,7 +529,7 @@ app.delete('/api/products/:id', async (req, res) => {
 // Get categories
 app.get('/api/categories', async (req, res) => {
     try {
-        const categories = await readData('categories');
+        const categories = await ensureCountryCategories();
         res.json(categories || []);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -470,8 +543,10 @@ app.post('/api/categories', async (req, res) => {
         const newCategory = {
             id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
             name: req.body.name,
-            slug: req.body.name.toLowerCase().replace(/\s+/g, '-'),
-            icon: req.body.icon || 'fa-folder'
+            slug: buildSlug(req.body.name),
+            icon: req.body.icon || 'fa-folder',
+            flag: req.body.flag || '',
+            isCountry: !!req.body.isCountry
         };
         
         categories.push(newCategory);
@@ -495,8 +570,10 @@ app.put('/api/categories/:id', async (req, res) => {
         categories[index] = {
             ...categories[index],
             name: req.body.name || categories[index].name,
-            slug: req.body.name ? req.body.name.toLowerCase().replace(/\s+/g, '-') : categories[index].slug,
-            icon: req.body.icon || categories[index].icon
+            slug: req.body.name ? buildSlug(req.body.name) : categories[index].slug,
+            icon: req.body.icon || categories[index].icon,
+            flag: req.body.flag !== undefined ? req.body.flag : categories[index].flag,
+            isCountry: req.body.isCountry !== undefined ? req.body.isCountry : categories[index].isCountry
         };
 
         await writeData('categories', categories);

@@ -315,6 +315,9 @@ async function initData() {
                 adminPassword: CONFIG.ADMIN_PASSWORD,
                 heroTitle: "JOHN'S LAB TEMPLATES",
                 heroSubtitle: "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.",
+                footerTagline: "Premium digital templates for USDT",
+                footerCopyright: "© 2024 JOHN'S LAB TEMPLATES. All rights reserved.",
+                footerPayment: "Payment: USDT (TRC20) | Instant Digital Delivery",
                 telegram: "John_refund",
                 logo: "",
                 backgroundImage: ""

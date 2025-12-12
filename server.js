@@ -228,7 +228,8 @@ function countryCodeToFlag(code) {
     return String.fromCodePoint(...code.toUpperCase().split('').map(char => base + char.charCodeAt(0)));
 }
 
-async function buildCountryCategories() {
+// Get all countries for product filtering
+async function getAllCountries() {
     try {
         const response = await axios.get('https://restcountries.com/v3.1/all?fields=name,cca2,flag');
         const countries = (response.data || [])
@@ -237,13 +238,11 @@ async function buildCountryCategories() {
 
         return countries.map(country => ({
             name: country.name.common,
-            slug: buildSlug(country.name.common),
-            icon: 'fa-flag',
-            flag: country.flag || countryCodeToFlag(country.cca2),
-            isCountry: true
+            code: country.cca2,
+            flag: country.flag || countryCodeToFlag(country.cca2)
         }));
     } catch (error) {
-        console.error('❌ Failed to fetch country list for categories:', error.message);
+        console.error('❌ Failed to fetch country list:', error.message);
         return [];
     }
 }
@@ -305,7 +304,10 @@ async function initData() {
                 { id: 2, name: "UI Kits", slug: "ui-kits", icon: "fa-layer-group" },
                 { id: 3, name: "Dashboards", slug: "dashboards", icon: "fa-chart-line" },
                 { id: 4, name: "Mobile Apps", slug: "mobile-apps", icon: "fa-mobile-alt" },
-                { id: 5, name: "Landing Pages", slug: "landing-pages", icon: "fa-file-alt" }
+                { id: 5, name: "Landing Pages", slug: "landing-pages", icon: "fa-file-alt" },
+                { id: 6, name: "E-commerce", slug: "ecommerce", icon: "fa-shopping-cart" },
+                { id: 7, name: "Portfolio", slug: "portfolio", icon: "fa-briefcase" },
+                { id: 8, name: "Blog & News", slug: "blog-news", icon: "fa-newspaper" }
             ],
             orders: [],
             settings: {
@@ -341,7 +343,8 @@ async function initData() {
             }
         }
 
-        await ensureCountryCategories();
+        // Clean up any existing country categories
+        await cleanupCategories();
         console.log('✅ Data initialized');
     } catch (error) {
         console.error('❌ Initialization error:', error);
@@ -369,40 +372,13 @@ async function writeData(filename, data) {
     }
 }
 
-async function ensureCountryCategories() {
+// Clean up categories - remove country categories
+async function cleanupCategories() {
     const categories = await readData('categories') || [];
-    const countryCategories = categories.filter(c => c.isCountry);
-
-    // Avoid re-adding if we already have a full country list with flags
-    if (countryCategories.length >= 190) {
-        return categories;
-    }
-
-    const baseCategories = categories.filter(c => !c.isCountry).map((cat, index) => ({
-        ...cat,
-        id: cat.id || index + 1,
-        slug: cat.slug || buildSlug(cat.name)
-    }));
-
-    const countries = await buildCountryCategories();
-    if (!countries.length) {
-        return categories;
-    }
-
-    const startingId = baseCategories.length
-        ? Math.max(...baseCategories.map(c => c.id))
-        : 0;
-
-    const mergedCategories = [
-        ...baseCategories,
-        ...countries.map((country, idx) => ({
-            ...country,
-            id: startingId + idx + 1
-        }))
-    ];
-
-    await writeData('categories', mergedCategories);
-    return mergedCategories;
+    // Remove all country categories
+    const mainCategories = categories.filter(c => !c.isCountry);
+    await writeData('categories', mainCategories);
+    return mainCategories;
 }
 
 function formatFileSize(bytes) {
@@ -454,6 +430,7 @@ app.post('/api/products', upload.fields([
             price: parseFloat(req.body.price),
             category: req.body.category,
             description: req.body.description,
+            countries: req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : [],
             downloads: 0,
             createdAt: new Date().toISOString()
         };
@@ -491,12 +468,15 @@ app.put('/api/products/:id', upload.fields([
         }
 
         // Update product data
+        const countries = req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : products[index].countries || [];
+        
         products[index] = {
             ...products[index],
             name: req.body.name || products[index].name,
             price: req.body.price ? parseFloat(req.body.price) : products[index].price,
             category: req.body.category || products[index].category,
             description: req.body.description || products[index].description,
+            countries: countries,
             updatedAt: new Date().toISOString()
         };
 
@@ -532,11 +512,23 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// Get categories
+// Get categories (main categories only, no countries)
 app.get('/api/categories', async (req, res) => {
     try {
-        const categories = await ensureCountryCategories();
-        res.json(categories || []);
+        const categories = await readData('categories') || [];
+        // Filter out any country categories that might still exist
+        const mainCategories = categories.filter(c => !c.isCountry);
+        res.json(mainCategories);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get all countries for filtering
+app.get('/api/countries', async (req, res) => {
+    try {
+        const countries = await getAllCountries();
+        res.json(countries);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -550,9 +542,7 @@ app.post('/api/categories', async (req, res) => {
             id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
             name: req.body.name,
             slug: buildSlug(req.body.name),
-            icon: req.body.icon || 'fa-folder',
-            flag: req.body.flag || '',
-            isCountry: !!req.body.isCountry
+            icon: req.body.icon || 'fa-folder'
         };
         
         categories.push(newCategory);
@@ -577,9 +567,7 @@ app.put('/api/categories/:id', async (req, res) => {
             ...categories[index],
             name: req.body.name || categories[index].name,
             slug: req.body.name ? buildSlug(req.body.name) : categories[index].slug,
-            icon: req.body.icon || categories[index].icon,
-            flag: req.body.flag !== undefined ? req.body.flag : categories[index].flag,
-            isCountry: req.body.isCountry !== undefined ? req.body.isCountry : categories[index].isCountry
+            icon: req.body.icon || categories[index].icon
         };
 
         await writeData('categories', categories);

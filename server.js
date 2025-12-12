@@ -323,7 +323,8 @@ async function initData() {
                 ownerPhoto: "",
                 telegram: "John_refund",
                 about: "Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive, high-quality digital templates. If you have any questions, feel free to contact me."
-            }
+            },
+            customers: []
         };
 
         for (const [key, data] of Object.entries(initialData)) {
@@ -606,13 +607,22 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// Helper function for email validation
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // Create order
 app.post('/api/orders', async (req, res) => {
     try {
-        const { email, items, total, wallet } = req.body;
+        const { email, telegram, items, total, wallet } = req.body;
         
         if (!email || !isValidEmail(email)) {
             return res.status(400).json({ success: false, error: 'Valid email is required' });
+        }
+        
+        if (!telegram || telegram.trim().length === 0) {
+            return res.status(400).json({ success: false, error: 'Telegram username is required' });
         }
         
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -627,9 +637,13 @@ app.post('/api/orders', async (req, res) => {
         // This ensures even if multiple orders have the same base amount, they'll have unique exact amounts
         const uniqueAmount = paymentChecker.startMonitoring(orderId, total, CONFIG.WALLET_ADDRESS, CONFIG.PAYMENT_TIMEOUT);
         
+        // Clean telegram username (remove @ if present)
+        const cleanTelegram = telegram.replace(/^@/, '').trim();
+        
         const newOrder = {
             id: orderId,
             email,
+            telegram: cleanTelegram,
             customerWallet: wallet || '', // Optional, kept for backward compatibility
             items,
             baseAmount: total,
@@ -644,6 +658,9 @@ app.post('/api/orders', async (req, res) => {
 
         orders.push(newOrder);
         await writeData('orders', orders);
+
+        // Save/update customer in database
+        await saveCustomerToDatabase(email, cleanTelegram, total);
 
         // Send payment email with QR code and payment details
         await sendPaymentEmail(email, orderId, uniqueAmount);
@@ -871,6 +888,89 @@ app.put('/api/contacts', upload.single('ownerPhoto'), async (req, res) => {
         res.json({ success: true, contacts: updatedContacts });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== CUSTOMER DATABASE FUNCTIONS =====
+async function saveCustomerToDatabase(email, telegram, orderAmount) {
+    try {
+        let customers = await readData('customers') || [];
+        
+        // Find existing customer by email
+        const existingCustomerIndex = customers.findIndex(c => c.email.toLowerCase() === email.toLowerCase());
+        
+        if (existingCustomerIndex >= 0) {
+            // Update existing customer
+            const customer = customers[existingCustomerIndex];
+            customer.telegram = telegram || customer.telegram;
+            customer.orderCount = (customer.orderCount || 0) + 1;
+            customer.totalSpent = (customer.totalSpent || 0) + orderAmount;
+            customer.lastOrderDate = new Date().toISOString();
+            customers[existingCustomerIndex] = customer;
+        } else {
+            // Add new customer
+            const newCustomer = {
+                id: customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1,
+                email: email.toLowerCase(),
+                telegram: telegram || '',
+                firstOrderDate: new Date().toISOString(),
+                lastOrderDate: new Date().toISOString(),
+                orderCount: 1,
+                totalSpent: orderAmount
+            };
+            customers.push(newCustomer);
+        }
+        
+        await writeData('customers', customers);
+    } catch (error) {
+        console.error('Error saving customer to database:', error);
+    }
+}
+
+// Get all customers
+app.get('/api/customers', async (req, res) => {
+    try {
+        const customers = await readData('customers') || [];
+        res.json(customers);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Export customers
+app.get('/api/customers/export', async (req, res) => {
+    try {
+        const format = req.query.format || 'json';
+        const customers = await readData('customers') || [];
+        
+        if (format === 'csv') {
+            // Generate CSV
+            const headers = ['Email', 'Telegram', 'First Order', 'Last Order', 'Total Orders', 'Total Spent'];
+            const rows = customers.map(c => [
+                c.email,
+                c.telegram || '',
+                new Date(c.firstOrderDate).toLocaleDateString(),
+                new Date(c.lastOrderDate).toLocaleDateString(),
+                c.orderCount || 0,
+                (c.totalSpent || 0).toFixed(2)
+            ]);
+            
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+            
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename=customers_${new Date().toISOString().split('T')[0]}.csv`);
+            res.send(csvContent);
+        } else {
+            // JSON format
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename=customers_${new Date().toISOString().split('T')[0]}.json`);
+            res.json(customers);
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

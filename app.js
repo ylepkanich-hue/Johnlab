@@ -69,6 +69,16 @@ function updateSiteSettings() {
     }
     if (settings.shopName) {
         document.getElementById('site-name').textContent = settings.shopName;
+        const heroTitleEl = document.getElementById('hero-title');
+        if (heroTitleEl) heroTitleEl.textContent = settings.shopName;
+    }
+    if (settings.heroTitle) {
+        const heroTitleEl = document.getElementById('hero-title');
+        if (heroTitleEl) heroTitleEl.textContent = settings.heroTitle;
+    }
+    if (settings.heroSubtitle) {
+        const heroSubtitleEl = document.getElementById('hero-subtitle');
+        if (heroSubtitleEl) heroSubtitleEl.textContent = settings.heroSubtitle;
     }
     if (settings.backgroundImage) {
         document.body.classList.add('custom-background');
@@ -1336,6 +1346,14 @@ function loadAdminSettings() {
                 <input type="password" id="setting-password" class="form-control" placeholder="Leave empty to keep current">
             </div>
             <div class="form-group">
+                <label>Header Title:</label>
+                <input type="text" id="setting-hero-title" class="form-control" value="${settings.heroTitle || settings.shopName || ''}" placeholder="Site title shown in header and hero">
+            </div>
+            <div class="form-group">
+                <label>Hero Subtitle:</label>
+                <textarea id="setting-hero-subtitle" class="form-control" rows="2" placeholder="Hero subtitle on the home page">${settings.heroSubtitle || ''}</textarea>
+            </div>
+            <div class="form-group">
                 <label>Logo:</label>
                 ${settings.logo ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.logo}" style="max-width: 100px; border-radius: 10px;"></div>` : ''}
                 <input type="file" id="setting-logo" class="form-control" accept="image/*">
@@ -1378,7 +1396,9 @@ async function saveSettings() {
     const updatedSettings = {
         shopName: document.getElementById('setting-shop-name').value,
         walletAddress: document.getElementById('setting-wallet').value,
-        adminEmail: document.getElementById('setting-email').value
+        adminEmail: document.getElementById('setting-email').value,
+        heroTitle: document.getElementById('setting-hero-title').value,
+        heroSubtitle: document.getElementById('setting-hero-subtitle').value
     };
     
     const newPassword = document.getElementById('setting-password').value;

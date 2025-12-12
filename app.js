@@ -27,7 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     document.getElementById('search-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchProducts();
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    });
+    
+    // Also check on search button click
+    document.querySelector('.search-btn').addEventListener('click', () => {
+        handleSearch();
     });
 });
 
@@ -110,10 +117,13 @@ function updateCartCount() {
 
 // ===== HOME PAGE =====
 function renderHomePage() {
-    document.getElementById('total-products').textContent = products.length;
-    document.getElementById('total-sales').textContent = products.reduce((sum, p) => sum + (p.downloads || 0), 0);
-    document.getElementById('total-orders').textContent = orders.length;
-    document.getElementById('total-users').textContent = new Set(orders.map(o => o.email)).size;
+    // Use configured statistics if available, otherwise use calculated values
+    const stats = settings.statistics || {};
+    
+    document.getElementById('total-products').textContent = stats.totalProducts !== undefined ? stats.totalProducts : products.length;
+    document.getElementById('total-sales').textContent = stats.totalDownloads !== undefined ? stats.totalDownloads : products.reduce((sum, p) => sum + (p.downloads || 0), 0);
+    document.getElementById('total-orders').textContent = stats.totalOrders !== undefined ? stats.totalOrders : orders.length;
+    document.getElementById('total-users').textContent = stats.totalCustomers !== undefined ? stats.totalCustomers : new Set(orders.map(o => o.email)).size;
 
     const featured = [...products]
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
@@ -221,6 +231,16 @@ function sortProducts(sortType) {
 }
 
 function searchProducts() {
+    const searchValue = document.getElementById('search-input').value.trim();
+    
+    // If search is empty or doesn't match admin password, do normal search
+    if (!searchValue || searchValue.length === 0) {
+        currentFilter = 'all';
+        renderProducts();
+        return;
+    }
+    
+    // Normal product search functionality
     const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
     
     if (!searchTerm) {
@@ -422,6 +442,11 @@ function showPayment() {
                     <input type="email" id="payment-email" class="form-control" placeholder="your@email.com" required>
                     <small style="color: #aaa; display: block; margin-top: 5px;">We'll send your download link to this email after payment confirmation</small>
                 </div>
+                <div class="form-group">
+                    <label for="payment-telegram"><i class="fab fa-telegram"></i> Your Telegram Username:</label>
+                    <input type="text" id="payment-telegram" class="form-control" placeholder="@username or username" required>
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Enter your Telegram username (with or without @)</small>
+                </div>
                 <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; padding: 18px; font-size: 18px;">
                     <i class="fas fa-check-circle"></i> Confirm Order
                 </button>
@@ -450,9 +475,15 @@ function showPayment() {
 
 async function createOrder() {
     const email = document.getElementById('payment-email').value.trim();
+    const telegram = document.getElementById('payment-telegram').value.trim();
     
     if (!email) {
         showAlert('Please enter your email address', 'error');
+        return;
+    }
+    
+    if (!telegram) {
+        showAlert('Please enter your Telegram username', 'error');
         return;
     }
     
@@ -460,6 +491,9 @@ async function createOrder() {
         showAlert('Please enter a valid email', 'error');
         return;
     }
+    
+    // Clean telegram username (remove @ if present)
+    const cleanTelegram = telegram.replace(/^@/, '');
     
     const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
     const items = cart.map(item => ({
@@ -473,7 +507,7 @@ async function createOrder() {
         const response = await fetch(`${API_URL}/api/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, items, total })
+            body: JSON.stringify({ email, telegram: cleanTelegram, items, total })
         });
         
         const result = await response.json();
@@ -642,12 +676,20 @@ function updateContactsDisplay() {
 }
 
 // ===== ADMIN PANEL =====
-function showAdminLogin() {
-    showSection('admin-login');
+function checkSecretAdminAccess() {
+    const searchValue = document.getElementById('search-input').value.trim();
+    
+    // Check if the search input contains the admin password
+    if (searchValue && searchValue.length > 0) {
+        // Try to login with the search value as password
+        adminLoginWithPassword(searchValue);
+    } else {
+        // Normal search functionality
+        searchProducts();
+    }
 }
 
-async function adminLogin() {
-    const password = document.getElementById('admin-password').value;
+async function adminLoginWithPassword(password) {
     
     try {
         const settingsData = await fetch(`${API_URL}/api/settings`).then(r => r.json());
@@ -716,6 +758,9 @@ function showAdminTab(tabName, button) {
             break;
         case 'contacts-admin':
             loadAdminContacts();
+            break;
+        case 'database':
+            loadAdminDatabase();
             break;
     }
 }
@@ -1259,7 +1304,29 @@ function loadAdminSettings() {
                 ${settings.backgroundImage ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.backgroundImage}" style="max-width: 200px; border-radius: 10px;"></div>` : ''}
                 <input type="file" id="setting-background" class="form-control" accept="image/*">
             </div>
-            <button type="button" class="btn btn-primary" onclick="saveSettings()" style="width: 100%; padding: 15px;">
+            
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
+                <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-chart-line"></i> Home Page Statistics</h3>
+                <p style="color: #aaa; margin-bottom: 20px;">Configure the statistics displayed on the home page. Leave empty to use automatic calculation.</p>
+                
+                <div class="form-group">
+                    <label>Total Downloads:</label>
+                    <input type="number" id="setting-total-downloads" class="form-control" value="${settings.statistics?.totalDownloads || ''}" placeholder="Auto-calculated if empty" min="0">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Leave empty to auto-calculate from product downloads</small>
+                </div>
+                <div class="form-group">
+                    <label>Total Orders:</label>
+                    <input type="number" id="setting-total-orders" class="form-control" value="${settings.statistics?.totalOrders || ''}" placeholder="Auto-calculated if empty" min="0">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Leave empty to auto-calculate from orders</small>
+                </div>
+                <div class="form-group">
+                    <label>Total Customers:</label>
+                    <input type="number" id="setting-total-customers" class="form-control" value="${settings.statistics?.totalCustomers || ''}" placeholder="Auto-calculated if empty" min="0">
+                    <small style="color: #aaa; display: block; margin-top: 5px;">Leave empty to auto-calculate from unique emails</small>
+                </div>
+            </div>
+            
+            <button type="button" class="btn btn-primary" onclick="saveSettings()" style="width: 100%; padding: 15px; margin-top: 30px;">
                 <i class="fas fa-save"></i> Save Settings
             </button>
         </form>
@@ -1277,6 +1344,17 @@ async function saveSettings() {
     if (newPassword) {
         updatedSettings.adminPassword = newPassword;
     }
+    
+    // Save statistics configuration
+    const totalDownloads = document.getElementById('setting-total-downloads').value.trim();
+    const totalOrders = document.getElementById('setting-total-orders').value.trim();
+    const totalCustomers = document.getElementById('setting-total-customers').value.trim();
+    
+    updatedSettings.statistics = {
+        totalDownloads: totalDownloads ? parseInt(totalDownloads) : undefined,
+        totalOrders: totalOrders ? parseInt(totalOrders) : undefined,
+        totalCustomers: totalCustomers ? parseInt(totalCustomers) : undefined
+    };
     
     try {
         const response = await fetch(`${API_URL}/api/settings`, {
@@ -1313,12 +1391,163 @@ async function saveSettings() {
             showAlert('Settings saved successfully!');
             await loadData();
             loadAdminSettings();
+            renderHomePage(); // Update home page statistics
         } else {
             showAlert('Error saving settings', 'error');
         }
     } catch (error) {
         showAlert('Network error', 'error');
     }
+}
+
+// ===== DATABASE ADMIN =====
+async function loadAdminDatabase() {
+    try {
+        const response = await fetch(`${API_URL}/api/customers`);
+        const customers = await response.json();
+        
+        const totalCustomers = customers.length;
+        const uniqueEmails = new Set(customers.map(c => c.email)).size;
+        const uniqueTelegrams = new Set(customers.map(c => c.telegram).filter(t => t)).size;
+        
+        document.getElementById('admin-database').innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h3 style="color: var(--gold); font-size: 24px;"><i class="fas fa-database"></i> Customer Database</h3>
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn btn-secondary" onclick="exportCustomersCSV()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportCustomersJSON()">
+                        <i class="fas fa-file-code"></i> Export JSON
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-grid" style="margin-bottom: 30px;">
+                <div class="stat-card">
+                    <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">Total Customers</div>
+                    <div style="color: #777; font-size: 32px; font-weight: 700;">${totalCustomers}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">Unique Emails</div>
+                    <div style="color: #777; font-size: 32px; font-weight: 700;">${uniqueEmails}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">Unique Telegrams</div>
+                    <div style="color: #777; font-size: 32px; font-weight: 700;">${uniqueTelegrams}</div>
+                </div>
+            </div>
+            
+            <div style="background: var(--black-lighter); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <input type="text" id="database-search" class="form-control" placeholder="Search by email or telegram..." style="flex: 1;" onkeyup="filterCustomers()">
+                    <select id="database-sort" class="form-control" style="width: 200px;" onchange="filterCustomers()">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="email">Sort by Email</option>
+                        <option value="telegram">Sort by Telegram</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="background: var(--black-lighter); padding: 20px; border-radius: 12px; overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Telegram</th>
+                            <th>First Order</th>
+                            <th>Total Orders</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        ${customers.length === 0 ? `
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: #777;">
+                                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                                    No customers yet
+                                </td>
+                            </tr>
+                        ` : customers.map((customer, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${customer.email}</td>
+                                <td>${customer.telegram ? `@${customer.telegram}` : 'N/A'}</td>
+                                <td>${new Date(customer.firstOrderDate).toLocaleDateString()}</td>
+                                <td>${customer.orderCount || 0}</td>
+                                <td>$${(customer.totalSpent || 0).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (error) {
+        document.getElementById('admin-database').innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--danger);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                <p>Error loading customer database</p>
+            </div>
+        `;
+    }
+}
+
+function filterCustomers() {
+    const searchTerm = document.getElementById('database-search')?.value.toLowerCase() || '';
+    const sortBy = document.getElementById('database-sort')?.value || 'newest';
+    
+    // This would need to be implemented with a full reload or client-side filtering
+    // For now, just reload the database tab
+    loadAdminDatabase();
+}
+
+function exportCustomersCSV() {
+    fetch(`${API_URL}/api/customers/export?format=csv`)
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customers_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showAlert('CSV file downloaded successfully!');
+        })
+        .catch(error => {
+            showAlert('Error exporting CSV', 'error');
+        });
+}
+
+function exportCustomersJSON() {
+    fetch(`${API_URL}/api/customers/export?format=json`)
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customers_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showAlert('JSON file downloaded successfully!');
+        })
+        .catch(error => {
+            showAlert('Error exporting JSON', 'error');
+        });
 }
 
 // ===== CONTACT ADMIN =====

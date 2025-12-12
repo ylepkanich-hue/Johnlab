@@ -420,10 +420,7 @@ function showPayment() {
                 <div class="form-group">
                     <label for="payment-email"><i class="fas fa-envelope"></i> Your Email:</label>
                     <input type="email" id="payment-email" class="form-control" placeholder="your@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="payment-wallet"><i class="fas fa-wallet"></i> Your USDT Address (for refunds):</label>
-                    <input type="text" id="payment-wallet" class="form-control" placeholder="TYourWalletAddress..." required>
+                    <small style="color: #aaa; display: block; margin-top: 5px;">We'll send your download link to this email after payment confirmation</small>
                 </div>
                 <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; padding: 18px; font-size: 18px;">
                     <i class="fas fa-check-circle"></i> Confirm Order
@@ -453,20 +450,14 @@ function showPayment() {
 
 async function createOrder() {
     const email = document.getElementById('payment-email').value.trim();
-    const wallet = document.getElementById('payment-wallet').value.trim();
     
-    if (!email || !wallet) {
-        showAlert('Please fill in all fields', 'error');
+    if (!email) {
+        showAlert('Please enter your email address', 'error');
         return;
     }
     
     if (!isValidEmail(email)) {
         showAlert('Please enter a valid email', 'error');
-        return;
-    }
-    
-    if (!isValidTronAddress(wallet)) {
-        showAlert('Please enter a valid TRON address', 'error');
         return;
     }
     
@@ -482,7 +473,7 @@ async function createOrder() {
         const response = await fetch(`${API_URL}/api/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, wallet, items, total })
+            body: JSON.stringify({ email, items, total })
         });
         
         const result = await response.json();
@@ -506,10 +497,18 @@ async function createOrder() {
 }
 
 function generateQRCode(amount, wallet) {
+    // Generate QR code with TRON USDT payment URI
+    // Format: tron:WALLET_ADDRESS?amount=AMOUNT&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
     const qrData = `tron:${wallet}?amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&bgcolor=FFFFFF&color=000000&margin=10`;
+    
     document.getElementById('qr-code').innerHTML = `
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}&bgcolor=FFFFFF&color=000000" 
-             alt="QR Code" style="width: 100%; height: 100%; border-radius: 10px;">
+        <div style="display: flex; justify-content: center; align-items: center; padding: 20px; background: #fff; border-radius: 15px; margin: 20px auto; max-width: 320px;">
+            <img src="${qrUrl}" 
+                 alt="USDT Payment QR Code" 
+                 style="width: 100%; height: auto; border-radius: 10px; display: block;">
+        </div>
+        <p style="color: #aaa; margin-top: 15px; font-size: 14px;">Scan with your TRON wallet app to pay</p>
     `;
 }
 
@@ -685,7 +684,19 @@ function showAdminTab(tabName, button) {
     if (button) button.classList.add('active');
     
     document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-    document.getElementById(`admin-${tabName}`).classList.add('active');
+    
+    // Map tab names to element IDs
+    const tabIdMap = {
+        'dashboard': 'admin-dashboard',
+        'products': 'admin-products',
+        'categories': 'admin-categories',
+        'orders': 'admin-orders',
+        'settings': 'admin-settings',
+        'contacts-admin': 'admin-contacts'
+    };
+    
+    const elementId = tabIdMap[tabName] || `admin-${tabName}`;
+    document.getElementById(elementId).classList.add('active');
     
     switch(tabName) {
         case 'dashboard':
@@ -1175,7 +1186,7 @@ function renderOrdersList() {
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 28px; color: var(--gold); font-weight: 900;">$${order.exactAmount || order.baseAmount}</div>
-                    <div style="color: #777; font-size: 14px;">${order.customerWallet}</div>
+                    <div style="color: #777; font-size: 14px;">${order.customerWallet || 'N/A'}</div>
                 </div>
             </div>
             

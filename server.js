@@ -610,17 +610,27 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
     try {
         const { email, items, total, wallet } = req.body;
+        
+        if (!email || !isValidEmail(email)) {
+            return res.status(400).json({ success: false, error: 'Valid email is required' });
+        }
+        
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ success: false, error: 'Order must contain at least one item' });
+        }
+        
         const orders = await readData('orders');
         
         const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
         
-        // Generate unique amount
-        const uniqueAmount = paymentChecker.startMonitoring(orderId, total, wallet, CONFIG.PAYMENT_TIMEOUT);
+        // Generate unique amount with different cents for payment identification
+        // This ensures even if multiple orders have the same base amount, they'll have unique exact amounts
+        const uniqueAmount = paymentChecker.startMonitoring(orderId, total, CONFIG.WALLET_ADDRESS, CONFIG.PAYMENT_TIMEOUT);
         
         const newOrder = {
             id: orderId,
             email,
-            customerWallet: wallet,
+            customerWallet: wallet || '', // Optional, kept for backward compatibility
             items,
             baseAmount: total,
             exactAmount: uniqueAmount,
@@ -635,7 +645,7 @@ app.post('/api/orders', async (req, res) => {
         orders.push(newOrder);
         await writeData('orders', orders);
 
-        // Send payment email
+        // Send payment email with QR code and payment details
         await sendPaymentEmail(email, orderId, uniqueAmount);
         
         res.json({ 
@@ -649,6 +659,7 @@ app.post('/api/orders', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Error creating order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -866,6 +877,10 @@ app.put('/api/contacts', upload.single('ownerPhoto'), async (req, res) => {
 // ===== EMAIL FUNCTIONS =====
 async function sendPaymentEmail(email, orderId, amount) {
     try {
+        // Generate QR code URL for email
+        const qrData = `tron:${CONFIG.WALLET_ADDRESS}?amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&bgcolor=FFFFFF&color=000000&margin=10`;
+        
         const mailOptions = {
             from: `${CONFIG.SITE_NAME} <${CONFIG.EMAIL_USER}>`,
             to: email,
@@ -881,8 +896,12 @@ async function sendPaymentEmail(email, orderId, amount) {
                         .header h1 { margin: 0; color: #000; font-size: 28px; }
                         .content { padding: 30px; }
                         .amount { background: #000; color: #D4AF37; padding: 20px; border-radius: 8px; text-align: center; font-size: 36px; font-weight: bold; margin: 20px 0; }
-                        .wallet { background: #000; color: #D4AF37; padding: 15px; border-radius: 8px; font-family: monospace; word-break: break-all; margin: 20px 0; }
+                        .wallet { background: #000; color: #D4AF37; padding: 15px; border-radius: 8px; font-family: monospace; word-break: break-all; margin: 20px 0; text-align: center; }
+                        .qr-code { text-align: center; margin: 25px 0; padding: 20px; background: #fff; border-radius: 10px; }
+                        .qr-code img { max-width: 300px; height: auto; border-radius: 8px; }
                         .info-box { background: #2a2a2a; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                        .info-box ul { margin: 10px 0; padding-left: 20px; }
+                        .info-box li { margin: 8px 0; }
                         .footer { text-align: center; padding: 20px; color: #888; font-size: 12px; }
                     </style>
                 </head>
@@ -895,22 +914,29 @@ async function sendPaymentEmail(email, orderId, amount) {
                             <h2 style="color: #D4AF37;">Payment Details</h2>
                             <p>To complete your order <strong>#${orderId}</strong>, please send:</p>
                             
-                            <div class="amount">${amount} USDT</div>
+                            <div class="amount">$${amount} USDT</div>
                             
-                            <p>To this address:</p>
+                            <p style="text-align: center; margin-bottom: 15px;">To this address:</p>
                             <div class="wallet">${CONFIG.WALLET_ADDRESS}</div>
+                            
+                            <div class="qr-code">
+                                <p style="color: #000; margin-bottom: 10px; font-weight: bold;">Scan QR Code to Pay</p>
+                                <img src="${qrUrl}" alt="USDT Payment QR Code">
+                                <p style="color: #666; margin-top: 10px; font-size: 12px;">Scan with your TRON wallet app</p>
+                            </div>
                             
                             <div class="info-box">
                                 <p><strong>⚠️ IMPORTANT:</strong></p>
                                 <ul>
-                                    <li>Send exactly <strong>${amount} USDT</strong></li>
+                                    <li>Send exactly <strong>$${amount} USDT</strong> (unique amount for this order)</li>
                                     <li>Use <strong>TRC20</strong> network only</li>
                                     <li>Payment expires in <strong>${CONFIG.PAYMENT_TIMEOUT} minutes</strong></li>
-                                    <li>After payment, files will be sent automatically</li>
+                                    <li>After payment confirmation on blockchain, files will be sent automatically to this email</li>
+                                    <li>Each order has a unique payment amount to prevent confusion</li>
                                 </ul>
                             </div>
                             
-                            <p>Your files will be delivered to this email address once payment is confirmed on the blockchain.</p>
+                            <p style="margin-top: 25px;">Your files will be delivered to this email address once payment is confirmed on the TRON blockchain network.</p>
                         </div>
                         <div class="footer">
                             <p>${CONFIG.SITE_NAME} - Premium Digital Templates</p>

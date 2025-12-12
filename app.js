@@ -230,17 +230,52 @@ function sortProducts(sortType) {
     renderProducts();
 }
 
-function searchProducts() {
+async function handleSearch() {
     const searchValue = document.getElementById('search-input').value.trim();
-    
-    // If search is empty or doesn't match admin password, do normal search
-    if (!searchValue || searchValue.length === 0) {
+
+    // If empty, just show all products
+    if (!searchValue) {
         currentFilter = 'all';
         renderProducts();
         return;
     }
-    
-    // Normal product search functionality
+
+    // Silently try admin login; on success, open admin panel and stop
+    try {
+        const response = await fetch(`${API_URL}/api/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: searchValue })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                isAdmin = true;
+                localStorage.setItem('admin_logged_in', 'true');
+                await loadData();
+                document.getElementById('search-input').value = '';
+                showAdminPanel();
+                return;
+            }
+        } else {
+            // If response is not ok (401, etc.), parse error response but continue to normal search
+            try {
+                await response.json();
+            } catch (e) {
+                // Ignore JSON parse errors
+            }
+        }
+    } catch (error) {
+        // Network error or other error - ignore and fall through to normal search
+        console.error('Admin login check error:', error);
+    }
+
+    // Normal product search fallback
+    searchProducts();
+}
+
+function searchProducts() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
     
     if (!searchTerm) {
@@ -711,7 +746,13 @@ async function adminLoginWithPassword(password) {
 
 function showAdminPanel() {
     showSection('admin-panel');
-    showAdminTab('dashboard');
+    // Find and activate the dashboard button
+    const dashboardButton = document.querySelector('.admin-tab-btn');
+    if (dashboardButton) {
+        showAdminTab('dashboard', dashboardButton);
+    } else {
+        showAdminTab('dashboard');
+    }
 }
 
 function adminLogout() {

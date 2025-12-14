@@ -2624,35 +2624,342 @@ function generateBarcodeAudit() {
 }
 
 
+// Build AAMVA string from form data
+function buildAAMVAString() {
+    const firstName = document.getElementById('barcode-firstName')?.value || '';
+    const middleName = document.getElementById('barcode-middleName')?.value || '';
+    const lastName = document.getElementById('barcode-lastName')?.value || '';
+    const gender = document.querySelector('input[name="barcode-gender"]:checked')?.value || '0';
+    const state = document.getElementById('barcode-states')?.value || 'Alabama';
+    const city = document.getElementById('barcode-city')?.value || '';
+    const street = document.getElementById('barcode-street')?.value || '';
+    const zipCode = document.getElementById('barcode-zipCode')?.value || '00000';
+    const hairColor = document.getElementById('barcode-hairColor')?.value || 'BAL';
+    const eyeColor = document.getElementById('barcode-eyeColor')?.value || 'BLK';
+    const raceCode = document.getElementById('barcode-raceCode')?.value || 'W';
+    const heightFt = document.getElementById('barcode-heightFt')?.value || '5';
+    const heightIn = document.getElementById('barcode-heightIn')?.value || '10';
+    const weight = document.getElementById('barcode-weight')?.value || '130';
+    const dateBirthday = document.getElementById('barcode-dateBirthday')?.value || '02031980';
+    const dateIssue = document.getElementById('barcode-dateIssue')?.value || '01022000';
+    const dateExpiry = document.getElementById('barcode-dateExpiry')?.value || '02031999';
+    const licNumber = document.getElementById('barcode-licNumber')?.value || '';
+    const docDiscr = document.getElementById('barcode-docDiscr')?.value || '';
+    const invNum = document.getElementById('barcode-invNum')?.value || '';
+    const auditInfo = document.getElementById('barcode-auditInfo')?.value || '';
+    const country = document.getElementById('barcode-country-toggle')?.checked ? 'CAN' : 'USA';
+    
+    // Convert date format from MMDDYYYY to YYYY-MM-DD for AAMVA
+    function convertDate(dateStr) {
+        if (dateStr.length !== 8) return '';
+        const month = dateStr.substring(0, 2);
+        const day = dateStr.substring(2, 4);
+        const year = dateStr.substring(4, 8);
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Build basic AAMVA string (simplified version)
+    // AAMVA format: @\nANSI [version]\n[data elements]
+    const aamvaData = [
+        `@`,
+        `ANSI 6360260101DL00290188${state.substring(0, 2).toUpperCase()}DL`,
+        `DAA${lastName.toUpperCase()}`,
+        `DAB${firstName.toUpperCase()}${middleName ? ' ' + middleName.toUpperCase() : ''}`,
+        `DAC${firstName.toUpperCase()}`,
+        `DAD${middleName ? middleName.toUpperCase() : ''}`,
+        `DBD${convertDate(dateIssue)}`,
+        `DBB${convertDate(dateBirthday)}`,
+        `DBA${convertDate(dateExpiry)}`,
+        `DBC${gender === '1' ? '1' : '2'}`,
+        `DAU${heightFt}FT ${heightIn}IN`,
+        `DAY${hairColor}`,
+        `DAZ${weight}LB`,
+        `DAG${street}`,
+        `DAI${city}`,
+        `DAJ${state}`,
+        `DAK${zipCode}`,
+        `DAQ${licNumber}`,
+        `DCF${docDiscr}`,
+        `DCG${country}`,
+        `DDE${raceCode}`,
+        `DDD${eyeColor}`
+    ];
+    
+    return aamvaData.join('\n');
+}
+
 async function generatePDF417() {
-    showAlert('PDF417 generation will be implemented with backend API', 'info');
-    // TODO: Implement PDF417 generation
-    // This would call a backend API similar to the original implementation
+    try {
+        const aamvaString = buildAAMVAString();
+        const svgContainer = document.getElementById('barcode-svg');
+        const resultsDiv = document.getElementById('barcode-results');
+        
+        if (!svgContainer || !resultsDiv) {
+            showAlert('Barcode container not found', 'error');
+            return;
+        }
+        
+        // Check if bwip-js is available
+        if (typeof bwipjs === 'undefined') {
+            showAlert('Barcode library not loaded. Please refresh the page.', 'error');
+            return;
+        }
+        
+        // Get PDF417 settings
+        const ecc = parseInt(document.getElementById('barcode-ecc')?.value || '5');
+        const rows = parseInt(document.getElementById('barcode-rows')?.value || '6');
+        const columns = parseInt(document.getElementById('barcode-columns')?.value || '12');
+        
+        // Create canvas for PDF417
+        const canvas = document.createElement('canvas');
+        const scale = 3; // Higher scale for better quality
+        
+        // Generate PDF417 barcode using bwip-js
+        bwipjs.toCanvas(canvas, {
+            bcid: 'pdf417',
+            text: aamvaString,
+            scale: scale,
+            height: 10,
+            width: 2,
+            columns: columns,
+            rows: rows,
+            ecclevel: ecc,
+            includetext: false
+        }, function(err) {
+            if (err) {
+                console.error('PDF417 generation error:', err);
+                showAlert('Error generating PDF417 barcode: ' + err.message, 'error');
+                return;
+            }
+            
+            // Convert canvas to SVG
+            const svg = canvasToSVG(canvas);
+            svgContainer.innerHTML = '';
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', 'auto');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svgContainer.appendChild(svg);
+            
+            // Show results
+            resultsDiv.style.display = 'block';
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Store SVG and canvas for download
+            window.currentBarcodeSVG = svg.outerHTML;
+            window.currentBarcodeCanvas = canvas;
+            window.currentBarcodeType = 'PDF417';
+            
+            showAlert('PDF417 barcode generated successfully!', 'success');
+        });
+    } catch (error) {
+        console.error('PDF417 generation error:', error);
+        showAlert('Error generating PDF417 barcode: ' + error.message, 'error');
+    }
+}
+
+// Helper function to convert canvas to SVG
+function canvasToSVG(canvas) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', canvas.width);
+    svg.setAttribute('height', canvas.height);
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    image.setAttribute('href', canvas.toDataURL('image/png'));
+    image.setAttribute('width', canvas.width);
+    image.setAttribute('height', canvas.height);
+    svg.appendChild(image);
+    
+    return svg;
 }
 
 async function generateCode128() {
-    showAlert('Code128 generation will be implemented with backend API', 'info');
-    // TODO: Implement Code128 generation
+    try {
+        const svgContainer = document.getElementById('barcode-svg');
+        const resultsDiv = document.getElementById('barcode-results');
+        
+        if (!svgContainer || !resultsDiv) {
+            showAlert('Barcode container not found', 'error');
+            return;
+        }
+        
+        // Check if JsBarcode is available
+        if (typeof JsBarcode === 'undefined') {
+            showAlert('JsBarcode library not loaded. Please refresh the page.', 'error');
+            return;
+        }
+        
+        // Use license number or build a simple string from form data
+        const licNumber = document.getElementById('barcode-licNumber')?.value || '';
+        const firstName = document.getElementById('barcode-firstName')?.value || '';
+        const lastName = document.getElementById('barcode-lastName')?.value || '';
+        
+        // Build Code128 data - prefer license number, otherwise use name
+        let code128Data = licNumber;
+        if (!code128Data || code128Data.trim() === '') {
+            code128Data = `${lastName.toUpperCase()},${firstName.toUpperCase()}`.substring(0, 50);
+        }
+        
+        if (!code128Data || code128Data.trim() === '') {
+            showAlert('Please enter a License Number or Name to generate Code128 barcode', 'error');
+            return;
+        }
+        
+        // Generate Code128 barcode
+        svgContainer.innerHTML = '';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', 'auto');
+        svgContainer.appendChild(svg);
+        
+        JsBarcode(svg, code128Data, {
+            format: 'CODE128',
+            width: 2,
+            height: 100,
+            displayValue: true,
+            fontSize: 20,
+            background: '#ffffff',
+            lineColor: '#000000',
+            margin: 10
+        });
+        
+        // Create canvas for PNG export
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        };
+        
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        img.src = url;
+        
+        // Show results
+        resultsDiv.style.display = 'block';
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Store SVG and canvas for download
+        window.currentBarcodeSVG = svg.outerHTML;
+        window.currentBarcodeCanvas = canvas;
+        window.currentBarcodeImage = img;
+        window.currentBarcodeType = 'CODE128';
+        
+        showAlert('Code128 barcode generated successfully!', 'success');
+    } catch (error) {
+        console.error('Code128 generation error:', error);
+        showAlert('Error generating Code128 barcode: ' + error.message, 'error');
+    }
 }
 
 async function savePDF417SVG() {
-    showAlert('Save SVG functionality will be implemented', 'info');
-    // TODO: Implement SVG save
+    if (!window.currentBarcodeSVG || window.currentBarcodeType !== 'PDF417') {
+        showAlert('Please generate a PDF417 barcode first', 'error');
+        return;
+    }
+    
+    try {
+        const blob = new Blob([window.currentBarcodeSVG], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `PDF417_${Date.now()}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('SVG file downloaded successfully!', 'success');
+    } catch (error) {
+        showAlert('Error saving SVG: ' + error.message, 'error');
+    }
 }
 
 async function savePDF417PNG() {
-    showAlert('Save PNG functionality will be implemented', 'info');
-    // TODO: Implement PNG save
+    if (!window.currentBarcodeCanvas || window.currentBarcodeType !== 'PDF417') {
+        showAlert('Please generate a PDF417 barcode first', 'error');
+        return;
+    }
+    
+    try {
+        window.currentBarcodeCanvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PDF417_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showAlert('PNG file downloaded successfully!', 'success');
+        });
+    } catch (error) {
+        showAlert('Error saving PNG: ' + error.message, 'error');
+    }
 }
 
 async function saveCode128SVG() {
-    showAlert('Save SVG functionality will be implemented', 'info');
-    // TODO: Implement SVG save
+    if (!window.currentBarcodeSVG || window.currentBarcodeType !== 'CODE128') {
+        showAlert('Please generate a Code128 barcode first', 'error');
+        return;
+    }
+    
+    try {
+        const blob = new Blob([window.currentBarcodeSVG], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Code128_${Date.now()}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('SVG file downloaded successfully!', 'success');
+    } catch (error) {
+        showAlert('Error saving SVG: ' + error.message, 'error');
+    }
 }
 
 async function saveCode128PNG() {
-    showAlert('Save PNG functionality will be implemented', 'info');
-    // TODO: Implement PNG save
+    if (!window.currentBarcodeSVG || window.currentBarcodeType !== 'CODE128') {
+        showAlert('Please generate a Code128 barcode first', 'error');
+        return;
+    }
+    
+    try {
+        const svg = window.currentBarcodeSVG;
+        const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        img.onload = function() {
+            canvas.width = img.width || 800;
+            canvas.height = img.height || 200;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Code128_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showAlert('PNG file downloaded successfully!', 'success');
+            }, 'image/png');
+        };
+        
+        const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        img.src = url;
+    } catch (error) {
+        showAlert('Error saving PNG: ' + error.message, 'error');
+    }
 }
 
 

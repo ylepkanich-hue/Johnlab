@@ -345,6 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadData();
     await loadCountries();
     updateCartCount();
+    updateLanguageSelector();
     applyTranslations();
     renderHomePage();
     renderProducts();
@@ -496,6 +497,16 @@ function renderHomePage() {
     document.getElementById('featured-products').innerHTML = featured.map(renderProductCard).join('');
 }
 
+// Helper function to render category icon (supports FontAwesome and emojis)
+function renderCategoryIcon(icon) {
+    if (!icon) return '<i class="fas fa-folder"></i>';
+    // Check if it's an emoji (doesn't start with "fa-")
+    if (!icon.startsWith('fa-')) {
+        return `<span class="category-emoji">${icon}</span>`;
+    }
+    return `<i class="fas ${icon}"></i>`;
+}
+
 function renderHomeCategories() {
     const container = document.getElementById('home-categories');
     if (!container) return;
@@ -508,7 +519,7 @@ function renderHomeCategories() {
         return `
             <div class="category-card" onclick="viewCategory('${cat.name}')">
                 <div class="category-icon">
-                    <i class="fas ${cat.icon || 'fa-folder'}"></i>
+                    ${renderCategoryIcon(cat.icon)}
                 </div>
                 <h3>${cat.name}</h3>
                 <p>${productCount} ${templateText}</p>
@@ -518,8 +529,8 @@ function renderHomeCategories() {
 }
 
 function viewCategory(categoryName) {
-    // Special handling for MRZ Generator
-    if (categoryName === 'MRZ Generator') {
+    // Special handling for MRZ Generator/MRZ
+    if (categoryName === 'MRZ Generator' || categoryName === 'MRZ') {
         showSection('mrz-generator');
         initializeMRZGenerator();
         return;
@@ -550,7 +561,7 @@ function renderCategoryFilters() {
     const categoryButtons = mainCategories.map(cat => {
         const safeName = (cat.name || '').replace(/"/g, '&quot;');
         return `<button class="btn-filter" data-category="${safeName}" onclick="filterProducts(this.dataset.category, this)">
-            <i class="fas ${cat.icon || 'fa-folder'}"></i> ${cat.name}
+            ${renderCategoryIcon(cat.icon)} ${cat.name}
         </button>`;
     }).join('');
     
@@ -1593,7 +1604,7 @@ function loadAdminCategories() {
             ${categories.map(cat => `
                 <div class="stat-card">
                     <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
-                        ${cat.flag ? `<span>${cat.flag}</span>` : `<i class="fas ${cat.icon || 'fa-folder'}"></i>`}
+                        ${cat.flag ? `<span>${cat.flag}</span>` : renderCategoryIcon(cat.icon)}
                     </div>
                     <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">${cat.flag ? `${cat.flag} ${cat.name}` : cat.name}</div>
                     <div style="color: #777; margin-bottom: 20px;">${products.filter(p => p.category === cat.name).length} products</div>

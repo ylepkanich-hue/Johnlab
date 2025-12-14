@@ -267,10 +267,10 @@ async function initData() {
             products: [
                 {
                     id: 1,
-                    name: "Modern Website Template",
+                    name: "Sample Passport Template",
                     price: 29.99,
-                    category: "Website Templates",
-                    description: "Clean and modern website template with responsive design",
+                    category: "Passport",
+                    description: "Professional passport template",
                     image: "",
                     file: "",
                     downloads: 0,
@@ -278,10 +278,10 @@ async function initData() {
                 },
                 {
                     id: 2,
-                    name: "E-commerce UI Kit",
+                    name: "Sample ID Card Template",
                     price: 39.99,
-                    category: "UI Kits",
-                    description: "Complete UI kit for building e-commerce platforms",
+                    category: "ID",
+                    description: "Professional ID card template",
                     image: "",
                     file: "",
                     downloads: 0,
@@ -289,10 +289,10 @@ async function initData() {
                 },
                 {
                     id: 3,
-                    name: "Dashboard Admin Panel",
+                    name: "Sample Driving License Template",
                     price: 49.99,
-                    category: "Dashboards",
-                    description: "Professional admin dashboard with analytics",
+                    category: "Driving",
+                    description: "Professional driving license template",
                     image: "",
                     file: "",
                     downloads: 0,
@@ -300,14 +300,13 @@ async function initData() {
                 }
             ],
             categories: [
-                { id: 1, name: "Website Templates", slug: "website-templates", icon: "fa-globe" },
-                { id: 2, name: "UI Kits", slug: "ui-kits", icon: "fa-layer-group" },
-                { id: 3, name: "Dashboards", slug: "dashboards", icon: "fa-chart-line" },
-                { id: 4, name: "Mobile Apps", slug: "mobile-apps", icon: "fa-mobile-alt" },
-                { id: 5, name: "Landing Pages", slug: "landing-pages", icon: "fa-file-alt" },
-                { id: 6, name: "E-commerce", slug: "ecommerce", icon: "fa-shopping-cart" },
-                { id: 7, name: "Portfolio", slug: "portfolio", icon: "fa-briefcase" },
-                { id: 8, name: "MRZ Generator", slug: "mrz-generator", icon: "fa-barcode" }
+                { id: 1, name: "Passport", slug: "passport", icon: "fa-passport" },
+                { id: 2, name: "ID", slug: "id", icon: "fa-id-card" },
+                { id: 3, name: "Driving", slug: "driving", icon: "fa-truck" },
+                { id: 4, name: "Bill", slug: "bill", icon: "fa-file-invoice" },
+                { id: 5, name: "Credit", slug: "credit", icon: "fa-credit-card" },
+                { id: 6, name: "USA", slug: "usa", icon: "🇺🇸" },
+                { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" }
             ],
             orders: [],
             settings: {

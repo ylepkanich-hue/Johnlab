@@ -87,6 +87,18 @@ const translations = {
         oneCheckDigitAtEnd: 'One check digit at the end',
         moveToSecondLine: 'Move to the second line',
         
+        // Barcode Generator
+        barcodeGenerator: 'Barcode Generator',
+        barcodeDescription: 'Generate PDF417 and Code128 barcodes for driver licenses and ID cards. Supports USA and Canada formats.',
+        personalInfo: 'Personal Information',
+        middleName: 'Middle Name',
+        otherCountry: 'Other Country',
+        city: 'City',
+        street: 'Street',
+        birthDate: 'Birth Date',
+        issueDate: 'Issue Date',
+        expiryDate: 'Expiry Date',
+        
         // Contact Section
         contact: 'Contact',
         contactOnTelegram: 'Contact on Telegram',
@@ -200,6 +212,18 @@ const translations = {
         fillFormAndGenerate: 'Заповніть форму та натисніть "Згенерувати MRZ", щоб побачити результати тут',
         oneCheckDigitAtEnd: 'Одна контрольна цифра в кінці',
         moveToSecondLine: 'Перемістити на другий рядок',
+        
+        // Barcode Generator
+        barcodeGenerator: 'Генератор штрих-кодів',
+        barcodeDescription: 'Генеруйте PDF417 та Code128 штрих-коди для водійських посвідчень та посвідчень особи. Підтримує формати USA та Canada.',
+        personalInfo: 'Особиста інформація',
+        middleName: 'По батькові',
+        otherCountry: 'Інша країна',
+        city: 'Місто',
+        street: 'Вулиця',
+        birthDate: 'Дата народження',
+        issueDate: 'Дата видачі',
+        expiryDate: 'Дата закінчення',
         
         // Contact Section
         contact: 'Контакти',
@@ -452,6 +476,7 @@ function showSection(sectionId) {
         else if (sectionId === 'cart') renderCart();
         else if (sectionId === 'products') renderProducts();
         else if (sectionId === 'mrz-generator') initializeMRZGenerator();
+        else if (sectionId === 'barcode-generator') initializeBarcodeGenerator();
     }
 }
 
@@ -490,7 +515,9 @@ function renderHomePage() {
     // Render categories on home page
     renderHomeCategories();
 
+    // Exclude MRZ category products from featured products
     const featured = [...products]
+        .filter(p => p.category !== 'MRZ')
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
         .slice(0, 3);
     
@@ -507,22 +534,35 @@ function renderCategoryIcon(icon) {
     return `<i class="fas ${icon}"></i>`;
 }
 
+// Helper function to filter out MRZ and Barcode Generator categories from store display
+function getStoreCategories() {
+    return categories.filter(c => !c.isCountry && c.name !== 'MRZ' && c.name !== 'Barcode Generator');
+}
+
 function renderHomeCategories() {
     const container = document.getElementById('home-categories');
     if (!container) return;
     
+    // Show all categories on home page (including MRZ for navigation)
     const mainCategories = categories.filter(c => !c.isCountry).slice(0, 8);
     
     container.innerHTML = mainCategories.map(cat => {
-        const productCount = products.filter(p => p.category === cat.name).length;
+        // Don't show product count for MRZ and Barcode Generator categories
+        const productCount = (cat.name === 'MRZ' || cat.name === 'Barcode Generator') ? 0 : products.filter(p => p.category === cat.name).length;
         const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates'); // Remove 's' for singular if needed
+        let displayText = `${productCount} ${templateText}`;
+        if (cat.name === 'MRZ') {
+            displayText = t('mrzGenerator') || 'MRZ Generator';
+        } else if (cat.name === 'Barcode Generator') {
+            displayText = t('barcodeGenerator') || 'Barcode Generator';
+        }
         return `
             <div class="category-card" onclick="viewCategory('${cat.name}')">
                 <div class="category-icon">
                     ${renderCategoryIcon(cat.icon)}
                 </div>
                 <h3>${cat.name}</h3>
-                <p>${productCount} ${templateText}</p>
+                <p>${displayText}</p>
             </div>
         `;
     }).join('');
@@ -533,6 +573,13 @@ function viewCategory(categoryName) {
     if (categoryName === 'MRZ Generator' || categoryName === 'MRZ') {
         showSection('mrz-generator');
         initializeMRZGenerator();
+        return;
+    }
+    
+    // Special handling for Barcode Generator
+    if (categoryName === 'Barcode Generator') {
+        showSection('barcode-generator');
+        initializeBarcodeGenerator();
         return;
     }
     
@@ -556,7 +603,8 @@ async function loadCountries() {
 
 function renderCategoryFilters() {
     const container = document.getElementById('category-filters');
-    const mainCategories = categories.filter(c => !c.isCountry);
+    // Exclude MRZ category from store filters
+    const mainCategories = getStoreCategories();
     const allButton = `<button class="btn-filter active" onclick="filterProducts('all', this)">${t('all')}</button>`;
     const categoryButtons = mainCategories.map(cat => {
         const safeName = (cat.name || '').replace(/"/g, '&quot;');
@@ -590,8 +638,10 @@ function renderCountryFilters(categoryName) {
     const container = document.getElementById('country-filters');
     if (!container) return;
     
-    // Get unique countries from products in this category
-    const categoryProducts = categoryName === 'all' ? products : products.filter(p => p.category === categoryName);
+    // Get unique countries from products in this category (exclude MRZ products)
+    const categoryProducts = categoryName === 'all' 
+        ? products.filter(p => p.category !== 'MRZ')
+        : products.filter(p => p.category === categoryName && p.category !== 'MRZ');
     const productCountries = new Set();
     categoryProducts.forEach(p => {
         if (p.countries && Array.isArray(p.countries)) {
@@ -664,7 +714,8 @@ function renderProductCard(product) {
 }
 
 function renderProducts() {
-    let filtered = products;
+    // Always exclude MRZ category products from store display
+    let filtered = products.filter(p => p.category !== 'MRZ');
     
     // Filter by category
     if (currentFilter !== 'all') {
@@ -782,10 +833,13 @@ function searchProducts() {
     }
     
     const container = document.getElementById('products-container');
+    // Exclude MRZ category products from search results
     const filtered = products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm) || 
-        p.description.toLowerCase().includes(searchTerm) ||
-        p.category.toLowerCase().includes(searchTerm)
+        p.category !== 'MRZ' && (
+            p.name.toLowerCase().includes(searchTerm) || 
+            p.description.toLowerCase().includes(searchTerm) ||
+            p.category.toLowerCase().includes(searchTerm)
+        )
     );
     
     if (filtered.length === 0) {
@@ -1400,7 +1454,8 @@ function renderAdminProductsList() {
 }
 
 function showAddProductModal() {
-    const mainCategories = categories.filter(c => !c.isCountry);
+    // Exclude MRZ category from product category selection
+    const mainCategories = getStoreCategories();
     const categoryOptions = mainCategories.map(cat => 
         `<option value="${cat.name}">${cat.name}</option>`
     ).join('');
@@ -1502,7 +1557,8 @@ function editProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    const mainCategories = categories.filter(c => !c.isCountry);
+    // Exclude MRZ category from product category selection
+    const mainCategories = getStoreCategories();
     const categoryOptions = mainCategories.map(cat => 
         `<option value="${cat.name}" ${cat.name === product.category ? 'selected' : ''}>${cat.name}</option>`
     ).join('');
@@ -2458,6 +2514,147 @@ async function generateControlDigit() {
         showAlert('Network error. Please try again.', 'error');
     }
 }
+
+// ===== BARCODE GENERATOR =====
+let currentBarcodeDocType = 'DL';
+
+// USA States list
+const USA_STATES = [
+    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+    'District of Columbia', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois',
+    'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts',
+    'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
+    'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
+    'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Puerto Rico', 'Rhode Island',
+    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia',
+    'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
+function initializeBarcodeGenerator() {
+    // Populate states dropdown
+    const statesSelect = document.getElementById('barcode-states');
+    if (statesSelect) {
+        statesSelect.innerHTML = USA_STATES.map(state => 
+            `<option value="${state}">${state}</option>`
+        ).join('');
+    }
+    
+    // Setup country toggle
+    const countryToggle = document.getElementById('barcode-country-toggle');
+    const countryLabel = document.getElementById('barcode-country-label');
+    if (countryToggle && countryLabel) {
+        countryToggle.addEventListener('change', function() {
+            if (this.checked) {
+                countryLabel.textContent = 'CANADA';
+            } else {
+                countryLabel.textContent = 'USA';
+            }
+        });
+    }
+    
+    // Set default document type
+    setBarcodeDocType('DL');
+    
+    // Setup date format toggle (if needed)
+    setupBarcodeDateFormats();
+}
+
+function setupBarcodeDateFormats() {
+    // Format date inputs to remove non-numeric characters
+    const dateInputs = ['barcode-dateBirthday', 'barcode-dateIssue', 'barcode-dateExpiry'];
+    dateInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '').substring(0, 8);
+            });
+        }
+    });
+}
+
+
+function setBarcodeDocType(type) {
+    currentBarcodeDocType = type;
+    ['DL', 'CDL', 'ID'].forEach(docType => {
+        const btn = document.getElementById(`barcode-doctype-${docType}`);
+        if (btn) {
+            if (docType === type) {
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-primary');
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            }
+        }
+    });
+}
+
+function generateBarcodeLicense() {
+    // Generate random license number (7-8 digits)
+    const length = Math.random() > 0.5 ? 7 : 8;
+    const licNumber = Array.from({length}, () => Math.floor(Math.random() * 10)).join('');
+    const input = document.getElementById('barcode-licNumber');
+    if (input) input.value = licNumber;
+}
+
+function generateBarcodeDiscriminator() {
+    // Generate random document discriminator
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = Math.floor(Math.random() * 10) + 10; // 10-20 chars
+    const discriminator = Array.from({length}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const input = document.getElementById('barcode-docDiscr');
+    if (input) input.value = discriminator;
+}
+
+function generateBarcodeInventory() {
+    // Generate inventory number (ten zeros + random digits)
+    const zeros = '0000000000';
+    const random = Array.from({length: 10}, () => Math.floor(Math.random() * 10)).join('');
+    const input = document.getElementById('barcode-invNum');
+    if (input) input.value = zeros + random;
+}
+
+function generateBarcodeAudit() {
+    // Generate audit information
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = Math.floor(Math.random() * 10) + 10;
+    const audit = Array.from({length}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const input = document.getElementById('barcode-auditInfo');
+    if (input) input.value = audit;
+}
+
+
+async function generatePDF417() {
+    showAlert('PDF417 generation will be implemented with backend API', 'info');
+    // TODO: Implement PDF417 generation
+    // This would call a backend API similar to the original implementation
+}
+
+async function generateCode128() {
+    showAlert('Code128 generation will be implemented with backend API', 'info');
+    // TODO: Implement Code128 generation
+}
+
+async function savePDF417SVG() {
+    showAlert('Save SVG functionality will be implemented', 'info');
+    // TODO: Implement SVG save
+}
+
+async function savePDF417PNG() {
+    showAlert('Save PNG functionality will be implemented', 'info');
+    // TODO: Implement PNG save
+}
+
+async function saveCode128SVG() {
+    showAlert('Save SVG functionality will be implemented', 'info');
+    // TODO: Implement SVG save
+}
+
+async function saveCode128PNG() {
+    showAlert('Save PNG functionality will be implemented', 'info');
+    // TODO: Implement PNG save
+}
+
 
 // ===== UTILITIES =====
 function closeModal() {

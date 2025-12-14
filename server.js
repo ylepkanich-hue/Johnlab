@@ -1,4 +1,4 @@
-const express = require('express');
+onst express = require('express');
 const multer = require('multer');
 const fs = require('fs').promises;
 const path = require('path');
@@ -1162,6 +1162,9 @@ app.listen(PORT, async () => {
 });
 
 // ===== MRZ GENERATOR ENDPOINTS =====
+// All MRZ generation uses standard ICAO 9303 formats:
+// - TD2 format for passports (2 lines of 44 characters each)
+// - TD1 format for ID cards (3 lines of 30 characters each)
 
 // Map 2-letter country codes to 3-letter ISO codes for MRZ
 const countryCodeMap = {
@@ -1233,13 +1236,14 @@ function formatDateForMRZ(year, month, day) {
     return `${y}${m}${d}`;
 }
 
-// Generate passport MRZ
+// Generate passport MRZ - Standard TD2 format for all countries
 function generatePassportMRZ(data) {
     const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
             expirYear, expirMonth, expirDay, number, code, sex, codeCheck } = data;
     
     const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
     const docType = 'P';
+    
     // Convert country code to 3-letter format if needed
     const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
     
@@ -1258,8 +1262,9 @@ function generatePassportMRZ(data) {
     }
     nameLine = nameLine.padEnd(44, '<');
     
-    // First line: Document type, country, name
-    const line1 = `${docType}${countryCode}${nameLine.substring(0, 39)}`;
+    // First line: Document type, <, country, name (44 chars total)
+    // Format: P<[COUNTRY][NAME] (P + < + 3-char country + 39-char name = 44 chars)
+    const line1 = `${docType}<${countryCode}${nameLine.substring(0, 39)}`;
     
     // Second line: Document number, check digit, nationality, birth date, sex, expiry date, optional data
     const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
@@ -1271,95 +1276,90 @@ function generatePassportMRZ(data) {
     const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay);
     const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
     
+    // TD2 line 2 structure (44 chars total):
+    // docNumber(9) + check(1) + country(3) + birth(6) + check(1) + sex(1) + expiry(6) + check(1) + optional(15) + finalCheck(1) = 44
     let optionalData = '';
     if (code) {
-        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(14, '<');
+        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(15, '<');
         if (codeCheck) {
-            optionalData = optionalData.substring(0, 13) + calculateMRZCheckDigit(optionalData.substring(0, 13));
+            // If codeCheck is provided, replace the last char with check digit for positions 0-14
+            optionalData = optionalData.substring(0, 14) + calculateMRZCheckDigit(optionalData.substring(0, 14));
         }
     } else {
-        optionalData = '<'.repeat(14);
+        optionalData = '<'.repeat(15);
     }
     
     const line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${optionalData}`;
     
-    // Calculate final check digit for line 2
-    const line2Check = calculateMRZCheckDigit(line2.substring(0, 42)).toString();
-    const finalLine2 = line2.substring(0, 42) + line2Check;
+    // Calculate final check digit for line 2 (positions 0-42, which is 43 characters)
+    // TD2 line 2 must be exactly 44 characters: 43 data chars + 1 check digit
+    const line2Check = calculateMRZCheckDigit(line2.substring(0, 43)).toString();
+    const finalLine2 = line2.substring(0, 43) + line2Check;
     
     return { gen1: line1, gen2: finalLine2 };
 }
 
-// Generate ID card MRZ
+// Generate ID card MRZ - Standard TD1 format for all countries
 function generateIDMRZ(data) {
     const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
             expirYear, expirMonth, expirDay, number, code, sex, codeCheck, codeCheck1 } = data;
     
-    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
-    const docType = 'I';
+    // Use standard document type
+    const docType = 'ID';
+    
     // Convert country code to 3-letter format if needed
     const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
+    
+    return generateStandardTD1MRZ(data, countryCode, docType);
+}
+
+// Generate standard TD1 format MRZ (ICAO 9303 standard for all countries)
+function generateStandardTD1MRZ(data, countryCode, docType) {
+    const { firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck, codeCheck1 } = data;
+    
+    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
+    
+    // Format document number (9 chars for standard TD1)
+    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
+    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
+    
+    // Format dates
+    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay); // YYMMDD
+    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
+    
+    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay); // YYMMDD
+    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
     
     // Format names
     const lastNameFormatted = formatNameForMRZ(lastName);
     const firstNameFormatted = formatNameForMRZ(firstName);
     const surNameFormatted = surName ? formatNameForMRZ(surName) : '';
     
-    // Combine names
-    let nameLine = lastNameFormatted;
+    // Optional data fields
+    const optionalData1 = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(15, '<');
+    const optionalData2 = (codeCheck1 || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(11, '<');
+    const optionalData2Check = calculateMRZCheckDigit(optionalData2.substring(0, 11)).toString();
+    
+    // Line 1 (30 chars): docType(2) + country(3) + docNumber(9) + docCheck(1) + optionalData1(15)
+    // Ensure docType is exactly 2 characters
+    const docTypeFormatted = docType.padEnd(2, '<').substring(0, 2);
+    const line1 = `${docTypeFormatted}${countryCode}${docNumber}${docNumberCheck}${optionalData1}`.substring(0, 30);
+    
+    // Line 2 (30 chars): birthDate(6) + birthCheck(1) + sex(1) + expirDate(6) + expirCheck(1) + country(3) + optionalData2(11) + optionalData2Check(1)
+    const line2 = `${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${countryCode}${optionalData2.substring(0, 11)}${optionalData2Check}`.substring(0, 30);
+    
+    // Line 3 (30 chars): Full name
+    let fullName = lastNameFormatted;
     if (surNameFormatted) {
-        nameLine += '<<' + surNameFormatted;
+        fullName += '<<' + surNameFormatted;
     }
     if (firstNameFormatted) {
-        nameLine += '<<' + firstNameFormatted;
+        fullName += '<<' + firstNameFormatted;
     }
-    nameLine = nameLine.padEnd(30, '<');
+    const line3 = fullName.padEnd(30, '<').substring(0, 30);
     
-    // First line: Document type, country, optional data, name
-    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
-    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
-    
-    let optionalData = '';
-    if (code) {
-        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(14, '<');
-        if (codeCheck) {
-            optionalData = optionalData.substring(0, 13) + calculateMRZCheckDigit(optionalData.substring(0, 13));
-        }
-    } else {
-        optionalData = '<'.repeat(14);
-    }
-    
-    const line1 = `${docType}${countryCode}${optionalData}${nameLine.substring(0, 27)}`;
-    
-    // Second line: Document number, check digit, birth date, sex, expiry date
-    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay);
-    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
-    
-    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay);
-    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
-    
-    let line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}`;
-    
-    if (codeCheck1) {
-        // Move optional data to second line
-        line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${optionalData.substring(0, 7)}`;
-    } else {
-        line2 = line2.padEnd(30, '<');
-    }
-    
-    // Calculate final check digit
-    const line2Check = calculateMRZCheckDigit(line2.substring(0, 29)).toString();
-    const finalLine2 = line2.substring(0, 29) + line2Check;
-    
-    // Third line: Additional data if needed
-    let line3 = '';
-    if (codeCheck1 && optionalData.length > 7) {
-        line3 = optionalData.substring(7).padEnd(30, '<');
-        const line3Check = calculateMRZCheckDigit(line3.substring(0, 29)).toString();
-        line3 = line3.substring(0, 29) + line3Check;
-    }
-    
-    return { gen1: line1, gen2: finalLine2, gen3: line3 || null };
+    return { gen1: line1, gen2: line2, gen3: line3 };
 }
 
 // Generate MRZ endpoint

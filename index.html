@@ -170,6 +170,47 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* === LANGUAGE SELECTOR === */
+        .language-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .language-selector select {
+            padding: 10px 35px 10px 15px;
+            background: var(--black-lighter);
+            border: 2px solid var(--gray);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            transition: all 0.3s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23D4AF37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        .language-selector select:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .language-selector select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .language-selector select option {
+            background: var(--black-lighter);
+            color: #fff;
+            padding: 10px;
         }
 
         /* === BUTTONS === */
@@ -1131,24 +1172,30 @@
                 </div>
 
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Search templates...">
+                    <input type="text" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search templates...">
                     <button class="search-btn" onclick="handleSearch()">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
 
                 <div class="nav-buttons">
+                    <div class="language-selector">
+                        <select id="language-selector">
+                            <option value="en">EN</option>
+                            <option value="uk">UK</option>
+                        </select>
+                    </div>
                     <button class="btn btn-secondary" onclick="showSection('home')">
-                        <i class="fas fa-home"></i> Home
+                        <i class="fas fa-home"></i> <span data-i18n="navHome">Home</span>
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('products')">
-                        <i class="fas fa-store"></i> Shop
+                        <i class="fas fa-store"></i> <span data-i18n="navShop">Shop</span>
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('cart')">
-                        <i class="fas fa-shopping-cart"></i> Cart (<span id="cart-count">0</span>)
+                        <i class="fas fa-shopping-cart"></i> <span data-i18n="navCart">Cart</span> (<span id="cart-count">0</span>)
                     </button>
                     <button class="btn btn-secondary" onclick="showSection('contacts')">
-                        <i class="fas fa-address-card"></i> Contact
+                        <i class="fas fa-address-card"></i> <span data-i18n="navContact">Contact</span>
                     </button>
                 </div>
             </div>
@@ -1158,51 +1205,51 @@
         <section id="home" class="section active">
             <div class="hero">
                 <h1 id="hero-title">JOHN'S LAB TEMPLATES</h1>
-                <p id="hero-subtitle">Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.</p>
+                <p id="hero-subtitle" data-i18n="heroSubtitle">Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.</p>
                 <button class="btn btn-primary" onclick="showSection('products')" style="font-size: 18px; padding: 15px 35px;">
-                    <i class="fas fa-shopping-bag"></i> Explore Templates
+                    <i class="fas fa-shopping-bag"></i> <span data-i18n="exploreTemplates">Explore Templates</span>
                 </button>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-number" id="total-products">0</span>
-                    <span class="stat-label">Templates</span>
+                    <span class="stat-label" data-i18n="templates">Templates</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="total-sales">0</span>
-                    <span class="stat-label">Downloads</span>
+                    <span class="stat-label" data-i18n="downloads">Downloads</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="total-orders">0</span>
-                    <span class="stat-label">Orders</span>
+                    <span class="stat-label" data-i18n="orders">Orders</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-number" id="total-users">0</span>
-                    <span class="stat-label">Customers</span>
+                    <span class="stat-label" data-i18n="customers">Customers</span>
                 </div>
             </div>
 
-            <div class="section-title">Browse by Category</div>
+            <div class="section-title" data-i18n="browseByCategory">Browse by Category</div>
             <div class="categories-grid" id="home-categories" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin: 40px 0;"></div>
 
-            <div class="section-title">Featured Templates</div>
+            <div class="section-title" data-i18n="featuredTemplates">Featured Templates</div>
             <div class="products-grid" id="featured-products"></div>
         </section>
 
         <!-- PRODUCTS -->
         <section id="products" class="section">
-            <div class="section-title">Template Catalog</div>
+            <div class="section-title" data-i18n="templateCatalog">Template Catalog</div>
             
             <div class="filters-container">
                 <div class="category-filters" id="category-filters">
-                    <button class="btn-filter active" onclick="filterProducts('all', this)">All</button>
+                    <button class="btn-filter active" onclick="filterProducts('all', this)" data-i18n="all">All</button>
                 </div>
-                <select class="sort-select" onchange="sortProducts(this.value)">
-                    <option value="newest">Newest First</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="popular">Most Popular</option>
+                <select class="sort-select" id="sort-select" onchange="sortProducts(this.value)">
+                    <option value="newest" data-i18n="newestFirst">Newest First</option>
+                    <option value="price-low" data-i18n="priceLow">Price: Low to High</option>
+                    <option value="price-high" data-i18n="priceHigh">Price: High to Low</option>
+                    <option value="popular" data-i18n="mostPopular">Most Popular</option>
                 </select>
             </div>
             
@@ -1213,14 +1260,14 @@
 
         <!-- CART -->
         <section id="cart" class="section">
-            <div class="section-title">Shopping Cart</div>
+            <div class="section-title" data-i18n="shoppingCart">Shopping Cart</div>
             <div id="cart-items"></div>
             <div id="cart-total"></div>
         </section>
 
         <!-- PAYMENT -->
         <section id="payment" class="section">
-            <div class="section-title">USDT Payment</div>
+            <div class="section-title" data-i18n="usdtPayment">USDT Payment</div>
             <div class="payment-card">
                 <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 24px;">Payment Details</h3>
                 <div id="payment-details"></div>
@@ -1229,10 +1276,10 @@
 
         <!-- MRZ GENERATOR -->
         <section id="mrz-generator" class="section">
-            <div class="section-title">MRZ Generator</div>
+            <div class="section-title" data-i18n="mrzGenerator">MRZ Generator</div>
             <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
                 <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;">
+                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;" data-i18n="mrzDescription">
                         Generate Machine Readable Zone (MRZ) codes for passports and ID cards. Fill in the required information below to generate accurate MRZ codes that meet international standards.
                     </p>
                 </div>
@@ -1240,103 +1287,103 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                     <!-- Main Generator Form -->
                     <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-barcode"></i> Document Information</h3>
+                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-barcode"></i> <span data-i18n="documentInformation">Document Information</span></h3>
                         
                         <form id="mrz-form">
                             <div class="form-group">
-                                <label style="color: var(--gold);">Document Type:</label>
+                                <label style="color: var(--gold);" data-i18n="documentType">Document Type:</label>
                                 <select id="mrz-type" class="form-control" required>
-                                    <option value="1">Passport</option>
-                                    <option value="2">ID Card</option>
+                                    <option value="1" data-i18n="passport">Passport</option>
+                                    <option value="2" data-i18n="idCard">ID Card</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label style="color: var(--gold);">Country:</label>
+                                <label style="color: var(--gold);" data-i18n="country">Country:</label>
                                 <select id="mrz-country" class="form-control" required>
-                                    <option value="0">Choose Country</option>
+                                    <option value="0" data-i18n="chooseCountry">Choose Country</option>
                                 </select>
                             </div>
 
                             <div id="mrz-form-fields" style="display: none;">
                                 <div class="form-group">
-                                    <label style="color: var(--gold);">Sex:</label>
+                                    <label style="color: var(--gold);" data-i18n="sex">Sex:</label>
                                     <div style="display: flex; gap: 20px; margin-top: 10px;">
                                         <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
                                             <input type="radio" name="mrz-sex" value="0" id="mrz-female">
-                                            <span>Female</span>
+                                            <span data-i18n="female">Female</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
                                             <input type="radio" name="mrz-sex" value="1" id="mrz-male">
-                                            <span>Male</span>
+                                            <span data-i18n="male">Male</span>
                                         </label>
                                         <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
                                             <input type="radio" name="mrz-sex" value="2" id="mrz-none">
-                                            <span>Unspecified</span>
+                                            <span data-i18n="unspecified">Unspecified</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="color: var(--gold);">First Name:</label>
+                                    <label style="color: var(--gold);" data-i18n="firstName">First Name:</label>
                                     <input type="text" id="mrz-first-name" class="form-control" placeholder="John" autocomplete="off">
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="color: var(--gold);">Last Name:</label>
+                                    <label style="color: var(--gold);" data-i18n="lastName">Last Name:</label>
                                     <input type="text" id="mrz-last-name" class="form-control" placeholder="Johnson" autocomplete="off">
                                 </div>
 
                                 <div class="form-group">
                                     <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
                                         <input type="checkbox" id="mrz-sur-check">
-                                        <span>Sur Name (Optional)</span>
+                                        <span data-i18n="surName">Sur Name (Optional)</span>
                                     </label>
                                     <input type="text" id="mrz-sur-name" class="form-control" placeholder="Smith" autocomplete="off" disabled style="margin-top: 10px;">
                                 </div>
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Birth Year:</label>
+                                        <label style="color: var(--gold);" data-i18n="birthYear">Birth Year:</label>
                                         <input type="text" id="mrz-birth-year" class="form-control" placeholder="1992" autocomplete="off">
                                     </div>
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Expiry Year:</label>
+                                        <label style="color: var(--gold);" data-i18n="expiryYear">Expiry Year:</label>
                                         <input type="text" id="mrz-expir-year" class="form-control" placeholder="2030" autocomplete="off" required>
                                     </div>
                                 </div>
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Birth Month:</label>
+                                        <label style="color: var(--gold);" data-i18n="birthMonth">Birth Month:</label>
                                         <input type="text" id="mrz-birth-month" class="form-control" placeholder="02" autocomplete="off">
                                     </div>
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Expiry Month:</label>
+                                        <label style="color: var(--gold);" data-i18n="expiryMonth">Expiry Month:</label>
                                         <input type="text" id="mrz-expir-month" class="form-control" placeholder="05" autocomplete="off" required>
                                     </div>
                                 </div>
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Birth Day:</label>
+                                        <label style="color: var(--gold);" data-i18n="birthDay">Birth Day:</label>
                                         <input type="text" id="mrz-birth-day" class="form-control" placeholder="18" autocomplete="off">
                                     </div>
                                     <div class="form-group">
-                                        <label style="color: var(--gold);">Expiry Day:</label>
+                                        <label style="color: var(--gold);" data-i18n="expiryDay">Expiry Day:</label>
                                         <input type="text" id="mrz-expir-day" class="form-control" placeholder="18" autocomplete="off" required>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="color: var(--gold);">Document Number:</label>
+                                    <label style="color: var(--gold);" data-i18n="documentNumber">Document Number:</label>
                                     <input type="text" id="mrz-number" class="form-control" placeholder="22 34 234234" autocomplete="off">
                                 </div>
 
                                 <div class="form-group">
                                     <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
                                         <input type="checkbox" id="mrz-code-check">
-                                        <span>Optional Data (Ident. Num., Dep. Code)</span>
+                                        <span data-i18n="optionalCode">Optional Data (Ident. Num., Dep. Code)</span>
                                     </label>
                                     <input type="text" id="mrz-code" class="form-control" placeholder="220-102" autocomplete="off" disabled style="margin-top: 10px;">
                                 </div>
@@ -1344,19 +1391,19 @@
                                 <div id="mrz-passport-options" style="display: none;">
                                     <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
                                         <input type="checkbox" id="mrz-code-check-digit">
-                                        <span>One check digit at the end</span>
+                                        <span data-i18n="oneCheckDigitAtEnd">One check digit at the end</span>
                                     </label>
                                 </div>
 
                                 <div id="mrz-id-options" style="display: none;">
                                     <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
                                         <input type="checkbox" id="mrz-code-check-digit-1">
-                                        <span>Move to the second line</span>
+                                        <span data-i18n="moveToSecondLine">Move to the second line</span>
                                     </label>
                                 </div>
 
                                 <button type="button" class="btn btn-primary" onclick="generateMRZ()" style="width: 100%; padding: 15px; margin-top: 20px;">
-                                    <i class="fas fa-barcode"></i> Generate MRZ
+                                    <i class="fas fa-barcode"></i> <span data-i18n="generateMRZ">Generate MRZ</span>
                                 </button>
                             </div>
                         </form>
@@ -1364,11 +1411,11 @@
 
                     <!-- Results Panel -->
                     <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> Generated MRZ</h3>
+                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> <span data-i18n="mrzResults">Generated MRZ</span></h3>
                         
                         <div id="mrz-results" style="display: none;">
                             <div class="form-group">
-                                <label style="color: var(--gold);">Result:</label>
+                                <label style="color: var(--gold);" data-i18n="mrzResults">Result:</label>
                                 <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px;">
                                     <input type="text" id="mrz-result1" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
                                 </div>
@@ -1379,25 +1426,25 @@
                                     <input type="text" id="mrz-result3" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
                                 </div>
                                 <button type="button" class="btn btn-secondary" onclick="copyMRZ()" style="width: 100%;">
-                                    <i class="fas fa-copy"></i> Copy MRZ Code
+                                    <i class="fas fa-copy"></i> <span data-i18n="copyMRZCode">Copy MRZ Code</span>
                                 </button>
                             </div>
                         </div>
 
                         <div id="mrz-no-results" style="text-align: center; padding: 40px; color: #aaa;">
                             <i class="fas fa-barcode" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
-                            <p>Fill in the form and click "Generate MRZ" to see results here</p>
+                            <p data-i18n="fillFormAndGenerate">Fill in the form and click "Generate MRZ" to see results here</p>
                         </div>
 
                         <!-- Control Digit Generator -->
                         <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
-                            <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 20px;"><i class="fas fa-calculator"></i> Control Digit Generator</h3>
+                            <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 20px;"><i class="fas fa-calculator"></i> <span data-i18n="controlDigitGenerator">Control Digit Generator</span></h3>
                             <div class="form-group">
-                                <label style="color: var(--gold);">Input String:</label>
+                                <label style="color: var(--gold);" data-i18n="inputString">Input String:</label>
                                 <input type="text" id="mrz-control-input" class="form-control" placeholder="Some string..." autocomplete="off">
                             </div>
                             <button type="button" class="btn btn-secondary" onclick="generateControlDigit()" style="width: 100%; margin-top: 10px;">
-                                <i class="fas fa-calculator"></i> Generate Control Digit
+                                <i class="fas fa-calculator"></i> <span data-i18n="generateControlDigit">Generate Control Digit</span>
                             </button>
                             <div id="mrz-control-result" style="margin-top: 15px; padding: 15px; background: var(--black); border-radius: 10px; border: 1px solid var(--gold); display: none;">
                                 <p style="color: var(--gold); font-size: 18px; margin: 0;" id="mrz-control-value"></p>
@@ -1410,14 +1457,14 @@
 
         <!-- CONTACTS -->
         <section id="contacts" class="section">
-            <div class="section-title">Contact</div>
+            <div class="section-title" data-i18n="contact">Contact</div>
             <div class="contact-card">
                 <img id="owner-photo" src="" alt="Owner" class="owner-photo" style="display: none;">
                 <h3 id="owner-name" class="owner-name">John</h3>
-                <p id="owner-description" class="owner-description">Premium digital templates creator</p>
+                <p id="owner-description" class="owner-description" data-i18n="premiumCreator">Premium digital templates creator</p>
                 <div id="owner-about" style="color: #aaa; margin-bottom: 30px; line-height: 1.8;"></div>
                 <a href="https://t.me/John_refund" target="_blank" class="telegram-btn" id="telegram-link">
-                    <i class="fab fa-telegram"></i> Contact on Telegram
+                    <i class="fab fa-telegram"></i> <span data-i18n="contactOnTelegram">Contact on Telegram</span>
                 </a>
             </div>
         </section>

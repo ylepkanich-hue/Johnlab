@@ -1,1804 +1,1413 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JOHN'S LAB TEMPLATES | Premium Digital Templates</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* === ROOT VARIABLES === */
-        :root {
-            --gold: #D4AF37;
-            --gold-light: #F4D03F;
-            --gold-dark: #B8860B;
-            --black: #000000;
-            --black-light: #0a0a0a;
-            --black-lighter: #1a1a1a;
-            --gray: #2d2d2d;
-            --gray-light: #3d3d3d;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--black);
-            color: #fff;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                radial-gradient(circle at 15% 25%, rgba(212, 175, 55, 0.08) 0%, transparent 25%),
-                radial-gradient(circle at 85% 75%, rgba(212, 175, 55, 0.08) 0%, transparent 25%),
-                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        body.custom-background::before {
-            background-size: cover;
-            background-position: center;
-            opacity: 0.15;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* === HEADER === */
-        header {
-            background: rgba(10, 10, 10, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 2px solid var(--gold);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 15px 0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--black);
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-            transition: transform 0.3s;
-        }
-
-        .logo-icon:hover {
-            transform: scale(1.05);
-        }
-
-        .logo-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-
-        .logo-text {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* === SEARCH === */
-        .search-box {
-            flex: 1;
-            max-width: 500px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 14px 50px 14px 20px;
-            background: var(--black-lighter);
-            border: 2px solid var(--gray);
-            border-radius: 30px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .search-box input:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-        }
-
-        .search-btn {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--gold);
-            cursor: pointer;
-            font-size: 18px;
-            transition: transform 0.3s;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        /* === NAVIGATION === */
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        /* === LANGUAGE SELECTOR === */
-        .language-selector {
-            position: relative;
-            display: inline-block;
-        }
-
-        .language-selector select {
-            padding: 10px 35px 10px 15px;
-            background: var(--black-lighter);
-            border: 2px solid var(--gray);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-            appearance: none;
-            transition: all 0.3s;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23D4AF37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 12px;
-        }
-
-        .language-selector select:hover {
-            border-color: var(--gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-        }
-
-        .language-selector select:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .language-selector select option {
-            background: var(--black-lighter);
-            color: #fff;
-            padding: 10px;
-        }
-
-        /* === BUTTONS === */
-        .btn {
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-            color: var(--black);
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--gold);
-            border: 2px solid var(--gold);
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-        }
-
-        /* === SECTIONS === */
-        .section {
-            display: none;
-            padding: 40px 0;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            font-size: 42px;
-            color: var(--gold);
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-            padding-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-        }
-
-        /* === HERO === */
-        .hero {
-            text-align: center;
-            padding: 100px 20px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(26,26,26,0.95));
-            border-radius: 20px;
-            margin: 30px 0;
-            border: 2px solid var(--gold);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        .hero h1 {
-            font-size: 56px;
-            color: var(--gold);
-            margin-bottom: 20px;
-            text-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
-            font-weight: 900;
-            letter-spacing: 3px;
-        }
-
-        .hero p {
-            font-size: 22px;
-            color: #ccc;
-            max-width: 800px;
-            margin: 0 auto 40px;
-            line-height: 1.8;
-        }
-
-        /* === STATISTICS === */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            margin: 50px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 35px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid var(--gold);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .category-card {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            border: 1px solid var(--gold);
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--gold-light);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .category-icon {
-            font-size: 48px;
-            color: var(--gold);
-            margin-bottom: 15px;
-        }
-
-        .category-emoji {
-            display: inline-block;
-            font-size: 48px;
-            line-height: 1;
-        }
-
-        .btn-filter .category-emoji {
-            font-size: 16px;
-            margin-right: 5px;
-        }
-
-        .category-card h3 {
-            color: var(--gold);
-            margin-bottom: 10px;
-            font-size: 20px;
-        }
-
-        .category-card p {
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .stat-card:hover::before {
-            left: 100%;
-        }
-
-        .stat-card:hover {
-            border-color: var(--gold-light);
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
-        }
-
-        .stat-number {
-            font-size: 48px;
-            color: var(--gold);
-            font-weight: 900;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #aaa;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
-        }
-
-        /* === PRODUCTS === */
-        .filters-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .category-filters {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            flex: 1;
-        }
-
-        .btn-filter {
-            padding: 10px 20px;
-            background: var(--black-lighter);
-            border: 2px solid var(--gray);
-            color: #fff;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .btn-filter:hover {
-            border-color: var(--gold);
-            transform: translateY(-2px);
-        }
-
-        .btn-filter.active {
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            color: var(--black);
-            border-color: var(--gold);
-        }
-
-        .sort-select {
-            padding: 10px 20px;
-            background: var(--black-lighter);
-            border: 2px solid var(--gray);
-            color: #fff;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .sort-select:focus {
-            border-color: var(--gold);
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .product-card {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.4s;
-            border: 1px solid transparent;
-            position: relative;
-        }
-
-        .product-card:hover {
-            transform: translateY(-15px);
-            border-color: var(--gold);
-            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 220px;
-            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--black);
-            font-size: 64px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s;
-        }
-
-        .product-card:hover .product-image img {
-            transform: scale(1.1);
-        }
-
-        .product-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--gold);
-            color: var(--black);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .product-info {
-            padding: 25px;
-        }
-
-        .product-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #fff;
-        }
-
-        .product-description {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            min-height: 65px;
-        }
-
-        .product-price {
-            font-size: 32px;
-            color: var(--gold);
-            font-weight: 900;
-            margin: 15px 0;
-        }
-
-        .product-meta {
-            display: flex;
-            justify-content: space-between;
-            color: #777;
-            font-size: 13px;
-            margin-bottom: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--gray);
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* === CART === */
-        .cart-item {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: var(--black-lighter);
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--gold);
-            transition: all 0.3s;
-        }
-
-        .cart-item:hover {
-            background: var(--gray-light);
-        }
-
-        .cart-item-image {
-            width: 90px;
-            height: 90px;
-            border-radius: 10px;
-            object-fit: cover;
-            margin-right: 20px;
-        }
-
-        .cart-item-info {
-            flex: 1;
-        }
-
-        .cart-item-title {
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 18px;
-        }
-
-        .cart-item-price {
-            color: var(--gold);
-            font-weight: 700;
-            font-size: 20px;
-        }
-
-        .cart-remove {
-            background: var(--danger);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .cart-remove:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-        }
-
-        .cart-total {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 30px;
-            border-radius: 20px;
-            margin-top: 30px;
-            border: 2px solid var(--gold);
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .total-amount {
-            font-size: 42px;
-            color: var(--gold);
-            font-weight: 900;
-        }
-
-        /* === PAYMENT === */
-        .payment-card {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid var(--gold);
-            margin: 30px 0;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .wallet-address {
-            background: var(--black);
-            padding: 25px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 2px solid var(--gold);
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-            color: var(--gold);
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .qr-code {
-            width: 250px;
-            height: 250px;
-            margin: 30px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        /* === CONTACTS === */
-        .contact-card {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 50px;
-            border-radius: 20px;
-            text-align: center;
-            border: 2px solid var(--gold);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .owner-photo {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid var(--gold);
-            margin: 0 auto 30px;
-            display: block;
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .owner-name {
-            font-size: 32px;
-            color: var(--gold);
-            margin-bottom: 15px;
-            font-weight: 900;
-        }
-
-        .owner-description {
-            color: #aaa;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-
-        .telegram-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 18px 40px;
-            background: linear-gradient(135deg, #0088cc, #00a6e3);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 700;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.3);
-        }
-
-        .telegram-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.5);
-        }
-
-        /* === FORMS === */
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            color: var(--gold);
-            font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 15px;
-            background: var(--black);
-            border: 2px solid var(--gray);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            border-color: var(--gold);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        /* === ADMIN PANEL === */
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .admin-menu {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .admin-tab-btn {
-            padding: 15px 25px;
-            background: var(--black-lighter);
-            border: 2px solid var(--gold);
-            color: var(--gold);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .admin-tab-btn:hover {
-            background: var(--gray);
-        }
-
-        .admin-tab-btn.active {
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            color: var(--black);
-        }
-
-        .admin-content {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid var(--gold);
-            min-height: 500px;
-        }
-
-        .admin-tab {
-            display: none;
-        }
-
-        .admin-tab.active {
-            display: block;
-        }
-
-        /* === MODAL === */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 3px solid var(--gold);
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--danger);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .modal-close:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-        }
-
-        .modal-title {
-            font-size: 32px;
-            color: var(--gold);
-            margin-bottom: 30px;
-            text-align: center;
-            font-weight: 900;
-        }
-
-        /* === ALERTS === */
-        .alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 18px 28px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 10001;
-            animation: slideIn 0.3s ease;
-            max-width: 450px;
-            backdrop-filter: blur(10px);
-            font-weight: 600;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .alert-success {
-            background: rgba(39, 174, 96, 0.95);
-            border: 2px solid var(--success);
-        }
-
-        .alert-error {
-            background: rgba(231, 76, 60, 0.95);
-            border: 2px solid var(--danger);
-        }
-
-        .alert-warning {
-            background: rgba(243, 156, 18, 0.95);
-            border: 2px solid var(--warning);
-        }
-
-        /* === TABLE === */
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--black);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .admin-table thead {
-            background: var(--gold);
-            color: var(--black);
-        }
-
-        .admin-table th,
-        .admin-table td {
-            padding: 15px;
-            text-align: left;
-        }
-
-        .admin-table tbody tr {
-            border-bottom: 1px solid var(--gray);
-            transition: background 0.3s;
-        }
-
-        .admin-table tbody tr:hover {
-            background: var(--gray-light);
-        }
-
-        /* === FOOTER === */
-        footer {
-            background: var(--black-light);
-            border-top: 2px solid var(--gold);
-            margin-top: 80px;
-            padding: 50px 0 25px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-logo .logo-text {
-            font-size: 24px;
-            margin-bottom: 15px;
-        }
-
-        .footer-links {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .footer-links a {
-            color: #aaa;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-links a:hover {
-            color: var(--gold);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 25px;
-            border-top: 1px solid var(--gray);
-            color: #777;
-            font-size: 14px;
-        }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
+const express = require('express');
+const multer = require('multer');
+const fs = require('fs').promises;
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
+const axios = require('axios');
+const cron = require('node-cron');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ===== CONFIGURATION =====
+const CONFIG = {
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
+    WALLET_ADDRESS: process.env.WALLET_ADDRESS || 'TYourWalletAddress',
+    TRON_API_KEY: process.env.TRON_API_KEY || '',
+    EMAIL_USER: process.env.EMAIL_USER || 'your-email@gmail.com',
+    EMAIL_PASS: process.env.EMAIL_PASS || 'your-password',
+    SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
+    SITE_NAME: "JOHN'S LAB TEMPLATES",
+    PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
+    CHECK_INTERVAL: parseInt(process.env.PAYMENT_CHECK_INTERVAL_SECONDS) || 30
+};
+
+// ===== FILE UPLOAD CONFIGURATION =====
+const storage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        try {
+            let uploadPath = 'uploads/temp/';
+            if (file.fieldname === 'productFile') uploadPath = 'uploads/products/';
+            if (file.fieldname === 'productImage') uploadPath = 'uploads/images/';
+            if (file.fieldname === 'ownerPhoto') uploadPath = 'uploads/owner/';
+            if (file.fieldname === 'logo') uploadPath = 'uploads/logo/';
+            if (file.fieldname === 'backgroundImage') uploadPath = 'uploads/backgrounds/';
             
-            .search-box {
-                max-width: 100%;
-            }
-            
-            .nav-buttons {
-                justify-content: center;
-            }
-            
-            .products-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .section-title {
-                font-size: 32px;
-            }
-
-            .filters-container {
-                flex-direction: column;
-            }
-
-            .category-filters {
-                justify-content: center;
-            }
+            await fs.mkdir(uploadPath, { recursive: true });
+            cb(null, uploadPath);
+        } catch (error) {
+            cb(error, null);
         }
+    },
+    filename: (req, file, cb) => {
+        const unique = uuidv4();
+        const ext = path.extname(file.originalname);
+        const safeName = file.originalname.replace(ext, '').replace(/[^a-zA-Z0-9]/g, '-');
+        cb(null, `${safeName}-${unique}${ext}`);
+    }
+});
 
-        /* === UTILITIES === */
-        .hidden {
-            display: none !important;
-        }
+const upload = multer({ 
+    storage,
+    limits: { fileSize: 500 * 1024 * 1024 } // 500MB
+});
 
-        .text-center {
-            text-align: center;
-        }
+// ===== EMAIL CONFIGURATION =====
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: CONFIG.EMAIL_USER,
+        pass: CONFIG.EMAIL_PASS
+    }
+});
 
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--gray);
-            border-top: 4px solid var(--gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+// ===== MIDDLEWARE =====
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('.'));
+app.use('/uploads', express.static('uploads'));
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+// ===== TRON BLOCKCHAIN FUNCTIONS =====
+class TronPaymentChecker {
+    constructor() {
+        this.apiUrl = 'https://api.trongrid.io';
+        this.activePayments = new Map();
+    }
 
-        .countdown {
-            font-size: 24px;
-            color: var(--gold);
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-        }
+    // Generate unique amount with cents
+    generateUniqueAmount(baseAmount) {
+        const randomCents = Math.floor(Math.random() * 99) + 1;
+        return parseFloat((baseAmount + (randomCents / 100)).toFixed(2));
+    }
 
-        /* === ADMIN CONTACT EDITOR === */
-        .admin-contact-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 20px;
-            align-items: start;
-        }
+    // Check transaction on TRON blockchain
+    async checkTransaction(walletAddress, expectedAmount, since) {
+        try {
+            const response = await axios.get(
+                `${this.apiUrl}/v1/accounts/${walletAddress}/transactions/trc20`,
+                {
+                    params: {
+                        limit: 50,
+                        only_confirmed: true,
+                        only_to: true,
+                        min_timestamp: since
+                    },
+                    headers: CONFIG.TRON_API_KEY ? {
+                        'TRON-PRO-API-KEY': CONFIG.TRON_API_KEY
+                    } : {}
+                }
+            );
 
-        .contact-textarea {
-            min-height: 140px;
-            resize: vertical;
-        }
-
-        .contact-photo-card {
-            background: var(--gray);
-            border: 1px solid var(--gray-light);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .contact-photo-preview {
-            width: 100%;
-            max-width: 260px;
-            border-radius: 12px;
-            border: 2px dashed var(--gold);
-            padding: 12px;
-            background: var(--black-light);
-            object-fit: cover;
-            display: block;
-        }
-
-        .contact-photo-input {
-            margin-top: 12px;
-            padding: 12px;
-        }
-
-        @media (max-width: 900px) {
-            .admin-contact-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="alerts"></div>
-    <div id="modals"></div>
-
-    <div class="container">
-        <!-- HEADER -->
-        <header>
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon" id="main-logo">JL</div>
-                    <div class="logo-text" id="site-name">JOHN'S LAB TEMPLATES</div>
-                </div>
-
-                <div class="search-box">
-                    <input type="text" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search templates...">
-                    <button class="search-btn" onclick="handleSearch()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-
-                <div class="nav-buttons">
-                    <div class="language-selector">
-                        <select id="language-selector">
-                            <option value="en">EN</option>
-                            <option value="uk">UK</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-secondary" onclick="showSection('home')">
-                        <i class="fas fa-home"></i> <span data-i18n="navHome">Home</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="showSection('products')">
-                        <i class="fas fa-store"></i> <span data-i18n="navShop">Shop</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="showSection('cart')">
-                        <i class="fas fa-shopping-cart"></i> <span data-i18n="navCart">Cart</span> (<span id="cart-count">0</span>)
-                    </button>
-                    <button class="btn btn-secondary" onclick="showSection('contacts')">
-                        <i class="fas fa-address-card"></i> <span data-i18n="navContact">Contact</span>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- HOME -->
-        <section id="home" class="section active">
-            <div class="hero">
-                <h1 id="hero-title">JOHN'S LAB TEMPLATES</h1>
-                <p id="hero-subtitle" data-i18n="heroSubtitle">Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.</p>
-                <button class="btn btn-primary" onclick="showSection('products')" style="font-size: 18px; padding: 15px 35px;">
-                    <i class="fas fa-shopping-bag"></i> <span data-i18n="exploreTemplates">Explore Templates</span>
-                </button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number" id="total-products">0</span>
-                    <span class="stat-label" data-i18n="templates">Templates</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-sales">0</span>
-                    <span class="stat-label" data-i18n="downloads">Downloads</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-orders">0</span>
-                    <span class="stat-label" data-i18n="orders">Orders</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="total-users">0</span>
-                    <span class="stat-label" data-i18n="customers">Customers</span>
-                </div>
-            </div>
-
-            <div class="section-title" data-i18n="browseByCategory">Browse by Category</div>
-            <div class="categories-grid" id="home-categories" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin: 40px 0;"></div>
-
-            <div class="section-title" data-i18n="featuredTemplates">Featured Templates</div>
-            <div class="products-grid" id="featured-products"></div>
-        </section>
-
-        <!-- PRODUCTS -->
-        <section id="products" class="section">
-            <div class="section-title" data-i18n="templateCatalog">Template Catalog</div>
-            
-            <div class="filters-container">
-                <div class="category-filters" id="category-filters">
-                    <button class="btn-filter active" onclick="filterProducts('all', this)" data-i18n="all">All</button>
-                </div>
-                <select class="sort-select" id="sort-select" onchange="sortProducts(this.value)">
-                    <option value="newest" data-i18n="newestFirst">Newest First</option>
-                    <option value="price-low" data-i18n="priceLow">Price: Low to High</option>
-                    <option value="price-high" data-i18n="priceHigh">Price: High to Low</option>
-                    <option value="popular" data-i18n="mostPopular">Most Popular</option>
-                </select>
-            </div>
-            
-            <div id="country-filters" style="margin: 20px 0;"></div>
-            
-            <div class="products-grid" id="products-container"></div>
-        </section>
-
-        <!-- CART -->
-        <section id="cart" class="section">
-            <div class="section-title" data-i18n="shoppingCart">Shopping Cart</div>
-            <div id="cart-items"></div>
-            <div id="cart-total"></div>
-        </section>
-
-        <!-- PAYMENT -->
-        <section id="payment" class="section">
-            <div class="section-title" data-i18n="usdtPayment">USDT Payment</div>
-            <div class="payment-card">
-                <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 24px;">Payment Details</h3>
-                <div id="payment-details"></div>
-            </div>
-        </section>
-
-        <!-- MRZ GENERATOR -->
-        <section id="mrz-generator" class="section">
-            <div class="section-title" data-i18n="mrzGenerator">MRZ Generator</div>
-            <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
-                <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;" data-i18n="mrzDescription">
-                        Generate Machine Readable Zone (MRZ) codes for passports and ID cards. Fill in the required information below to generate accurate MRZ codes that meet international standards.
-                    </p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                    <!-- Main Generator Form -->
-                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-barcode"></i> <span data-i18n="documentInformation">Document Information</span></h3>
+            if (response.data && response.data.data) {
+                for (const tx of response.data.data) {
+                    // Check if it's USDT (TRC20)
+                    if (tx.token_info && tx.token_info.symbol === 'USDT') {
+                        const amount = parseFloat(tx.value) / 1000000; // USDT has 6 decimals
                         
-                        <form id="mrz-form">
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="documentType">Document Type:</label>
-                                <select id="mrz-type" class="form-control" required>
-                                    <option value="1" data-i18n="passport">Passport</option>
-                                    <option value="2" data-i18n="idCard">ID Card</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="country">Country:</label>
-                                <select id="mrz-country" class="form-control" required>
-                                    <option value="0" data-i18n="chooseCountry">Choose Country</option>
-                                </select>
-                            </div>
-
-                            <div id="mrz-form-fields" style="display: none;">
-                                <div class="form-group">
-                                    <label style="color: var(--gold);" data-i18n="sex">Sex:</label>
-                                    <div style="display: flex; gap: 20px; margin-top: 10px;">
-                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                            <input type="radio" name="mrz-sex" value="0" id="mrz-female">
-                                            <span data-i18n="female">Female</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                            <input type="radio" name="mrz-sex" value="1" id="mrz-male">
-                                            <span data-i18n="male">Male</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                            <input type="radio" name="mrz-sex" value="2" id="mrz-none">
-                                            <span data-i18n="unspecified">Unspecified</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="color: var(--gold);" data-i18n="firstName">First Name:</label>
-                                    <input type="text" id="mrz-first-name" class="form-control" placeholder="John" autocomplete="off">
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="color: var(--gold);" data-i18n="lastName">Last Name:</label>
-                                    <input type="text" id="mrz-last-name" class="form-control" placeholder="Johnson" autocomplete="off">
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
-                                        <input type="checkbox" id="mrz-sur-check">
-                                        <span data-i18n="surName">Sur Name (Optional)</span>
-                                    </label>
-                                    <input type="text" id="mrz-sur-name" class="form-control" placeholder="Smith" autocomplete="off" disabled style="margin-top: 10px;">
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="birthYear">Birth Year:</label>
-                                        <input type="text" id="mrz-birth-year" class="form-control" placeholder="1992" autocomplete="off">
-                                    </div>
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="expiryYear">Expiry Year:</label>
-                                        <input type="text" id="mrz-expir-year" class="form-control" placeholder="2030" autocomplete="off" required>
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="birthMonth">Birth Month:</label>
-                                        <input type="text" id="mrz-birth-month" class="form-control" placeholder="02" autocomplete="off">
-                                    </div>
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="expiryMonth">Expiry Month:</label>
-                                        <input type="text" id="mrz-expir-month" class="form-control" placeholder="05" autocomplete="off" required>
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="birthDay">Birth Day:</label>
-                                        <input type="text" id="mrz-birth-day" class="form-control" placeholder="18" autocomplete="off">
-                                    </div>
-                                    <div class="form-group">
-                                        <label style="color: var(--gold);" data-i18n="expiryDay">Expiry Day:</label>
-                                        <input type="text" id="mrz-expir-day" class="form-control" placeholder="18" autocomplete="off" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="color: var(--gold);" data-i18n="documentNumber">Document Number:</label>
-                                    <input type="text" id="mrz-number" class="form-control" placeholder="22 34 234234" autocomplete="off">
-                                </div>
-
-                                <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer;">
-                                        <input type="checkbox" id="mrz-code-check">
-                                        <span data-i18n="optionalCode">Optional Data (Ident. Num., Dep. Code)</span>
-                                    </label>
-                                    <input type="text" id="mrz-code" class="form-control" placeholder="220-102" autocomplete="off" disabled style="margin-top: 10px;">
-                                </div>
-
-                                <div id="mrz-passport-options" style="display: none;">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
-                                        <input type="checkbox" id="mrz-code-check-digit">
-                                        <span data-i18n="oneCheckDigitAtEnd">One check digit at the end</span>
-                                    </label>
-                                </div>
-
-                                <div id="mrz-id-options" style="display: none;">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: var(--gold); cursor: pointer; margin-bottom: 10px;">
-                                        <input type="checkbox" id="mrz-code-check-digit-1">
-                                        <span data-i18n="moveToSecondLine">Move to the second line</span>
-                                    </label>
-                                </div>
-
-                                <button type="button" class="btn btn-primary" onclick="generateMRZ()" style="width: 100%; padding: 15px; margin-top: 20px;">
-                                    <i class="fas fa-barcode"></i> <span data-i18n="generateMRZ">Generate MRZ</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Results Panel -->
-                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                        <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> <span data-i18n="mrzResults">Generated MRZ</span></h3>
-                        
-                        <div id="mrz-results" style="display: none;">
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="mrzResults">Result:</label>
-                                <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px;">
-                                    <input type="text" id="mrz-result1" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
-                                </div>
-                                <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px;">
-                                    <input type="text" id="mrz-result2" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
-                                </div>
-                                <div id="mrz-result3-container" style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gold); margin-bottom: 10px; display: none;">
-                                    <input type="text" id="mrz-result3" class="form-control" style="font-family: 'Courier New', monospace; font-size: 18px; color: var(--gold); background: transparent; border: none; padding: 0;" readonly>
-                                </div>
-                                <button type="button" class="btn btn-secondary" onclick="copyMRZ()" style="width: 100%;">
-                                    <i class="fas fa-copy"></i> <span data-i18n="copyMRZCode">Copy MRZ Code</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="mrz-no-results" style="text-align: center; padding: 40px; color: #aaa;">
-                            <i class="fas fa-barcode" style="font-size: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
-                            <p data-i18n="fillFormAndGenerate">Fill in the form and click "Generate MRZ" to see results here</p>
-                        </div>
-
-                        <!-- Control Digit Generator -->
-                        <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
-                            <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 20px;"><i class="fas fa-calculator"></i> <span data-i18n="controlDigitGenerator">Control Digit Generator</span></h3>
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="inputString">Input String:</label>
-                                <input type="text" id="mrz-control-input" class="form-control" placeholder="Some string..." autocomplete="off">
-                            </div>
-                            <button type="button" class="btn btn-secondary" onclick="generateControlDigit()" style="width: 100%; margin-top: 10px;">
-                                <i class="fas fa-calculator"></i> <span data-i18n="generateControlDigit">Generate Control Digit</span>
-                            </button>
-                            <div id="mrz-control-result" style="margin-top: 15px; padding: 15px; background: var(--black); border-radius: 10px; border: 1px solid var(--gold); display: none;">
-                                <p style="color: var(--gold); font-size: 18px; margin: 0;" id="mrz-control-value"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- BARCODE GENERATOR -->
-        <section id="barcode-generator" class="section">
-            <div class="section-title" data-i18n="barcodeGenerator">Barcode Generator</div>
-            <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
-                <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;" data-i18n="barcodeDescription">
-                        Generate PDF417 and Code128 barcodes for driver licenses and ID cards. Supports USA and Canada formats.
-                    </p>
-                </div>
-
-                <!-- Main Form Block (USA/Canada) -->
-                <div id="mainBarBlock" style="display: block;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-                        <!-- Left Column: Personal Information -->
-                        <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                            <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-user"></i> <span data-i18n="personalInfo">Personal Information</span></h3>
-                            
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="gender">Gender:</label>
-                                <div style="display: flex; gap: 15px; margin-top: 10px;">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                        <input type="radio" name="barcode-gender" value="0" id="barcode-female" checked>
-                                        <span data-i18n="female">Female</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                        <input type="radio" name="barcode-gender" value="1" id="barcode-male">
-                                        <span data-i18n="male">Male</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="firstName">First Name:</label>
-                                <input type="text" id="barcode-firstName" class="form-control" placeholder="John" value="John">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="middleName">Middle Name:</label>
-                                <input type="text" id="barcode-middleName" class="form-control" placeholder="Yovanovitch" value="Yovanovitch">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="lastName">Last Name:</label>
-                                <input type="text" id="barcode-lastName" class="form-control" placeholder="Wick" value="Wick">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Country:</label>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
-                                        <input type="checkbox" id="barcode-country-toggle">
-                                        <span id="barcode-country-label">USA</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">State:</label>
-                                <select id="barcode-states" class="form-control">
-                                    <option value="Alabama" selected>Alabama</option>
-                                    <option value="Alaska">Alaska</option>
-                                    <option value="Arizona">Arizona</option>
-                                    <option value="Arkansas">Arkansas</option>
-                                    <option value="California">California</option>
-                                    <!-- More states will be populated dynamically -->
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="city">City:</label>
-                                <input type="text" id="barcode-city" class="form-control" placeholder="City">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="street">Street:</label>
-                                <input type="text" id="barcode-street" class="form-control" placeholder="Street">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">ZIP Code:</label>
-                                <input type="text" id="barcode-zipCode" class="form-control" placeholder="00000" value="00000">
-                            </div>
-                        </div>
-
-                        <!-- Right Column: Physical Attributes & Dates -->
-                        <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
-                            <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-id-card"></i> <span data-i18n="documentInfo">Document Information</span></h3>
-                            
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Hair Color:</label>
-                                <select id="barcode-hairColor" class="form-control">
-                                    <option value="BAL" selected>Bald</option>
-                                    <option value="BLK">Black</option>
-                                    <option value="BLN">Blond</option>
-                                    <option value="BRO">Brown</option>
-                                    <option value="GRY">Gray</option>
-                                    <option value="RED">Red</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Eye Color:</label>
-                                <select id="barcode-eyeColor" class="form-control">
-                                    <option value="BLK" selected>Black</option>
-                                    <option value="BLU">Blue</option>
-                                    <option value="BRO">Brown</option>
-                                    <option value="GRN">Green</option>
-                                    <option value="HAZ">Hazel</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Race Code:</label>
-                                <select id="barcode-raceCode" class="form-control">
-                                    <option value="W" selected>White</option>
-                                    <option value="BK">Black</option>
-                                    <option value="AI">Alaskan or American Indian</option>
-                                    <option value="AP">Asian or Pacific Islander</option>
-                                    <option value="H">Hispanic Origin</option>
-                                </select>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <div class="form-group">
-                                    <label style="color: var(--gold);">Height (ft):</label>
-                                    <input type="number" id="barcode-heightFt" class="form-control" value="5" min="4" max="7">
-                                </div>
-                                <div class="form-group">
-                                    <label style="color: var(--gold);">Height (in):</label>
-                                    <input type="number" id="barcode-heightIn" class="form-control" value="10" min="0" max="11">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Weight (lbs):</label>
-                                <input type="number" id="barcode-weight" class="form-control" value="130">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="birthDate">Birth Date:</label>
-                                <input type="text" id="barcode-dateBirthday" class="form-control" placeholder="MMDDYYYY" value="02031980">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="issueDate">Issue Date:</label>
-                                <input type="text" id="barcode-dateIssue" class="form-control" placeholder="MMDDYYYY" value="01022000">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);" data-i18n="expiryDate">Expiry Date:</label>
-                                <input type="text" id="barcode-dateExpiry" class="form-control" placeholder="MMDDYYYY" value="02031999">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Document Type:</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <button type="button" id="barcode-doctype-DL" class="btn btn-secondary" onclick="setBarcodeDocType('DL')" style="flex: 1;">DL</button>
-                                    <button type="button" id="barcode-doctype-CDL" class="btn btn-secondary" onclick="setBarcodeDocType('CDL')" style="flex: 1;">CDL</button>
-                                    <button type="button" id="barcode-doctype-ID" class="btn btn-secondary" onclick="setBarcodeDocType('ID')" style="flex: 1;">ID</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- License Information -->
-                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-credit-card"></i> License Information</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                            <div class="form-group">
-                                <label style="color: var(--gold);">License Number:</label>
-                                <input type="text" id="barcode-licNumber" class="form-control" placeholder="License number">
-                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeLicense()" style="margin-top: 10px; width: 100%;">GENERATE</button>
-                            </div>
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Document Discriminator:</label>
-                                <input type="text" id="barcode-docDiscr" class="form-control" placeholder="Document Discriminator" maxlength="25">
-                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeDiscriminator()" style="margin-top: 10px; width: 100%;">GENERATE</button>
-                            </div>
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Inventory Number:</label>
-                                <input type="text" id="barcode-invNum" class="form-control" placeholder="Inventory Control Number" maxlength="25">
-                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeInventory()" style="margin-top: 10px; width: 100%;">GENERATE</button>
-                            </div>
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Audit Information:</label>
-                                <input type="text" id="barcode-auditInfo" class="form-control" placeholder="Audit information" maxlength="25">
-                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeAudit()" style="margin-top: 10px; width: 100%;">GENERATE</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PDF417 Settings -->
-                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-cog"></i> PDF417 Settings</h3>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Error Correction:</label>
-                                <input type="number" id="barcode-ecc" class="form-control" value="5">
-                            </div>
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Rows:</label>
-                                <input type="number" id="barcode-rows" class="form-control" value="6">
-                            </div>
-                            <div class="form-group">
-                                <label style="color: var(--gold);">Columns:</label>
-                                <input type="number" id="barcode-columns" class="form-control" value="12">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Generation Buttons -->
-                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-primary" onclick="generatePDF417()" style="flex: 1; min-width: 200px;">
-                                <i class="fas fa-barcode"></i> Generate PDF417
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="savePDF417SVG()" id="genBtn2">
-                                <i class="fas fa-download"></i> Save SVG
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="savePDF417PNG()" id="genBtn3">
-                                <i class="fas fa-download"></i> Save PNG
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="generateCode128()" style="flex: 1; min-width: 200px;">
-                                <i class="fas fa-barcode"></i> Generate Code128
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="saveCode128SVG()" id="genBtn5">
-                                <i class="fas fa-download"></i> Save SVG
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="saveCode128PNG()" id="genBtn6">
-                                <i class="fas fa-download"></i> Save PNG
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Results -->
-                    <div id="barcode-results" style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); display: none;">
-                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-qrcode"></i> Generated Barcode</h3>
-                        <div id="barcode-svg-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; min-height: 200px; display: flex; align-items: center; justify-content: center;">
-                            <svg id="barcode-svg" width="100%" height="auto" viewBox="0 0 300 100" preserveAspectRatio="none"></svg>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- CONTACTS -->
-        <section id="contacts" class="section">
-            <div class="section-title" data-i18n="contact">Contact</div>
-            <div class="contact-card">
-                <img id="owner-photo" src="" alt="Owner" class="owner-photo" style="display: none;">
-                <h3 id="owner-name" class="owner-name">John</h3>
-                <p id="owner-description" class="owner-description" data-i18n="premiumCreator">Premium digital templates creator</p>
-                <div id="owner-about" style="color: #aaa; margin-bottom: 30px; line-height: 1.8;"></div>
-                <a href="https://t.me/John_refund" target="_blank" class="telegram-btn" id="telegram-link">
-                    <i class="fab fa-telegram"></i> <span data-i18n="contactOnTelegram">Contact on Telegram</span>
-                </a>
-            </div>
-        </section>
-
-        <!-- ADMIN LOGIN (Hidden) -->
-        <section id="admin-login" class="section" style="display: none;">
-        </section>
-
-        <!-- ADMIN PANEL -->
-        <section id="admin-panel" class="section">
-            <div class="admin-header">
-                <h2 class="section-title" style="margin-bottom: 0;">Admin Panel</h2>
-                <button class="btn btn-danger" onclick="adminLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
+                        // Check if amount matches (with 0.01 tolerance)
+                        if (Math.abs(amount - expectedAmount) < 0.01) {
+                            return {
+                                found: true,
+                                txId: tx.transaction_id,
+                                amount: amount,
+                                timestamp: tx.block_timestamp,
+                                from: tx.from
+                            };
+                        }
+                    }
+                }
+            }
             
-            <div class="admin-menu">
-                <button class="admin-tab-btn active" onclick="showAdminTab('dashboard', this)">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('products', this)">
-                    <i class="fas fa-box"></i> Products
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('categories', this)">
-                    <i class="fas fa-folder"></i> Categories
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('orders', this)">
-                    <i class="fas fa-shopping-cart"></i> Orders
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('settings', this)">
-                    <i class="fas fa-cog"></i> Settings
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('contacts-admin', this)">
-                    <i class="fas fa-user"></i> Contact Info
-                </button>
-                <button class="admin-tab-btn" onclick="showAdminTab('database', this)">
-                    <i class="fas fa-database"></i> Customer Database
-                </button>
-            </div>
+            return { found: false };
+        } catch (error) {
+            console.error('Error checking TRON transaction:', error.message);
+            return { found: false, error: error.message };
+        }
+    }
+
+    // Start monitoring payment
+    startMonitoring(orderId, amount, wallet, timeout = 60) {
+        const uniqueAmount = this.generateUniqueAmount(amount);
+        const startTime = Date.now();
+        const expiryTime = startTime + (timeout * 60 * 1000);
+
+        this.activePayments.set(orderId, {
+            amount: uniqueAmount,
+            wallet,
+            startTime,
+            expiryTime,
+            checked: false
+        });
+
+        return uniqueAmount;
+    }
+
+    // Check if payment is received
+    async verifyPayment(orderId) {
+        const payment = this.activePayments.get(orderId);
+        if (!payment) {
+            return { verified: false, error: 'Payment not found' };
+        }
+
+        // Check if expired
+        if (Date.now() > payment.expiryTime) {
+            this.activePayments.delete(orderId);
+            return { verified: false, error: 'Payment expired', expired: true };
+        }
+
+        // Check blockchain
+        const result = await this.checkTransaction(
+            CONFIG.WALLET_ADDRESS,
+            payment.amount,
+            payment.startTime
+        );
+
+        if (result.found) {
+            payment.checked = true;
+            payment.txId = result.txId;
+            return {
+                verified: true,
+                transaction: result,
+                amount: payment.amount
+            };
+        }
+
+        return { 
+            verified: false, 
+            timeLeft: Math.floor((payment.expiryTime - Date.now()) / 1000 / 60),
+            expectedAmount: payment.amount
+        };
+    }
+
+    // Get payment info
+    getPaymentInfo(orderId) {
+        const payment = this.activePayments.get(orderId);
+        if (!payment) return null;
+
+        return {
+            amount: payment.amount,
+            wallet: CONFIG.WALLET_ADDRESS,
+            expiresAt: payment.expiryTime,
+            timeLeft: Math.floor((payment.expiryTime - Date.now()) / 1000 / 60)
+        };
+    }
+
+    // Cleanup expired payments
+    cleanupExpired() {
+        const now = Date.now();
+        for (const [orderId, payment] of this.activePayments.entries()) {
+            if (now > payment.expiryTime) {
+                this.activePayments.delete(orderId);
+            }
+        }
+    }
+}
+
+const paymentChecker = new TronPaymentChecker();
+
+// Cleanup expired payments every 5 minutes
+cron.schedule('*/5 * * * *', () => {
+    paymentChecker.cleanupExpired();
+    console.log('🧹 Cleaned up expired payments');
+});
+
+// ===== CATEGORY HELPERS =====
+function buildSlug(name) {
+    return name
+        ?.toString()
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || '';
+}
+
+function countryCodeToFlag(code) {
+    if (!code || code.length !== 2) return '';
+    const base = 127397;
+    return String.fromCodePoint(...code.toUpperCase().split('').map(char => base + char.charCodeAt(0)));
+}
+
+// Get all countries for product filtering
+async function getAllCountries() {
+    try {
+        const response = await axios.get('https://restcountries.com/v3.1/all?fields=name,cca2,flag');
+        const countries = (response.data || [])
+            .filter(country => country?.name?.common && country.cca2)
+            .sort((a, b) => a.name.common.localeCompare(b.name.common));
+
+        return countries.map(country => ({
+            name: country.name.common,
+            code: country.cca2,
+            flag: country.flag || countryCodeToFlag(country.cca2)
+        }));
+    } catch (error) {
+        console.error('❌ Failed to fetch country list:', error.message);
+        return [];
+    }
+}
+
+// ===== DATA INITIALIZATION =====
+async function initData() {
+    try {
+        const folders = [
+            'uploads/products', 
+            'uploads/images', 
+            'uploads/owner', 
+            'uploads/logo',
+            'uploads/backgrounds',
+            'data'
+        ];
+        
+        for (const folder of folders) {
+            await fs.mkdir(folder, { recursive: true });
+        }
+
+        const initialData = {
+            products: [
+                {
+                    id: 1,
+                    name: "Sample Passport Template",
+                    price: 29.99,
+                    category: "Passport",
+                    description: "Professional passport template",
+                    image: "",
+                    file: "",
+                    downloads: 0,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    name: "Sample ID Card Template",
+                    price: 39.99,
+                    category: "ID",
+                    description: "Professional ID card template",
+                    image: "",
+                    file: "",
+                    downloads: 0,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 3,
+                    name: "Sample Driving License Template",
+                    price: 49.99,
+                    category: "Driving",
+                    description: "Professional driving license template",
+                    image: "",
+                    file: "",
+                    downloads: 0,
+                    createdAt: new Date().toISOString()
+                }
+            ],
+            categories: [
+                { id: 1, name: "Passport", slug: "passport", icon: "fa-passport" },
+                { id: 2, name: "ID", slug: "id", icon: "fa-id-card" },
+                { id: 3, name: "Driving", slug: "driving", icon: "fa-truck" },
+                { id: 4, name: "Bill", slug: "bill", icon: "fa-file-invoice" },
+                { id: 5, name: "Credit", slug: "credit", icon: "fa-credit-card" },
+                { id: 6, name: "USA", slug: "usa", icon: "🇺🇸" },
+                { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" },
+                { id: 8, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
+            ],
+            orders: [],
+            settings: {
+                shopName: CONFIG.SITE_NAME,
+                walletAddress: CONFIG.WALLET_ADDRESS,
+                adminEmail: CONFIG.EMAIL_USER,
+                adminPassword: CONFIG.ADMIN_PASSWORD,
+                heroTitle: "JOHN'S LAB TEMPLATES",
+                heroSubtitle: "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.",
+                footerTagline: "Premium digital templates for USDT",
+                footerCopyright: "© 2024 JOHN'S LAB TEMPLATES. All rights reserved.",
+                footerPayment: "Payment: USDT (TRC20) | Instant Digital Delivery",
+                telegram: "John_refund",
+                logo: "",
+                backgroundImage: ""
+            },
+            contacts: {
+                ownerName: "John",
+                ownerDescription: "Premium digital templates creator. Professional designs for modern businesses.",
+                ownerPhoto: "",
+                telegram: "John_refund",
+                about: "Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive, high-quality digital templates. If you have any questions, feel free to contact me."
+            },
+            customers: []
+        };
+
+        for (const [key, data] of Object.entries(initialData)) {
+            const filePath = `data/${key}.json`;
+            try {
+                await fs.access(filePath);
+            } catch {
+                await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+            }
+        }
+
+        // Clean up any existing country categories
+        await cleanupCategories();
+        console.log('✅ Data initialized');
+    } catch (error) {
+        console.error('❌ Initialization error:', error);
+    }
+}
+
+// ===== HELPER FUNCTIONS =====
+async function readData(filename) {
+    try {
+        const data = await fs.readFile(`data/${filename}.json`, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error(`Error reading ${filename}:`, error);
+        return null;
+    }
+}
+
+async function writeData(filename, data) {
+    try {
+        await fs.writeFile(`data/${filename}.json`, JSON.stringify(data, null, 2));
+        return true;
+    } catch (error) {
+        console.error(`Error writing ${filename}:`, error);
+        return false;
+    }
+}
+
+// Clean up categories - remove country categories
+async function cleanupCategories() {
+    const categories = await readData('categories') || [];
+    // Remove all country categories
+    const mainCategories = categories.filter(c => !c.isCountry);
+    await writeData('categories', mainCategories);
+    return mainCategories;
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ===== API ROUTES =====
+
+// Get all products
+app.get('/api/products', async (req, res) => {
+    try {
+        const products = await readData('products');
+        res.json(products || []);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get single product
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const products = await readData('products');
+        const product = products.find(p => p.id === parseInt(req.params.id));
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).json({ error: 'Product not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add product
+app.post('/api/products', upload.fields([
+    { name: 'productImage', maxCount: 1 },
+    { name: 'productFile', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const products = await readData('products');
+        
+        const newProduct = {
+            id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+            name: req.body.name,
+            price: parseFloat(req.body.price),
+            category: req.body.category,
+            description: req.body.description,
+            countries: req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : [],
+            downloads: 0,
+            createdAt: new Date().toISOString()
+        };
+
+        if (req.files?.productImage) {
+            newProduct.image = `/uploads/images/${req.files.productImage[0].filename}`;
+        }
+
+        if (req.files?.productFile) {
+            newProduct.file = `/uploads/products/${req.files.productFile[0].filename}`;
+            newProduct.fileName = req.files.productFile[0].originalname;
+            newProduct.fileSize = formatFileSize(req.files.productFile[0].size);
+        }
+
+        products.push(newProduct);
+        await writeData('products', products);
+        
+        res.json({ success: true, product: newProduct });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update product
+app.put('/api/products/:id', upload.fields([
+    { name: 'productImage', maxCount: 1 },
+    { name: 'productFile', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const products = await readData('products');
+        const index = products.findIndex(p => p.id === parseInt(req.params.id));
+        
+        if (index === -1) {
+            return res.status(404).json({ success: false, error: 'Product not found' });
+        }
+
+        // Update product data
+        const countries = req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : products[index].countries || [];
+        
+        products[index] = {
+            ...products[index],
+            name: req.body.name || products[index].name,
+            price: req.body.price ? parseFloat(req.body.price) : products[index].price,
+            category: req.body.category || products[index].category,
+            description: req.body.description || products[index].description,
+            countries: countries,
+            updatedAt: new Date().toISOString()
+        };
+
+        // Update image if provided
+        if (req.files?.productImage) {
+            products[index].image = `/uploads/images/${req.files.productImage[0].filename}`;
+        }
+
+        // Update file if provided
+        if (req.files?.productFile) {
+            products[index].file = `/uploads/products/${req.files.productFile[0].filename}`;
+            products[index].fileName = req.files.productFile[0].originalname;
+            products[index].fileSize = formatFileSize(req.files.productFile[0].size);
+        }
+
+        await writeData('products', products);
+        res.json({ success: true, product: products[index] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete product
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        const products = await readData('products');
+        const filtered = products.filter(p => p.id !== parseInt(req.params.id));
+        
+        await writeData('products', filtered);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get categories (main categories only, no countries)
+app.get('/api/categories', async (req, res) => {
+    try {
+        const categories = await readData('categories') || [];
+        // Filter out any country categories that might still exist
+        const mainCategories = categories.filter(c => !c.isCountry);
+        res.json(mainCategories);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get all countries for filtering
+app.get('/api/countries', async (req, res) => {
+    try {
+        const countries = await getAllCountries();
+        res.json(countries);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add category
+app.post('/api/categories', async (req, res) => {
+    try {
+        const categories = await readData('categories');
+        const newCategory = {
+            id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
+            name: req.body.name,
+            slug: buildSlug(req.body.name),
+            icon: req.body.icon || 'fa-folder'
+        };
+        
+        categories.push(newCategory);
+        await writeData('categories', categories);
+        res.json({ success: true, category: newCategory });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update category
+app.put('/api/categories/:id', async (req, res) => {
+    try {
+        const categories = await readData('categories');
+        const index = categories.findIndex(c => c.id === parseInt(req.params.id));
+        
+        if (index === -1) {
+            return res.status(404).json({ success: false, error: 'Category not found' });
+        }
+
+        categories[index] = {
+            ...categories[index],
+            name: req.body.name || categories[index].name,
+            slug: req.body.name ? buildSlug(req.body.name) : categories[index].slug,
+            icon: req.body.icon || categories[index].icon
+        };
+
+        await writeData('categories', categories);
+        res.json({ success: true, category: categories[index] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete category
+app.delete('/api/categories/:id', async (req, res) => {
+    try {
+        const categories = await readData('categories');
+        const filtered = categories.filter(c => c.id !== parseInt(req.params.id));
+        
+        await writeData('categories', filtered);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get orders
+app.get('/api/orders', async (req, res) => {
+    try {
+        const orders = await readData('orders');
+        res.json(orders || []);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Helper function for email validation
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Create order
+app.post('/api/orders', async (req, res) => {
+    try {
+        const { email, telegram, items, total, wallet } = req.body;
+        
+        if (!email || !isValidEmail(email)) {
+            return res.status(400).json({ success: false, error: 'Valid email is required' });
+        }
+        
+        if (!telegram || telegram.trim().length === 0) {
+            return res.status(400).json({ success: false, error: 'Telegram username is required' });
+        }
+        
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ success: false, error: 'Order must contain at least one item' });
+        }
+        
+        const orders = await readData('orders');
+        
+        const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        
+        // Generate unique amount with different cents for payment identification
+        // This ensures even if multiple orders have the same base amount, they'll have unique exact amounts
+        const uniqueAmount = paymentChecker.startMonitoring(orderId, total, CONFIG.WALLET_ADDRESS, CONFIG.PAYMENT_TIMEOUT);
+        
+        // Clean telegram username (remove @ if present)
+        const cleanTelegram = telegram.replace(/^@/, '').trim();
+        
+        const newOrder = {
+            id: orderId,
+            email,
+            telegram: cleanTelegram,
+            customerWallet: wallet || '', // Optional, kept for backward compatibility
+            items,
+            baseAmount: total,
+            exactAmount: uniqueAmount,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + CONFIG.PAYMENT_TIMEOUT * 60 * 1000).toISOString(),
+            paidAt: null,
+            txId: null,
+            downloadToken: uuidv4()
+        };
+
+        orders.push(newOrder);
+        await writeData('orders', orders);
+
+        // Save/update customer in database
+        await saveCustomerToDatabase(email, cleanTelegram, total);
+
+        // Send payment email with QR code and payment details
+        await sendPaymentEmail(email, orderId, uniqueAmount);
+        
+        res.json({ 
+            success: true, 
+            order: newOrder,
+            paymentDetails: {
+                wallet: CONFIG.WALLET_ADDRESS,
+                amount: uniqueAmount,
+                network: 'TRC20',
+                expiresIn: CONFIG.PAYMENT_TIMEOUT
+            }
+        });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Check payment status
+app.get('/api/orders/:id/check', async (req, res) => {
+    try {
+        const orders = await readData('orders');
+        const order = orders.find(o => o.id === req.params.id);
+        
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+
+        // If already paid, return success
+        if (order.status === 'paid') {
+            return res.json({ 
+                success: true, 
+                status: 'paid',
+                paid: true,
+                downloadUrl: `${CONFIG.SITE_URL}/download/${order.downloadToken}`
+            });
+        }
+
+        // Check if expired
+        if (new Date() > new Date(order.expiresAt)) {
+            order.status = 'expired';
+            await writeData('orders', orders);
+            return res.json({ 
+                success: false, 
+                status: 'expired',
+                paid: false,
+                error: 'Payment time expired'
+            });
+        }
+
+        // Verify payment on blockchain
+        const verification = await paymentChecker.verifyPayment(req.params.id);
+        
+        if (verification.verified) {
+            order.status = 'paid';
+            order.paidAt = new Date().toISOString();
+            order.txId = verification.transaction.txId;
             
-            <div class="admin-content">
-                <div id="admin-dashboard" class="admin-tab active"></div>
-                <div id="admin-products" class="admin-tab"></div>
-                <div id="admin-categories" class="admin-tab"></div>
-                <div id="admin-orders" class="admin-tab"></div>
-                <div id="admin-settings" class="admin-tab"></div>
-                <div id="admin-contacts" class="admin-tab"></div>
-                <div id="admin-database" class="admin-tab"></div>
-            </div>
-        </section>
-    </div>
+            await writeData('orders', orders);
+            
+            // Send files email
+            await sendOrderFiles(order.email, order.items, order.id, order.downloadToken);
+            
+            // Update download count
+            const products = await readData('products');
+            order.items.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    product.downloads = (product.downloads || 0) + 1;
+                }
+            });
+            await writeData('products', products);
+            
+            return res.json({ 
+                success: true, 
+                status: 'paid',
+                paid: true,
+                txId: order.txId,
+                downloadUrl: `${CONFIG.SITE_URL}/download/${order.downloadToken}`
+            });
+        }
 
-    <!-- FOOTER -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <div class="logo-text">JOHN'S LAB TEMPLATES</div>
-                    <p id="footer-tagline" style="color: #aaa; margin-top: 10px;">Premium digital templates for USDT</p>
-                </div>
-                <div class="footer-links">
-                    <a href="#" onclick="showSection('home')">Home</a>
-                    <a href="#" onclick="showSection('products')">Shop</a>
-                    <a href="#" onclick="showSection('contacts')">Contact</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p id="footer-copyright">© 2024 JOHN'S LAB TEMPLATES. All rights reserved.</p>
-                <p id="footer-payment">Payment: USDT (TRC20) | Instant Digital Delivery</p>
-            </div>
-        </div>
-    </footer>
+        res.json({ 
+            success: true, 
+            status: 'pending',
+            paid: false,
+            timeLeft: verification.timeLeft,
+            expectedAmount: verification.expectedAmount
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
-    <!-- Barcode Generation Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.0.0/dist/bwip-js.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+// Download files
+app.get('/download/:token', async (req, res) => {
+    try {
+        const orders = await readData('orders');
+        const order = orders.find(o => o.downloadToken === req.params.token);
+        
+        if (!order || order.status !== 'paid') {
+            return res.status(404).send('Download not found or payment not confirmed');
+        }
+
+        const products = await readData('products');
+        const files = order.items.map(item => {
+            const product = products.find(p => p.id === item.id);
+            return product ? {
+                name: product.name,
+                path: product.file,
+                filename: product.fileName
+            } : null;
+        }).filter(f => f !== null);
+
+        // For simplicity, redirect to first file or show download page
+        if (files.length > 0) {
+            res.json({
+                success: true,
+                files: files.map(f => ({
+                    name: f.name,
+                    downloadUrl: `${CONFIG.SITE_URL}${f.path}`,
+                    filename: f.filename
+                }))
+            });
+        } else {
+            res.status(404).json({ success: false, error: 'No files found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get settings
+app.get('/api/settings', async (req, res) => {
+    try {
+        const settings = await readData('settings');
+        // Don't send password to client
+        const { adminPassword, ...safeSettings } = settings;
+        res.json(safeSettings);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update settings
+app.put('/api/settings', async (req, res) => {
+    try {
+        const currentSettings = await readData('settings');
+        const updatedSettings = {
+            ...currentSettings,
+            ...req.body
+        };
+        
+        await writeData('settings', updatedSettings);
+        
+        // Update CONFIG if wallet changed
+        if (req.body.walletAddress) {
+            CONFIG.WALLET_ADDRESS = req.body.walletAddress;
+        }
+        
+        res.json({ success: true, settings: updatedSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Admin login (password validation only)
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const settings = await readData('settings');
+        const correctPassword = settings.adminPassword || CONFIG.ADMIN_PASSWORD;
+
+        if (req.body.password && req.body.password === correctPassword) {
+            return res.json({ success: true });
+        }
+
+        res.status(401).json({ success: false, error: 'Invalid password' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Upload logo
+app.post('/api/upload-logo', upload.single('logo'), async (req, res) => {
+    try {
+        const logoUrl = `/uploads/logo/${req.file.filename}`;
+        const settings = await readData('settings');
+        settings.logo = logoUrl;
+        await writeData('settings', settings);
+        
+        res.json({ success: true, logoUrl });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Upload background
+app.post('/api/upload-background', upload.single('backgroundImage'), async (req, res) => {
+    try {
+        const backgroundUrl = `/uploads/backgrounds/${req.file.filename}`;
+        const settings = await readData('settings');
+        settings.backgroundImage = backgroundUrl;
+        await writeData('settings', settings);
+        
+        res.json({ success: true, backgroundUrl });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get contacts
+app.get('/api/contacts', async (req, res) => {
+    try {
+        const contacts = await readData('contacts');
+        res.json(contacts || {});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update contacts
+app.put('/api/contacts', upload.single('ownerPhoto'), async (req, res) => {
+    try {
+        const contacts = await readData('contacts');
+        
+        const updatedContacts = {
+            ...contacts,
+            ownerName: req.body.ownerName || contacts.ownerName,
+            ownerDescription: req.body.ownerDescription || contacts.ownerDescription,
+            telegram: req.body.telegram || contacts.telegram,
+            about: req.body.about || contacts.about
+        };
+
+        if (req.file) {
+            updatedContacts.ownerPhoto = `/uploads/owner/${req.file.filename}`;
+        }
+
+        await writeData('contacts', updatedContacts);
+        res.json({ success: true, contacts: updatedContacts });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== CUSTOMER DATABASE FUNCTIONS =====
+async function saveCustomerToDatabase(email, telegram, orderAmount) {
+    try {
+        let customers = await readData('customers') || [];
+        
+        // Find existing customer by email
+        const existingCustomerIndex = customers.findIndex(c => c.email.toLowerCase() === email.toLowerCase());
+        
+        if (existingCustomerIndex >= 0) {
+            // Update existing customer
+            const customer = customers[existingCustomerIndex];
+            customer.telegram = telegram || customer.telegram;
+            customer.orderCount = (customer.orderCount || 0) + 1;
+            customer.totalSpent = (customer.totalSpent || 0) + orderAmount;
+            customer.lastOrderDate = new Date().toISOString();
+            customers[existingCustomerIndex] = customer;
+        } else {
+            // Add new customer
+            const newCustomer = {
+                id: customers.length > 0 ? Math.max(...customers.map(c => c.id)) + 1 : 1,
+                email: email.toLowerCase(),
+                telegram: telegram || '',
+                firstOrderDate: new Date().toISOString(),
+                lastOrderDate: new Date().toISOString(),
+                orderCount: 1,
+                totalSpent: orderAmount
+            };
+            customers.push(newCustomer);
+        }
+        
+        await writeData('customers', customers);
+    } catch (error) {
+        console.error('Error saving customer to database:', error);
+    }
+}
+
+// Get all customers
+app.get('/api/customers', async (req, res) => {
+    try {
+        const customers = await readData('customers') || [];
+        res.json(customers);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Export customers
+app.get('/api/customers/export', async (req, res) => {
+    try {
+        const format = req.query.format || 'json';
+        const customers = await readData('customers') || [];
+        
+        if (format === 'csv') {
+            // Generate CSV
+            const headers = ['Email', 'Telegram', 'First Order', 'Last Order', 'Total Orders', 'Total Spent'];
+            const rows = customers.map(c => [
+                c.email,
+                c.telegram || '',
+                new Date(c.firstOrderDate).toLocaleDateString(),
+                new Date(c.lastOrderDate).toLocaleDateString(),
+                c.orderCount || 0,
+                (c.totalSpent || 0).toFixed(2)
+            ]);
+            
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+            
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename=customers_${new Date().toISOString().split('T')[0]}.csv`);
+            res.send(csvContent);
+        } else {
+            // JSON format
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename=customers_${new Date().toISOString().split('T')[0]}.json`);
+            res.json(customers);
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ===== EMAIL FUNCTIONS =====
+async function sendPaymentEmail(email, orderId, amount) {
+    try {
+        // Generate QR code URL for email
+        const qrData = `tron:${CONFIG.WALLET_ADDRESS}?amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}&bgcolor=FFFFFF&color=000000&margin=10`;
+        
+        const mailOptions = {
+            from: `${CONFIG.SITE_NAME} <${CONFIG.EMAIL_USER}>`,
+            to: email,
+            subject: `💳 Payment Details - Order #${orderId}`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; }
+                        .container { max-width: 600px; margin: 0 auto; background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 2px solid #D4AF37; }
+                        .header { background: linear-gradient(135deg, #D4AF37, #F4D03F); padding: 30px; text-align: center; }
+                        .header h1 { margin: 0; color: #000; font-size: 28px; }
+                        .content { padding: 30px; }
+                        .amount { background: #000; color: #D4AF37; padding: 20px; border-radius: 8px; text-align: center; font-size: 36px; font-weight: bold; margin: 20px 0; }
+                        .wallet { background: #000; color: #D4AF37; padding: 15px; border-radius: 8px; font-family: monospace; word-break: break-all; margin: 20px 0; text-align: center; }
+                        .qr-code { text-align: center; margin: 25px 0; padding: 20px; background: #fff; border-radius: 10px; }
+                        .qr-code img { max-width: 300px; height: auto; border-radius: 8px; }
+                        .info-box { background: #2a2a2a; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                        .info-box ul { margin: 10px 0; padding-left: 20px; }
+                        .info-box li { margin: 8px 0; }
+                        .footer { text-align: center; padding: 20px; color: #888; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>${CONFIG.SITE_NAME}</h1>
+                        </div>
+                        <div class="content">
+                            <h2 style="color: #D4AF37;">Payment Details</h2>
+                            <p>To complete your order <strong>#${orderId}</strong>, please send:</p>
+                            
+                            <div class="amount">$${amount} USDT</div>
+                            
+                            <p style="text-align: center; margin-bottom: 15px;">To this address:</p>
+                            <div class="wallet">${CONFIG.WALLET_ADDRESS}</div>
+                            
+                            <div class="qr-code">
+                                <p style="color: #000; margin-bottom: 10px; font-weight: bold;">Scan QR Code to Pay</p>
+                                <img src="${qrUrl}" alt="USDT Payment QR Code">
+                                <p style="color: #666; margin-top: 10px; font-size: 12px;">Scan with your TRON wallet app</p>
+                            </div>
+                            
+                            <div class="info-box">
+                                <p><strong>⚠️ IMPORTANT:</strong></p>
+                                <ul>
+                                    <li>Send exactly <strong>$${amount} USDT</strong> (unique amount for this order)</li>
+                                    <li>Use <strong>TRC20</strong> network only</li>
+                                    <li>Payment expires in <strong>${CONFIG.PAYMENT_TIMEOUT} minutes</strong></li>
+                                    <li>After payment confirmation on blockchain, files will be sent automatically to this email</li>
+                                    <li>Each order has a unique payment amount to prevent confusion</li>
+                                </ul>
+                            </div>
+                            
+                            <p style="margin-top: 25px;">Your files will be delivered to this email address once payment is confirmed on the TRON blockchain network.</p>
+                        </div>
+                        <div class="footer">
+                            <p>${CONFIG.SITE_NAME} - Premium Digital Templates</p>
+                            <p>This is an automated email. Please do not reply.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Payment email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Email send error:', error);
+        return false;
+    }
+}
+
+async function sendOrderFiles(email, items, orderId, downloadToken) {
+    try {
+        const products = await readData('products');
+        
+        let filesHtml = '';
+        items.forEach(item => {
+            const product = products.find(p => p.id === item.id);
+            if (product) {
+                filesHtml += `
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        <h3 style="margin: 0 0 10px 0; color: #D4AF37;">${product.name}</h3>
+                        <p style="margin: 0; color: #888;">File: ${product.fileName || 'Download'} (${product.fileSize || 'N/A'})</p>
+                        <a href="${CONFIG.SITE_URL}${product.file}" 
+                           style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                            Download File
+                        </a>
+                    </div>
+                `;
+            }
+        });
+
+        const mailOptions = {
+            from: `${CONFIG.SITE_NAME} <${CONFIG.EMAIL_USER}>`,
+            to: email,
+            subject: `🎉 Your Order #${orderId} is Ready!`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; }
+                        .container { max-width: 600px; margin: 0 auto; background: #1a1a1a; border-radius: 10px; overflow: hidden; border: 2px solid #D4AF37; }
+                        .header { background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 30px; text-align: center; }
+                        .header h1 { margin: 0; color: #fff; font-size: 28px; }
+                        .content { padding: 30px; }
+                        .footer { text-align: center; padding: 20px; color: #888; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>✅ Payment Confirmed!</h1>
+                        </div>
+                        <div class="content">
+                            <h2 style="color: #D4AF37;">Thank you for your purchase!</h2>
+                            <p>Your order <strong>#${orderId}</strong> has been successfully paid and processed.</p>
+                            
+                            <h3 style="color: #D4AF37; margin-top: 30px;">📦 Your Files:</h3>
+                            ${filesHtml}
+                            
+                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                                <p style="margin: 0 0 15px 0;">Or use this download link:</p>
+                                <a href="${CONFIG.SITE_URL}/download/${downloadToken}" 
+                                   style="display: inline-block; padding: 15px 30px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+                                    Download All Files
+                                </a>
+                            </div>
+                            
+                            <p><strong>⚠️ Note:</strong> Download links are valid for 30 days.</p>
+                            
+                            <p>If you have any questions, feel free to contact us on Telegram: @${await readData('contacts').then(c => c.telegram)}</p>
+                        </div>
+                        <div class="footer">
+                            <p>${CONFIG.SITE_NAME} - Premium Digital Templates</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Files sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Files email error:', error);
+        return false;
+    }
+}
+
+// ===== START SERVER =====
+app.listen(PORT, async () => {
+    await initData();
+    console.log(`
+╔════════════════════════════════════════════════════════════╗
+║           🚀 JOHN'S LAB TEMPLATES - RUNNING                ║
+╠════════════════════════════════════════════════════════════╣
+║ 🌐 URL:      ${CONFIG.SITE_URL.padEnd(43)} ║
+║ 💰 Wallet:   ${CONFIG.WALLET_ADDRESS.padEnd(43)} ║
+║ 👑 Admin:    Password: ${CONFIG.ADMIN_PASSWORD.padEnd(33)} ║
+║ ⏱️  Timeout:  ${CONFIG.PAYMENT_TIMEOUT} minutes payment window${' '.repeat(24)} ║
+╚════════════════════════════════════════════════════════════╝
+    `);
+});
+
+// ===== MRZ GENERATOR ENDPOINTS =====
+// All MRZ generation uses standard ICAO 9303 formats:
+// - TD2 format for passports (2 lines of 44 characters each)
+// - TD1 format for ID cards (3 lines of 30 characters each)
+
+// Map 2-letter country codes to 3-letter ISO codes for MRZ
+const countryCodeMap = {
+    'US': 'USA', 'RU': 'RUS', 'GB': 'GBR', 'DE': 'D', 'FR': 'FRA', 'IT': 'ITA',
+    'ES': 'ESP', 'CA': 'CAN', 'AU': 'AUS', 'JP': 'JPN', 'CN': 'CHN', 'IN': 'IND',
+    'BR': 'BRA', 'MX': 'MEX', 'KR': 'KOR', 'NL': 'NLD', 'SE': 'SWE', 'NO': 'NOR',
+    'DK': 'DNK', 'FI': 'FIN', 'PL': 'POL', 'TR': 'TUR', 'SA': 'SAU', 'AE': 'ARE',
+    'EG': 'EGY', 'ZA': 'ZAF', 'AR': 'ARG', 'CL': 'CHL', 'CO': 'COL', 'PE': 'PER',
+    'VE': 'VEN', 'PH': 'PHL', 'ID': 'IDN', 'TH': 'THA', 'VN': 'VNM', 'MY': 'MYS',
+    'SG': 'SGP', 'NZ': 'NZL', 'IE': 'IRL', 'CH': 'CHE', 'AT': 'AUT', 'BE': 'BEL',
+    'PT': 'PRT', 'GR': 'GRC', 'CZ': 'CZE', 'HU': 'HUN', 'RO': 'ROU', 'BG': 'BGR',
+    'HR': 'HRV', 'RS': 'SRB', 'UA': 'UKR', 'BY': 'BLR', 'KZ': 'KAZ', 'UZ': 'UZB',
+    'PK': 'PAK', 'BD': 'BGD', 'NG': 'NGA', 'KE': 'KEN', 'ET': 'ETH', 'GH': 'GHA',
+    'MA': 'MAR', 'DZ': 'DZA', 'TN': 'TUN', 'LY': 'LBY', 'SD': 'SDN', 'IQ': 'IRQ',
+    'IR': 'IRN', 'IL': 'ISR', 'JO': 'JOR', 'LB': 'LBN', 'SY': 'SYR', 'YE': 'YEM',
+    'AF': 'AFG', 'NP': 'NPL', 'LK': 'LKA', 'MM': 'MMR', 'KH': 'KHM', 'LA': 'LAO',
+    'MN': 'MNG', 'KP': 'PRK', 'TW': 'TWN', 'HK': 'HKG', 'MO': 'MAC', 'BN': 'BRN',
+    'FJ': 'FJI', 'PG': 'PNG', 'NC': 'NCL', 'PF': 'PYF', 'GU': 'GUM', 'AS': 'ASM',
+    'MP': 'MNP', 'VI': 'VIR', 'PR': 'PRI', 'JM': 'JAM', 'HT': 'HTI', 'DO': 'DOM',
+    'CU': 'CUB', 'GT': 'GTM', 'BZ': 'BLZ', 'HN': 'HND', 'SV': 'SLV', 'NI': 'NIC',
+    'CR': 'CRI', 'PA': 'PAN', 'EC': 'ECU', 'BO': 'BOL', 'PY': 'PRY', 'UY': 'URY',
+    'GY': 'GUY', 'SR': 'SUR', 'GF': 'GUF', 'FK': 'FLK', 'IS': 'ISL', 'FO': 'FRO',
+    'GL': 'GRL', 'SJ': 'SJM', 'AX': 'ALA', 'EE': 'EST', 'LV': 'LVA', 'LT': 'LTU',
+    'MD': 'MDA', 'GE': 'GEO', 'AM': 'ARM', 'AZ': 'AZE', 'TM': 'TKM', 'TJ': 'TJK',
+    'KG': 'KGZ', 'AF': 'AFG', 'MV': 'MDV', 'BT': 'BTN', 'TL': 'TLS', 'SB': 'SLB',
+    'VU': 'VUT', 'NC': 'NCL', 'PF': 'PYF', 'WS': 'WSM', 'TO': 'TON', 'TV': 'TUV',
+    'KI': 'KIR', 'NR': 'NRU', 'PW': 'PLW', 'FM': 'FSM', 'MH': 'MHL', 'CK': 'COK',
+    'NU': 'NIU', 'TK': 'TKL', 'PN': 'PCN', 'AQ': 'ATA', 'BV': 'BVT', 'TF': 'ATF',
+    'HM': 'HMD', 'GS': 'SGS', 'IO': 'IOT', 'CC': 'CCK', 'CX': 'CXR', 'NF': 'NFK',
+    'PW': 'PLW', 'PW': 'PLW', 'PW': 'PLW'
+};
+
+// Convert 2-letter code to 3-letter code for MRZ
+function getMRZCountryCode(code2) {
+    return countryCodeMap[code2] || code2.toUpperCase().padEnd(3, '<').substring(0, 3);
+}
+
+// Calculate MRZ check digit
+function calculateMRZCheckDigit(str) {
+    const weights = [7, 3, 1];
+    let sum = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        let value;
+        if (char >= '0' && char <= '9') {
+            value = parseInt(char);
+        } else if (char >= 'A' && char <= 'Z') {
+            value = char.charCodeAt(0) - 55;
+        } else if (char === '<') {
+            value = 0;
+        } else {
+            value = 0;
+        }
+        sum += value * weights[i % 3];
+    }
+    return sum % 10;
+}
+
+// Format name for MRZ (uppercase, replace spaces with <)
+function formatNameForMRZ(name) {
+    return (name || '').toUpperCase().replace(/[^A-Z0-9]/g, '<').substring(0, 39);
+}
+
+// Format date for MRZ (YYMMDD)
+function formatDateForMRZ(year, month, day) {
+    const y = (year || '').toString().padStart(4, '0').substring(2);
+    const m = (month || '').toString().padStart(2, '0');
+    const d = (day || '').toString().padStart(2, '0');
+    return `${y}${m}${d}`;
+}
+
+// Generate passport MRZ - Standard TD2 format for all countries
+function generatePassportMRZ(data) {
+    const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck } = data;
+    
+    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
+    const docType = 'P';
+    
+    // Convert country code to 3-letter format if needed
+    const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
+    
+    // Format names
+    const lastNameFormatted = formatNameForMRZ(lastName);
+    const firstNameFormatted = formatNameForMRZ(firstName);
+    const surNameFormatted = surName ? formatNameForMRZ(surName) : '';
+    
+    // Combine names
+    let nameLine = lastNameFormatted;
+    if (surNameFormatted) {
+        nameLine += '<<' + surNameFormatted;
+    }
+    if (firstNameFormatted) {
+        nameLine += '<<' + firstNameFormatted;
+    }
+    nameLine = nameLine.padEnd(44, '<');
+    
+    // First line: Document type, <, country, name (44 chars total)
+    // Format: P<[COUNTRY][NAME] (P + < + 3-char country + 39-char name = 44 chars)
+    const line1 = `${docType}<${countryCode}${nameLine.substring(0, 39)}`;
+    
+    // Second line: Document number, check digit, nationality, birth date, sex, expiry date, optional data
+    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
+    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
+    
+    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay);
+    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
+    
+    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay);
+    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
+    
+    // TD2 line 2 structure (44 chars total):
+    // docNumber(9) + check(1) + country(3) + birth(6) + check(1) + sex(1) + expiry(6) + check(1) + optional(15) + finalCheck(1) = 44
+    let optionalData = '';
+    if (code) {
+        optionalData = code.toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(15, '<');
+        if (codeCheck) {
+            // If codeCheck is provided, replace the last char with check digit for positions 0-14
+            optionalData = optionalData.substring(0, 14) + calculateMRZCheckDigit(optionalData.substring(0, 14));
+        }
+    } else {
+        optionalData = '<'.repeat(15);
+    }
+    
+    const line2 = `${docNumber}${docNumberCheck}${countryCode}${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${optionalData}`;
+    
+    // Calculate final check digit for line 2 (positions 0-42, which is 43 characters)
+    // TD2 line 2 must be exactly 44 characters: 43 data chars + 1 check digit
+    const line2Check = calculateMRZCheckDigit(line2.substring(0, 43)).toString();
+    const finalLine2 = line2.substring(0, 43) + line2Check;
+    
+    return { gen1: line1, gen2: finalLine2 };
+}
+
+// Generate ID card MRZ - Standard TD1 format for all countries
+function generateIDMRZ(data) {
+    const { country, firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck, codeCheck1 } = data;
+    
+    // Use standard document type
+    const docType = 'ID';
+    
+    // Convert country code to 3-letter format if needed
+    const countryCode = country.length === 2 ? getMRZCountryCode(country) : country.padEnd(3, '<').substring(0, 3);
+    
+    return generateStandardTD1MRZ(data, countryCode, docType);
+}
+
+// Generate standard TD1 format MRZ (ICAO 9303 standard for all countries)
+function generateStandardTD1MRZ(data, countryCode, docType) {
+    const { firstName, lastName, surName, birthYear, birthMonth, birthDay, 
+            expirYear, expirMonth, expirDay, number, code, sex, codeCheck, codeCheck1 } = data;
+    
+    const sexChar = sex === 0 ? 'F' : sex === 1 ? 'M' : '<';
+    
+    // Format document number (9 chars for standard TD1)
+    const docNumber = (number || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(9, '<');
+    const docNumberCheck = calculateMRZCheckDigit(docNumber).toString();
+    
+    // Format dates
+    const birthDate = formatDateForMRZ(birthYear, birthMonth, birthDay); // YYMMDD
+    const birthDateCheck = calculateMRZCheckDigit(birthDate).toString();
+    
+    const expirDate = formatDateForMRZ(expirYear, expirMonth, expirDay); // YYMMDD
+    const expirDateCheck = calculateMRZCheckDigit(expirDate).toString();
+    
+    // Format names
+    const lastNameFormatted = formatNameForMRZ(lastName);
+    const firstNameFormatted = formatNameForMRZ(firstName);
+    const surNameFormatted = surName ? formatNameForMRZ(surName) : '';
+    
+    // Optional data fields
+    const optionalData1 = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(15, '<');
+    const optionalData2 = (codeCheck1 || '').toUpperCase().replace(/[^A-Z0-9]/g, '').padEnd(11, '<');
+    const optionalData2Check = calculateMRZCheckDigit(optionalData2.substring(0, 11)).toString();
+    
+    // Line 1 (30 chars): docType(2) + country(3) + docNumber(9) + docCheck(1) + optionalData1(15)
+    // Ensure docType is exactly 2 characters
+    const docTypeFormatted = docType.padEnd(2, '<').substring(0, 2);
+    const line1 = `${docTypeFormatted}${countryCode}${docNumber}${docNumberCheck}${optionalData1}`.substring(0, 30);
+    
+    // Line 2 (30 chars): birthDate(6) + birthCheck(1) + sex(1) + expirDate(6) + expirCheck(1) + country(3) + optionalData2(11) + optionalData2Check(1)
+    const line2 = `${birthDate}${birthDateCheck}${sexChar}${expirDate}${expirDateCheck}${countryCode}${optionalData2.substring(0, 11)}${optionalData2Check}`.substring(0, 30);
+    
+    // Line 3 (30 chars): Full name
+    let fullName = lastNameFormatted;
+    if (surNameFormatted) {
+        fullName += '<<' + surNameFormatted;
+    }
+    if (firstNameFormatted) {
+        fullName += '<<' + firstNameFormatted;
+    }
+    const line3 = fullName.padEnd(30, '<').substring(0, 30);
+    
+    return { gen1: line1, gen2: line2, gen3: line3 };
+}
+
+// Generate MRZ endpoint
+app.post('/api/mrz/generate', (req, res) => {
+    try {
+        const result = generatePassportMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate Russian passport MRZ (special handling)
+app.post('/api/mrz/generate-ru', (req, res) => {
+    try {
+        // Russian passports may have specific formatting requirements
+        const result = generatePassportMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate ID card MRZ
+app.post('/api/mrz/generate-id', (req, res) => {
+    try {
+        const result = generateIDMRZ(req.body);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Generate control digit
+app.post('/api/mrz/control-digit', (req, res) => {
+    try {
+        const { str } = req.body;
+        if (!str) {
+            return res.status(400).json({ success: false, error: 'String is required' });
+        }
+        const digit = calculateMRZCheckDigit(str);
+        res.json({ success: true, digit });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' });
+});

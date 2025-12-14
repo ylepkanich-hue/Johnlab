@@ -1466,6 +1466,252 @@
             </div>
         </section>
 
+        <!-- BARCODE GENERATOR -->
+        <section id="barcode-generator" class="section">
+            <div class="section-title" data-i18n="barcodeGenerator">Barcode Generator</div>
+            <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
+                    <p style="color: #aaa; line-height: 1.8; margin-bottom: 20px;" data-i18n="barcodeDescription">
+                        Generate PDF417 and Code128 barcodes for driver licenses and ID cards. Supports USA and Canada formats.
+                    </p>
+                </div>
+
+                <!-- Main Form Block (USA/Canada) -->
+                <div id="mainBarBlock" style="display: block;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                        <!-- Left Column: Personal Information -->
+                        <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
+                            <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-user"></i> <span data-i18n="personalInfo">Personal Information</span></h3>
+                            
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="gender">Gender:</label>
+                                <div style="display: flex; gap: 15px; margin-top: 10px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                        <input type="radio" name="barcode-gender" value="0" id="barcode-female" checked>
+                                        <span data-i18n="female">Female</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                        <input type="radio" name="barcode-gender" value="1" id="barcode-male">
+                                        <span data-i18n="male">Male</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="firstName">First Name:</label>
+                                <input type="text" id="barcode-firstName" class="form-control" placeholder="John" value="John">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="middleName">Middle Name:</label>
+                                <input type="text" id="barcode-middleName" class="form-control" placeholder="Yovanovitch" value="Yovanovitch">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="lastName">Last Name:</label>
+                                <input type="text" id="barcode-lastName" class="form-control" placeholder="Wick" value="Wick">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Country:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; color: #aaa; cursor: pointer;">
+                                        <input type="checkbox" id="barcode-country-toggle">
+                                        <span id="barcode-country-label">USA</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">State:</label>
+                                <select id="barcode-states" class="form-control">
+                                    <option value="Alabama" selected>Alabama</option>
+                                    <option value="Alaska">Alaska</option>
+                                    <option value="Arizona">Arizona</option>
+                                    <option value="Arkansas">Arkansas</option>
+                                    <option value="California">California</option>
+                                    <!-- More states will be populated dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="city">City:</label>
+                                <input type="text" id="barcode-city" class="form-control" placeholder="City">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="street">Street:</label>
+                                <input type="text" id="barcode-street" class="form-control" placeholder="Street">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">ZIP Code:</label>
+                                <input type="text" id="barcode-zipCode" class="form-control" placeholder="00000" value="00000">
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Physical Attributes & Dates -->
+                        <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold);">
+                            <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-id-card"></i> <span data-i18n="documentInfo">Document Information</span></h3>
+                            
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Hair Color:</label>
+                                <select id="barcode-hairColor" class="form-control">
+                                    <option value="BAL" selected>Bald</option>
+                                    <option value="BLK">Black</option>
+                                    <option value="BLN">Blond</option>
+                                    <option value="BRO">Brown</option>
+                                    <option value="GRY">Gray</option>
+                                    <option value="RED">Red</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Eye Color:</label>
+                                <select id="barcode-eyeColor" class="form-control">
+                                    <option value="BLK" selected>Black</option>
+                                    <option value="BLU">Blue</option>
+                                    <option value="BRO">Brown</option>
+                                    <option value="GRN">Green</option>
+                                    <option value="HAZ">Hazel</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Race Code:</label>
+                                <select id="barcode-raceCode" class="form-control">
+                                    <option value="W" selected>White</option>
+                                    <option value="BK">Black</option>
+                                    <option value="AI">Alaskan or American Indian</option>
+                                    <option value="AP">Asian or Pacific Islander</option>
+                                    <option value="H">Hispanic Origin</option>
+                                </select>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">Height (ft):</label>
+                                    <input type="number" id="barcode-heightFt" class="form-control" value="5" min="4" max="7">
+                                </div>
+                                <div class="form-group">
+                                    <label style="color: var(--gold);">Height (in):</label>
+                                    <input type="number" id="barcode-heightIn" class="form-control" value="10" min="0" max="11">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Weight (lbs):</label>
+                                <input type="number" id="barcode-weight" class="form-control" value="130">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="birthDate">Birth Date:</label>
+                                <input type="text" id="barcode-dateBirthday" class="form-control" placeholder="MMDDYYYY" value="02031980">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="issueDate">Issue Date:</label>
+                                <input type="text" id="barcode-dateIssue" class="form-control" placeholder="MMDDYYYY" value="01022000">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);" data-i18n="expiryDate">Expiry Date:</label>
+                                <input type="text" id="barcode-dateExpiry" class="form-control" placeholder="MMDDYYYY" value="02031999">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Document Type:</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <button type="button" id="barcode-doctype-DL" class="btn btn-secondary" onclick="setBarcodeDocType('DL')" style="flex: 1;">DL</button>
+                                    <button type="button" id="barcode-doctype-CDL" class="btn btn-secondary" onclick="setBarcodeDocType('CDL')" style="flex: 1;">CDL</button>
+                                    <button type="button" id="barcode-doctype-ID" class="btn btn-secondary" onclick="setBarcodeDocType('ID')" style="flex: 1;">ID</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- License Information -->
+                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
+                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-credit-card"></i> License Information</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <div class="form-group">
+                                <label style="color: var(--gold);">License Number:</label>
+                                <input type="text" id="barcode-licNumber" class="form-control" placeholder="License number">
+                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeLicense()" style="margin-top: 10px; width: 100%;">GENERATE</button>
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Document Discriminator:</label>
+                                <input type="text" id="barcode-docDiscr" class="form-control" placeholder="Document Discriminator" maxlength="25">
+                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeDiscriminator()" style="margin-top: 10px; width: 100%;">GENERATE</button>
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Inventory Number:</label>
+                                <input type="text" id="barcode-invNum" class="form-control" placeholder="Inventory Control Number" maxlength="25">
+                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeInventory()" style="margin-top: 10px; width: 100%;">GENERATE</button>
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Audit Information:</label>
+                                <input type="text" id="barcode-auditInfo" class="form-control" placeholder="Audit information" maxlength="25">
+                                <button type="button" class="btn btn-secondary" onclick="generateBarcodeAudit()" style="margin-top: 10px; width: 100%;">GENERATE</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF417 Settings -->
+                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
+                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-cog"></i> PDF417 Settings</h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Error Correction:</label>
+                                <input type="number" id="barcode-ecc" class="form-control" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Rows:</label>
+                                <input type="number" id="barcode-rows" class="form-control" value="6">
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--gold);">Columns:</label>
+                                <input type="number" id="barcode-columns" class="form-control" value="12">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generation Buttons -->
+                    <div style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); margin-bottom: 30px;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" onclick="generatePDF417()" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-barcode"></i> Generate PDF417
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="savePDF417SVG()" id="genBtn2">
+                                <i class="fas fa-download"></i> Save SVG
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="savePDF417PNG()" id="genBtn3">
+                                <i class="fas fa-download"></i> Save PNG
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="generateCode128()" style="flex: 1; min-width: 200px;">
+                                <i class="fas fa-barcode"></i> Generate Code128
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="saveCode128SVG()" id="genBtn5">
+                                <i class="fas fa-download"></i> Save SVG
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="saveCode128PNG()" id="genBtn6">
+                                <i class="fas fa-download"></i> Save PNG
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="barcode-results" style="background: linear-gradient(135deg, var(--black-lighter), var(--gray)); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); display: none;">
+                        <h3 style="color: var(--gold); margin-bottom: 25px;"><i class="fas fa-qrcode"></i> Generated Barcode</h3>
+                        <div id="barcode-svg-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <svg id="barcode-svg" width="100%" height="auto" viewBox="0 0 300 100" preserveAspectRatio="none"></svg>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
         <!-- CONTACTS -->
         <section id="contacts" class="section">
             <div class="section-title" data-i18n="contact">Contact</div>

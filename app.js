@@ -1,6 +1,238 @@
 // ===== CONFIGURATION =====
 const API_URL = window.location.origin;
 
+// ===== TRANSLATIONS =====
+const translations = {
+    en: {
+        // Navigation
+        navHome: 'Home',
+        navShop: 'Shop',
+        navCart: 'Cart',
+        navContact: 'Contact',
+        searchPlaceholder: 'Search templates...',
+        
+        // Home Section
+        heroSubtitle: 'Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.',
+        exploreTemplates: 'Explore Templates',
+        templates: 'Templates',
+        downloads: 'Downloads',
+        orders: 'Orders',
+        customers: 'Customers',
+        browseByCategory: 'Browse by Category',
+        featuredTemplates: 'Featured Templates',
+        
+        // Products Section
+        templateCatalog: 'Template Catalog',
+        all: 'All',
+        newestFirst: 'Newest First',
+        priceLow: 'Price: Low to High',
+        priceHigh: 'Price: High to Low',
+        mostPopular: 'Most Popular',
+        addToCart: 'Add to Cart',
+        viewDetails: 'View Details',
+        price: 'Price',
+        category: 'Category',
+        countries: 'Countries',
+        
+        // Cart Section
+        shoppingCart: 'Shopping Cart',
+        cartEmpty: 'Your cart is empty',
+        total: 'Total',
+        checkout: 'Checkout',
+        remove: 'Remove',
+        continueShopping: 'Continue Shopping',
+        
+        // Payment Section
+        usdtPayment: 'USDT Payment',
+        paymentDetails: 'Payment Details',
+        orderTotal: 'Order Total',
+        paymentInstructions: 'Payment Instructions',
+        sendPayment: 'Send Payment',
+        backToCart: 'Back to Cart',
+        
+        // MRZ Generator
+        mrzGenerator: 'MRZ Generator',
+        mrzDescription: 'Generate Machine Readable Zone (MRZ) codes for passports and ID cards. Fill in the required information below to generate accurate MRZ codes that meet international standards.',
+        documentInformation: 'Document Information',
+        documentType: 'Document Type',
+        passport: 'Passport',
+        idCard: 'ID Card',
+        country: 'Country',
+        chooseCountry: 'Choose Country',
+        sex: 'Sex',
+        female: 'Female',
+        male: 'Male',
+        unspecified: 'Unspecified',
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        surName: 'Sur Name (Optional)',
+        birthYear: 'Birth Year',
+        birthMonth: 'Birth Month',
+        birthDay: 'Birth Day',
+        expiryYear: 'Expiry Year',
+        expiryMonth: 'Expiry Month',
+        expiryDay: 'Expiry Day',
+        documentNumber: 'Document Number',
+        optionalCode: 'Optional Code',
+        generateMRZ: 'Generate MRZ',
+        mrzResults: 'MRZ Results',
+        copy: 'Copy',
+        copyMRZCode: 'Copy MRZ Code',
+        controlDigit: 'Control Digit',
+        controlDigitGenerator: 'Control Digit Generator',
+        generateControlDigit: 'Generate Control Digit',
+        inputString: 'Input String',
+        calculate: 'Calculate',
+        fillFormAndGenerate: 'Fill in the form and click "Generate MRZ" to see results here',
+        oneCheckDigitAtEnd: 'One check digit at the end',
+        moveToSecondLine: 'Move to the second line',
+        
+        // Contact Section
+        contact: 'Contact',
+        contactOnTelegram: 'Contact on Telegram',
+        premiumCreator: 'Premium digital templates creator',
+        
+        // Footer
+        footerTagline: 'Premium digital templates for USDT',
+        footerCopyright: '© 2024 JOHN\'S LAB TEMPLATES. All rights reserved.',
+        
+        // Admin
+        dashboard: 'Dashboard',
+        adminOrders: 'Orders',
+        adminContactInfo: 'Contact Info',
+        adminSettings: 'Settings',
+        
+        // Common
+        loading: 'Loading...',
+        error: 'Error',
+        success: 'Success',
+        close: 'Close',
+        save: 'Save',
+        cancel: 'Cancel',
+        delete: 'Delete',
+        edit: 'Edit',
+        add: 'Add',
+        update: 'Update',
+        notFound: 'not found',
+        tryDifferentSearch: 'Try a different search or category',
+        addTemplatesFromCatalog: 'Add some templates from our catalog'
+    },
+    uk: {
+        // Navigation
+        navHome: 'Головна',
+        navShop: 'Магазин',
+        navCart: 'Кошик',
+        navContact: 'Контакти',
+        searchPlaceholder: 'Пошук шаблонів...',
+        
+        // Home Section
+        heroSubtitle: 'Преміальні цифрові шаблони для сучасного бізнесу. Високоякісні дизайни, миттєва доставка через USDT.',
+        exploreTemplates: 'Переглянути шаблони',
+        templates: 'Шаблони',
+        downloads: 'Завантажень',
+        orders: 'Замовлень',
+        customers: 'Клієнтів',
+        browseByCategory: 'Перегляд за категоріями',
+        featuredTemplates: 'Рекомендовані шаблони',
+        
+        // Products Section
+        templateCatalog: 'Каталог шаблонів',
+        all: 'Всі',
+        newestFirst: 'Спочатку нові',
+        priceLow: 'Ціна: від низької до високої',
+        priceHigh: 'Ціна: від високої до низької',
+        mostPopular: 'Найпопулярніші',
+        addToCart: 'Додати в кошик',
+        viewDetails: 'Деталі',
+        price: 'Ціна',
+        category: 'Категорія',
+        countries: 'Країни',
+        
+        // Cart Section
+        shoppingCart: 'Кошик',
+        cartEmpty: 'Ваш кошик порожній',
+        total: 'Всього',
+        checkout: 'Оформити замовлення',
+        remove: 'Видалити',
+        continueShopping: 'Продовжити покупки',
+        
+        // Payment Section
+        usdtPayment: 'Оплата USDT',
+        paymentDetails: 'Деталі оплати',
+        orderTotal: 'Сума замовлення',
+        paymentInstructions: 'Інструкції з оплати',
+        sendPayment: 'Відправити платіж',
+        backToCart: 'Назад до кошика',
+        
+        // MRZ Generator
+        mrzGenerator: 'Генератор MRZ',
+        mrzDescription: 'Генеруйте коди машинно-читабельної зони (MRZ) для паспортів та посвідчень особи. Заповніть необхідну інформацію нижче для генерації точних MRZ кодів, що відповідають міжнародним стандартам.',
+        documentInformation: 'Інформація про документ',
+        documentType: 'Тип документа',
+        passport: 'Паспорт',
+        idCard: 'Посвідчення особи',
+        country: 'Країна',
+        chooseCountry: 'Виберіть країну',
+        sex: 'Стать',
+        female: 'Жіноча',
+        male: 'Чоловіча',
+        unspecified: 'Не вказано',
+        firstName: 'Ім\'я',
+        lastName: 'Прізвище',
+        surName: 'По батькові (необов\'язково)',
+        birthYear: 'Рік народження',
+        birthMonth: 'Місяць народження',
+        birthDay: 'День народження',
+        expiryYear: 'Рік закінчення',
+        expiryMonth: 'Місяць закінчення',
+        expiryDay: 'День закінчення',
+        documentNumber: 'Номер документа',
+        optionalCode: 'Додатковий код',
+        generateMRZ: 'Згенерувати MRZ',
+        mrzResults: 'Результати MRZ',
+        copy: 'Копіювати',
+        copyMRZCode: 'Копіювати MRZ код',
+        controlDigit: 'Контрольна цифра',
+        controlDigitGenerator: 'Генератор контрольних цифр',
+        generateControlDigit: 'Згенерувати контрольну цифру',
+        inputString: 'Вхідний рядок',
+        calculate: 'Обчислити',
+        fillFormAndGenerate: 'Заповніть форму та натисніть "Згенерувати MRZ", щоб побачити результати тут',
+        oneCheckDigitAtEnd: 'Одна контрольна цифра в кінці',
+        moveToSecondLine: 'Перемістити на другий рядок',
+        
+        // Contact Section
+        contact: 'Контакти',
+        contactOnTelegram: 'Зв\'язатися в Telegram',
+        premiumCreator: 'Створювач преміальних цифрових шаблонів',
+        
+        // Footer
+        footerTagline: 'Преміальні цифрові шаблони для USDT',
+        footerCopyright: '© 2024 JOHN\'S LAB TEMPLATES. Всі права захищені.',
+        
+        // Admin
+        dashboard: 'Панель управління',
+        adminOrders: 'Замовлення',
+        adminContactInfo: 'Контактна інформація',
+        adminSettings: 'Налаштування',
+        
+        // Common
+        loading: 'Завантаження...',
+        error: 'Помилка',
+        success: 'Успіх',
+        close: 'Закрити',
+        save: 'Зберегти',
+        cancel: 'Скасувати',
+        delete: 'Видалити',
+        edit: 'Редагувати',
+        add: 'Додати',
+        update: 'Оновити',
+        notFound: 'не знайдено',
+        tryDifferentSearch: 'Спробуйте інший пошук або категорію',
+        addTemplatesFromCatalog: 'Додайте шаблони з нашого каталогу'
+    }
+};
+
 // ===== GLOBAL STATE =====
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let products = [];
@@ -11,12 +243,109 @@ let contacts = {};
 let isAdmin = false;
 let currentFilter = 'all';
 let currentSort = 'newest';
+let currentLanguage = localStorage.getItem('language') || 'en';
+
+// ===== TRANSLATION FUNCTIONS =====
+function t(key) {
+    return translations[currentLanguage]?.[key] || translations.en[key] || key;
+}
+
+function setLanguage(lang) {
+    if (translations[lang]) {
+        currentLanguage = lang;
+        localStorage.setItem('language', lang);
+        document.documentElement.lang = lang;
+        applyTranslations();
+        updateLanguageSelector();
+    }
+}
+
+function applyTranslations() {
+    // Update elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (el.tagName === 'INPUT' && el.type === 'text' && el.hasAttribute('placeholder')) {
+            el.placeholder = t(key);
+        } else if (el.tagName === 'INPUT' && el.type === 'submit') {
+            el.value = t(key);
+        } else if (el.tagName === 'OPTION') {
+            // Options are handled separately
+        } else {
+            el.textContent = t(key);
+        }
+    });
+    
+    // Update option elements with data-i18n attribute
+    document.querySelectorAll('option[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+    });
+    
+    // Update elements with data-i18n-html attribute (for HTML content)
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        el.innerHTML = t(key);
+    });
+    
+    // Update elements with data-i18n-placeholder attribute
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = t(key);
+    });
+    
+    // Update sort select options
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+        const currentValue = sortSelect.value;
+        sortSelect.innerHTML = `
+            <option value="newest">${t('newestFirst')}</option>
+            <option value="price-low">${t('priceLow')}</option>
+            <option value="price-high">${t('priceHigh')}</option>
+            <option value="popular">${t('mostPopular')}</option>
+        `;
+        sortSelect.value = currentValue;
+    }
+    
+    // Update MRZ type select options
+    const mrzTypeSelect = document.getElementById('mrz-type');
+    if (mrzTypeSelect) {
+        const currentValue = mrzTypeSelect.value;
+        mrzTypeSelect.innerHTML = `
+            <option value="1">${t('passport')}</option>
+            <option value="2">${t('idCard')}</option>
+        `;
+        mrzTypeSelect.value = currentValue;
+    }
+    
+    // Re-render dynamic content
+    updateCartCount();
+    renderHomePage();
+    renderProducts();
+    renderCategoryFilters();
+    renderContacts();
+    
+    // Update MRZ generator if visible
+    if (document.getElementById('mrz-generator')?.classList.contains('active')) {
+        initializeMRZGenerator();
+    }
+}
+
+function updateLanguageSelector() {
+    const langSelect = document.getElementById('language-selector');
+    if (langSelect) {
+        langSelect.value = currentLanguage;
+    }
+}
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', async () => {
+    // Set initial language
+    document.documentElement.lang = currentLanguage;
+    
     await loadData();
     await loadCountries();
     updateCartCount();
+    applyTranslations();
     renderHomePage();
     renderProducts();
     renderCategoryFilters();
@@ -37,6 +366,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('.search-btn').addEventListener('click', () => {
         handleSearch();
     });
+    
+    // Language selector change handler
+    const langSelect = document.getElementById('language-selector');
+    if (langSelect) {
+        langSelect.addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+        });
+    }
 });
 
 // ===== DATA LOADING =====
@@ -167,13 +504,14 @@ function renderHomeCategories() {
     
     container.innerHTML = mainCategories.map(cat => {
         const productCount = products.filter(p => p.category === cat.name).length;
+        const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates'); // Remove 's' for singular if needed
         return `
             <div class="category-card" onclick="viewCategory('${cat.name}')">
                 <div class="category-icon">
                     <i class="fas ${cat.icon || 'fa-folder'}"></i>
                 </div>
                 <h3>${cat.name}</h3>
-                <p>${productCount} ${productCount === 1 ? 'template' : 'templates'}</p>
+                <p>${productCount} ${templateText}</p>
             </div>
         `;
     }).join('');
@@ -208,7 +546,7 @@ async function loadCountries() {
 function renderCategoryFilters() {
     const container = document.getElementById('category-filters');
     const mainCategories = categories.filter(c => !c.isCountry);
-    const allButton = '<button class="btn-filter active" onclick="filterProducts(\'all\', this)">All</button>';
+    const allButton = `<button class="btn-filter active" onclick="filterProducts('all', this)">${t('all')}</button>`;
     const categoryButtons = mainCategories.map(cat => {
         const safeName = (cat.name || '').replace(/"/g, '&quot;');
         return `<button class="btn-filter" data-category="${safeName}" onclick="filterProducts(this.dataset.category, this)">
@@ -251,12 +589,12 @@ function renderCountryFilters(categoryName) {
     });
     
     if (productCountries.size === 0) {
-        container.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">No countries available for this category</p>';
+        container.innerHTML = `<p style="color: #aaa; text-align: center; padding: 20px;">${t('all')} ${t('countries')}</p>`;
         return;
     }
     
     const countryList = Array.from(productCountries).sort();
-    const allCountriesButton = `<button class="btn-filter ${currentCountryFilter === null ? 'active' : ''}" onclick="filterByCountry(null, '${categoryName}')">All Countries</button>`;
+    const allCountriesButton = `<button class="btn-filter ${currentCountryFilter === null ? 'active' : ''}" onclick="filterByCountry(null, '${categoryName}')">${t('all')} ${t('countries')}</button>`;
     
     const countryButtons = countryList.map(countryName => {
         const country = allCountries.find(c => c.name === countryName);
@@ -303,9 +641,9 @@ function renderProductCard(product) {
                 <div class="product-price">$${product.price}</div>
                 <div class="product-actions">
                     <button class="btn btn-primary btn-small" onclick="addToCart(${product.id})" style="flex: 1;">
-                        <i class="fas fa-cart-plus"></i> Add to Cart
+                        <i class="fas fa-cart-plus"></i> ${t('addToCart')}
                     </button>
-                    <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})">
+                    <button class="btn btn-secondary btn-small" onclick="viewProduct(${product.id})" title="${t('viewDetails')}">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
@@ -351,8 +689,8 @@ function renderProducts() {
         container.innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
                 <i class="fas fa-search fa-4x" style="color: var(--gold); margin-bottom: 20px; opacity: 0.5;"></i>
-                <h3 style="color: var(--gold); margin-bottom: 10px;">No templates found</h3>
-                <p style="color: #aaa;">Try a different search or category</p>
+                <h3 style="color: var(--gold); margin-bottom: 10px;">${t('templates')} ${t('notFound') || 'not found'}</h3>
+                <p style="color: #aaa;">${t('tryDifferentSearch') || 'Try a different search or category'}</p>
             </div>
         `;
     } else {
@@ -531,10 +869,10 @@ function renderCart() {
         container.innerHTML = `
             <div style="text-align: center; padding: 80px 20px;">
                 <i class="fas fa-shopping-cart fa-4x" style="color: var(--gold); margin-bottom: 25px; opacity: 0.5;"></i>
-                <h3 style="color: var(--gold); margin-bottom: 15px; font-size: 28px;">Your cart is empty</h3>
-                <p style="color: #aaa; margin-bottom: 30px;">Add some templates from our catalog</p>
+                <h3 style="color: var(--gold); margin-bottom: 15px; font-size: 28px;">${t('cartEmpty')}</h3>
+                <p style="color: #aaa; margin-bottom: 30px;">${t('addTemplatesFromCatalog') || 'Add some templates from our catalog'}</p>
                 <button class="btn btn-primary" onclick="showSection('products')" style="padding: 15px 30px; font-size: 16px;">
-                    <i class="fas fa-shopping-bag"></i> Browse Templates
+                    <i class="fas fa-shopping-bag"></i> ${t('exploreTemplates')}
                 </button>
             </div>
         `;
@@ -558,7 +896,7 @@ function renderCart() {
                     <div class="cart-item-price">$${item.price} × ${item.quantity || 1} = $${itemTotal.toFixed(2)}</div>
                     <div style="color: #777; font-size: 14px; margin-top: 5px;">${item.category}</div>
                 </div>
-                <button class="cart-remove" onclick="removeFromCart(${index})" title="Remove">
+                <button class="cart-remove" onclick="removeFromCart(${index})" title="${t('remove')}">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -578,11 +916,11 @@ function renderCart() {
                 <span>$0.00</span>
             </div>
             <div class="total-row" style="border-top: 3px solid var(--gold); padding-top: 20px; margin-top: 20px; font-size: 24px;">
-                <span style="font-weight: 700;">Total:</span>
+                <span style="font-weight: 700;">${t('total')}:</span>
                 <span class="total-amount">$${total.toFixed(2)}</span>
             </div>
             <button class="btn btn-primary" onclick="showPayment()" style="width: 100%; margin-top: 25px; padding: 18px; font-size: 18px;">
-                <i class="fas fa-lock"></i> Proceed to Payment
+                <i class="fas fa-lock"></i> ${t('checkout')}
             </button>
         </div>
     `;
@@ -1880,7 +2218,7 @@ async function initializeMRZGenerator() {
     // Populate country dropdown
     const countrySelect = document.getElementById('mrz-country');
     if (countrySelect && allCountries.length > 0) {
-        countrySelect.innerHTML = '<option value="0">Choose Country</option>' + 
+        countrySelect.innerHTML = `<option value="0">${t('chooseCountry')}</option>` + 
             allCountries.map(country => 
                 `<option value="${country.code}">${country.flag} ${country.name}</option>`
             ).join('');

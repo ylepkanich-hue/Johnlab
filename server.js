@@ -306,7 +306,8 @@ async function initData() {
                 { id: 4, name: "Bill", slug: "bill", icon: "fa-file-invoice" },
                 { id: 5, name: "Credit", slug: "credit", icon: "fa-credit-card" },
                 { id: 6, name: "USA", slug: "usa", icon: "🇺🇸" },
-                { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" }
+                { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" },
+                { id: 8, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
             ],
             orders: [],
             settings: {

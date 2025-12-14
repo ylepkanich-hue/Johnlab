@@ -2530,13 +2530,18 @@ const USA_STATES = [
     'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
 ];
 
+// Canadian Provinces list
+const CANADA_PROVINCES = [
+    'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+    'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+    'Quebec', 'Saskatchewan', 'Yukon'
+];
+
 function initializeBarcodeGenerator() {
-    // Populate states dropdown
+    // Populate states dropdown initially with USA states
     const statesSelect = document.getElementById('barcode-states');
     if (statesSelect) {
-        statesSelect.innerHTML = USA_STATES.map(state => 
-            `<option value="${state}">${state}</option>`
-        ).join('');
+        updateStatesDropdown(false); // false = USA
     }
     
     // Setup country toggle
@@ -2544,11 +2549,9 @@ function initializeBarcodeGenerator() {
     const countryLabel = document.getElementById('barcode-country-label');
     if (countryToggle && countryLabel) {
         countryToggle.addEventListener('change', function() {
-            if (this.checked) {
-                countryLabel.textContent = 'CANADA';
-            } else {
-                countryLabel.textContent = 'USA';
-            }
+            const isCanada = this.checked;
+            countryLabel.textContent = isCanada ? 'CANADA' : 'USA';
+            updateStatesDropdown(isCanada);
         });
     }
     
@@ -2557,6 +2560,22 @@ function initializeBarcodeGenerator() {
     
     // Setup date format toggle (if needed)
     setupBarcodeDateFormats();
+}
+
+function updateStatesDropdown(isCanada) {
+    const statesSelect = document.getElementById('barcode-states');
+    if (!statesSelect) return;
+    
+    const options = isCanada ? CANADA_PROVINCES : USA_STATES;
+    statesSelect.innerHTML = options.map(option => 
+        `<option value="${option}">${option}</option>`
+    ).join('');
+    
+    // Update label
+    const label = statesSelect.previousElementSibling;
+    if (label && label.tagName === 'LABEL') {
+        label.textContent = isCanada ? 'Province:' : 'State:';
+    }
 }
 
 function setupBarcodeDateFormats() {
@@ -2701,7 +2720,17 @@ async function generatePDF417() {
         
         // Check if bwip-js is available
         if (typeof bwipjs === 'undefined') {
-            showAlert('Barcode library not loaded. Please refresh the page.', 'error');
+            console.error('bwipjs is undefined. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('bwip')));
+            showAlert('Barcode library (bwip-js) not loaded. Please refresh the page.', 'error');
+            return;
+        }
+        
+        console.log('bwipjs library loaded:', typeof bwipjs);
+        console.log('AAMVA string length:', aamvaString.length);
+        
+        // Validate AAMVA string
+        if (!aamvaString || aamvaString.trim() === '') {
+            showAlert('Please fill in the form fields to generate PDF417 barcode', 'error');
             return;
         }
         
@@ -2710,11 +2739,19 @@ async function generatePDF417() {
         const rows = parseInt(document.getElementById('barcode-rows')?.value || '6');
         const columns = parseInt(document.getElementById('barcode-columns')?.value || '12');
         
-        // Create canvas for PDF417
-        const canvas = document.createElement('canvas');
+        // Create canvas for PDF417 - must be in DOM for bwip-js
+        let canvas = document.getElementById('barcode-pdf417-canvas');
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'barcode-pdf417-canvas';
+            canvas.style.display = 'none';
+            document.body.appendChild(canvas);
+        }
+        
         const scale = 3; // Higher scale for better quality
         
-        // Generate PDF417 barcode using bwip-js
+        // Generate PDF417 barcode using bwip-js (callback-based API)
+        // Note: Not specifying backgroundcolor makes it transparent by default
         bwipjs.toCanvas(canvas, {
             bcid: 'pdf417',
             text: aamvaString,
@@ -2725,10 +2762,11 @@ async function generatePDF417() {
             rows: rows,
             ecclevel: ecc,
             includetext: false
+            // backgroundcolor is not specified to keep it transparent
         }, function(err) {
             if (err) {
                 console.error('PDF417 generation error:', err);
-                showAlert('Error generating PDF417 barcode: ' + err.message, 'error');
+                showAlert('Error generating PDF417 barcode: ' + (err.message || err), 'error');
                 return;
             }
             
@@ -2764,6 +2802,7 @@ function canvasToSVG(canvas) {
     svg.setAttribute('height', canvas.height);
     svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     
+    // Use PNG with transparency preserved
     const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     image.setAttribute('href', canvas.toDataURL('image/png'));
     image.setAttribute('width', canvas.width);
@@ -2816,9 +2855,9 @@ async function generateCode128() {
             format: 'CODE128',
             width: 2,
             height: 100,
-            displayValue: true,
+            displayValue: false,
             fontSize: 20,
-            background: '#ffffff',
+            background: 'transparent',
             lineColor: '#000000',
             margin: 10
         });
@@ -2885,6 +2924,7 @@ async function savePDF417PNG() {
     }
     
     try {
+        // Use toBlob with PNG format to preserve transparency
         window.currentBarcodeCanvas.toBlob(function(blob) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2895,7 +2935,7 @@ async function savePDF417PNG() {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showAlert('PNG file downloaded successfully!', 'success');
-        });
+        }, 'image/png'); // PNG format preserves transparency
     } catch (error) {
         showAlert('Error saving PNG: ' + error.message, 'error');
     }
@@ -2938,8 +2978,8 @@ async function saveCode128PNG() {
         img.onload = function() {
             canvas.width = img.width || 800;
             canvas.height = img.height || 200;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Don't fill with white - keep transparent
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
             canvas.toBlob(function(blob) {
                 const url = URL.createObjectURL(blob);

@@ -93,6 +93,8 @@ class TronPaymentChecker {
     // Check transaction on TRON blockchain
     async checkTransaction(walletAddress, expectedAmount, since) {
         try {
+            console.log(`🔍 Checking transactions for wallet ${walletAddress}, expected: $${expectedAmount}, since: ${new Date(since).toISOString()}`);
+            
             const response = await axios.get(
                 `${this.apiUrl}/v1/accounts/${walletAddress}/transactions/trc20`,
                 {
@@ -108,14 +110,20 @@ class TronPaymentChecker {
                 }
             );
 
+            console.log(`📊 API Response: ${response.data?.data?.length || 0} transactions found`);
+
             if (response.data && response.data.data) {
                 for (const tx of response.data.data) {
                     // Check if it's USDT (TRC20)
                     if (tx.token_info && tx.token_info.symbol === 'USDT') {
                         const amount = parseFloat(tx.value) / 1000000; // USDT has 6 decimals
+                        const difference = Math.abs(amount - expectedAmount);
+                        
+                        console.log(`  💰 Found USDT tx: $${amount.toFixed(2)} (expected: $${expectedAmount.toFixed(2)}, diff: $${difference.toFixed(2)})`);
                         
                         // Check if amount matches (with 0.01 tolerance)
-                        if (Math.abs(amount - expectedAmount) < 0.01) {
+                        if (difference < 0.01) {
+                            console.log(`✅ MATCH FOUND! Transaction ID: ${tx.transaction_id}`);
                             return {
                                 found: true,
                                 txId: tx.transaction_id,
@@ -128,9 +136,14 @@ class TronPaymentChecker {
                 }
             }
             
+            console.log(`❌ No matching transaction found`);
             return { found: false };
         } catch (error) {
-            console.error('Error checking TRON transaction:', error.message);
+            console.error('❌ Error checking TRON transaction:', error.message);
+            if (error.response) {
+                console.error('   Response status:', error.response.status);
+                console.error('   Response data:', error.response.data);
+            }
             return { found: false, error: error.message };
         }
     }
@@ -156,6 +169,27 @@ class TronPaymentChecker {
     async verifyPayment(orderId) {
         const payment = this.activePayments.get(orderId);
         if (!payment) {
+            console.log(`⚠️ Payment not found in activePayments for order ${orderId}`);
+            // Try to get from orders database
+            try {
+                const orders = await readData('orders');
+                const order = orders.find(o => o.id === orderId);
+                if (order && order.status === 'pending') {
+                    console.log(`📋 Found order in database, expected amount: $${order.exactAmount}`);
+                    // Recreate payment entry
+                    this.activePayments.set(orderId, {
+                        amount: order.exactAmount,
+                        wallet: CONFIG.WALLET_ADDRESS,
+                        startTime: new Date(order.createdAt).getTime(),
+                        expiryTime: new Date(order.expiresAt).getTime(),
+                        checked: false
+                    });
+                    const restoredPayment = this.activePayments.get(orderId);
+                    return await this.verifyPayment(orderId); // Retry with restored payment
+                }
+            } catch (err) {
+                console.error('Error reading orders:', err);
+            }
             return { verified: false, error: 'Payment not found' };
         }
 
@@ -165,6 +199,8 @@ class TronPaymentChecker {
             return { verified: false, error: 'Payment expired', expired: true };
         }
 
+        console.log(`🔍 Verifying payment for order ${orderId}: Expected $${payment.amount}`);
+
         // Check blockchain
         const result = await this.checkTransaction(
             CONFIG.WALLET_ADDRESS,
@@ -173,6 +209,7 @@ class TronPaymentChecker {
         );
 
         if (result.found) {
+            console.log(`✅ Payment verified for order ${orderId}!`);
             payment.checked = true;
             payment.txId = result.txId;
             return {
@@ -228,13 +265,27 @@ cron.schedule(`*/${CONFIG.CHECK_INTERVAL} * * * * *`, async () => {
         const pendingOrders = orders.filter(o => o.status === 'pending' && new Date(o.expiresAt) > new Date());
         
         if (pendingOrders.length > 0) {
-            console.log(`🔍 Checking ${pendingOrders.length} pending payment(s)...`);
+            console.log(`\n⏰ [${new Date().toISOString()}] Checking ${pendingOrders.length} pending payment(s)...`);
             
             for (const order of pendingOrders) {
+                console.log(`  📦 Order ${order.id}: Expected $${order.exactAmount || order.baseAmount}`);
+                
+                // Ensure payment is in activePayments map
+                if (!paymentChecker.activePayments.has(order.id) && order.exactAmount) {
+                    console.log(`  🔄 Restoring payment entry for order ${order.id}`);
+                    paymentChecker.activePayments.set(order.id, {
+                        amount: order.exactAmount,
+                        wallet: CONFIG.WALLET_ADDRESS,
+                        startTime: new Date(order.createdAt).getTime(),
+                        expiryTime: new Date(order.expiresAt).getTime(),
+                        checked: false
+                    });
+                }
+                
                 const verification = await paymentChecker.verifyPayment(order.id);
                 
                 if (verification.verified) {
-                    console.log(`✅ Payment confirmed for order ${order.id}`);
+                    console.log(`\n✅✅✅ PAYMENT CONFIRMED FOR ORDER ${order.id} ✅✅✅\n`);
                     
                     // Update order status
                     order.status = 'paid';
@@ -244,7 +295,12 @@ cron.schedule(`*/${CONFIG.CHECK_INTERVAL} * * * * *`, async () => {
                     await writeData('orders', orders);
                     
                     // Send files email automatically
-                    await sendOrderFiles(order.email, order.items, order.id, order.downloadToken);
+                    try {
+                        await sendOrderFiles(order.email, order.items, order.id, order.downloadToken);
+                        console.log(`📧 Files email sent to ${order.email} for order ${order.id}`);
+                    } catch (emailError) {
+                        console.error(`❌ Error sending email:`, emailError);
+                    }
                     
                     // Update download counts
                     const products = await readData('products');
@@ -255,13 +311,16 @@ cron.schedule(`*/${CONFIG.CHECK_INTERVAL} * * * * *`, async () => {
                         }
                     });
                     await writeData('products', products);
-                    
-                    console.log(`📧 Files email sent to ${order.email} for order ${order.id}`);
+                } else if (verification.error) {
+                    console.log(`  ⚠️ Order ${order.id}: ${verification.error}`);
+                } else {
+                    console.log(`  ⏳ Order ${order.id}: Still waiting... (${verification.timeLeft || 'N/A'} min left)`);
                 }
             }
         }
     } catch (error) {
         console.error('❌ Error in automatic payment check:', error);
+        console.error('Stack:', error.stack);
     }
 });
 
@@ -1456,6 +1515,47 @@ app.post('/api/mrz/control-digit', (req, res) => {
         const digit = calculateMRZCheckDigit(str);
         res.json({ success: true, digit });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Manual payment check endpoint (for debugging)
+app.get('/api/orders/:id/manual-check', async (req, res) => {
+    try {
+        const orders = await readData('orders');
+        const order = orders.find(o => o.id === req.params.id);
+        
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Order not found' });
+        }
+        
+        console.log(`\n🔧 MANUAL CHECK REQUESTED for order ${order.id}`);
+        console.log(`   Expected amount: $${order.exactAmount || order.baseAmount}`);
+        console.log(`   Created at: ${order.createdAt}`);
+        console.log(`   Wallet: ${CONFIG.WALLET_ADDRESS}`);
+        
+        // Restore payment entry if needed
+        if (!paymentChecker.activePayments.has(order.id) && order.exactAmount) {
+            paymentChecker.activePayments.set(order.id, {
+                amount: order.exactAmount,
+                wallet: CONFIG.WALLET_ADDRESS,
+                startTime: new Date(order.createdAt).getTime(),
+                expiryTime: new Date(order.expiresAt).getTime(),
+                checked: false
+            });
+        }
+        
+        const verification = await paymentChecker.verifyPayment(order.id);
+        
+        res.json({
+            success: true,
+            orderId: order.id,
+            expectedAmount: order.exactAmount || order.baseAmount,
+            verification: verification,
+            wallet: CONFIG.WALLET_ADDRESS
+        });
+    } catch (error) {
+        console.error('Manual check error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

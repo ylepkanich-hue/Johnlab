@@ -2839,8 +2839,12 @@ async function generatePDF417() {
                 const svg = canvasToSVG(canvas);
                 svgContainer.innerHTML = '';
                 svg.setAttribute('width', '100%');
-                svg.setAttribute('height', 'auto');
+                // SVG doesn't support height="auto", use viewBox instead or calculate height
+                const aspectRatio = canvas.height / canvas.width;
+                svg.setAttribute('viewBox', `0 0 ${canvas.width} ${canvas.height}`);
                 svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
                 svgContainer.appendChild(svg);
                 
                 // Show results
@@ -2918,7 +2922,9 @@ async function generateCode128() {
         svgContainer.innerHTML = '';
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', '100%');
-        svg.setAttribute('height', 'auto');
+        // SVG doesn't support height="auto", use viewBox and style instead
+        svg.setAttribute('viewBox', `0 0 ${svg.getAttribute('width') || '300'} ${svg.getAttribute('height') || '100'}`);
+        svg.style.height = 'auto';
         svgContainer.appendChild(svg);
         
         JsBarcode(svg, code128Data, {

@@ -884,6 +884,197 @@
             display: block;
         }
 
+        /* === AUTH FORMS === */
+        .auth-container {
+            max-width: 500px;
+            margin: 60px auto;
+        }
+
+        .auth-card {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-card .form-group {
+            margin-bottom: 20px;
+        }
+
+        .auth-card input[type="text"],
+        .auth-card input[type="email"],
+        .auth-card input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            background: var(--black);
+            border: 2px solid var(--gray);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .auth-card input:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .success-message {
+            background: rgba(39, 174, 96, 0.2);
+            border: 2px solid var(--success);
+            color: var(--success);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* === ACCOUNT DASHBOARD === */
+        .account-header {
+            margin-bottom: 30px;
+        }
+
+        .account-info-card {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            margin-bottom: 30px;
+        }
+
+        .account-info-card h3 {
+            color: var(--gold);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--gray);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row span:first-child {
+            color: #888;
+            font-weight: 600;
+        }
+
+        .info-row span:last-child {
+            color: var(--gold);
+        }
+
+        .orders-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .order-card {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            transition: all 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray);
+        }
+
+        .order-id {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .order-date {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .order-total {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .order-items {
+            margin: 20px 0;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--black);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .order-item-name {
+            flex: 1;
+            color: #fff;
+        }
+
+        .order-item-price {
+            color: var(--gold);
+            margin-right: 20px;
+        }
+
+        .order-item-download {
+            padding: 8px 16px;
+            background: var(--gold);
+            color: var(--black);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-item-download:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 18px;
+        }
+
         /* === MODAL === */
         .modal-overlay {
             position: fixed;
@@ -1205,6 +1396,22 @@
                     <button class="btn btn-secondary" onclick="showSection('cart')">
                         <i class="fas fa-shopping-cart"></i> <span data-i18n="navCart">Cart</span> (<span id="cart-count">0</span>)
                     </button>
+                    <div id="user-account-buttons" style="display: none;">
+                        <button class="btn btn-secondary" onclick="showSection('account')">
+                            <i class="fas fa-user"></i> <span data-i18n="myAccount">My Account</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="userLogout()">
+                            <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span>
+                        </button>
+                    </div>
+                    <div id="guest-account-buttons">
+                        <button class="btn btn-secondary" onclick="showSection('login')">
+                            <i class="fas fa-sign-in-alt"></i> <span data-i18n="login">Login</span>
+                        </button>
+                        <button class="btn btn-primary" onclick="showSection('register')">
+                            <i class="fas fa-user-plus"></i> <span data-i18n="register">Register</span>
+                        </button>
+                    </div>
                     <button class="btn btn-secondary" onclick="showSection('contacts')">
                         <i class="fas fa-address-card"></i> <span data-i18n="navContact">Contact</span>
                     </button>

@@ -503,7 +503,7 @@ function showSection(sectionId) {
         else if (sectionId === 'products') renderProducts();
         else if (sectionId === 'mrz-generator') initializeMRZGenerator();
         else if (sectionId === 'barcode-generator') initializeBarcodeGenerator();
-        else if (sectionId === 'account') loadUserAccount();
+        else if (sectionId === 'other-services') renderOtherServices();
         else if (sectionId === 'account') loadUserAccount();
     }
 }
@@ -543,9 +543,9 @@ function renderHomePage() {
     // Render categories on home page
     renderHomeCategories();
 
-    // Exclude MRZ category products from featured products
+    // Exclude MRZ and Other services category products from featured products
     const featured = [...products]
-        .filter(p => p.category !== 'MRZ')
+        .filter(p => p.category !== 'MRZ' && p.category !== 'Other services')
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
         .slice(0, 3);
     
@@ -562,9 +562,9 @@ function renderCategoryIcon(icon) {
     return `<i class="fas ${icon}"></i>`;
 }
 
-// Helper function to filter out MRZ and Barcode Generator categories from store display
+// Helper function to filter out MRZ, Other services, and Barcode Generator categories from store display
 function getStoreCategories() {
-    return categories.filter(c => !c.isCountry && c.name !== 'MRZ' && c.name !== 'Barcode Generator');
+    return categories.filter(c => !c.isCountry && c.name !== 'MRZ' && c.name !== 'Other services' && c.name !== 'Barcode Generator');
 }
 
 function renderHomeCategories() {
@@ -575,12 +575,16 @@ function renderHomeCategories() {
     const mainCategories = categories.filter(c => !c.isCountry && c.name !== 'Barcode Generator').slice(0, 8);
     
     container.innerHTML = mainCategories.map(cat => {
-        // Don't show product count for MRZ category
-        const productCount = (cat.name === 'MRZ') ? 0 : products.filter(p => p.category === cat.name).length;
-        const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates'); // Remove 's' for singular if needed
-        let displayText = `${productCount} ${templateText}`;
+        // Don't show product count for MRZ and Other services categories
+        let displayText = '';
         if (cat.name === 'MRZ') {
             displayText = t('mrzGenerator') || 'MRZ Generator';
+        } else if (cat.name === 'Other services') {
+            displayText = t('otherServices') || 'Other Services';
+        } else {
+            const productCount = products.filter(p => p.category === cat.name).length;
+            const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates');
+            displayText = `${productCount} ${templateText}`;
         }
         return `
             <div class="category-card" onclick="viewCategory('${cat.name}')">
@@ -599,6 +603,13 @@ function viewCategory(categoryName) {
     if (categoryName === 'MRZ Generator' || categoryName === 'MRZ') {
         showSection('mrz-generator');
         initializeMRZGenerator();
+        return;
+    }
+    
+    // Special handling for Other services
+    if (categoryName === 'Other services') {
+        showSection('other-services');
+        renderOtherServices();
         return;
     }
     
@@ -664,10 +675,10 @@ function renderCountryFilters(categoryName) {
     const container = document.getElementById('country-filters');
     if (!container) return;
     
-    // Get unique countries from products in this category (exclude MRZ products)
+    // Get unique countries from products in this category (exclude MRZ and Other services products)
     const categoryProducts = categoryName === 'all' 
-        ? products.filter(p => p.category !== 'MRZ')
-        : products.filter(p => p.category === categoryName && p.category !== 'MRZ');
+        ? products.filter(p => p.category !== 'MRZ' && p.category !== 'Other services')
+        : products.filter(p => p.category === categoryName && p.category !== 'MRZ' && p.category !== 'Other services');
     const productCountries = new Set();
     categoryProducts.forEach(p => {
         if (p.countries && Array.isArray(p.countries)) {
@@ -740,8 +751,8 @@ function renderProductCard(product) {
 }
 
 function renderProducts() {
-    // Always exclude MRZ category products from store display
-    let filtered = products.filter(p => p.category !== 'MRZ');
+    // Always exclude MRZ and Other services category products from store display
+    let filtered = products.filter(p => p.category !== 'MRZ' && p.category !== 'Other services');
     
     // Filter by category
     if (currentFilter !== 'all') {
@@ -859,9 +870,9 @@ function searchProducts() {
     }
     
     const container = document.getElementById('products-container');
-    // Exclude MRZ category products from search results
+    // Exclude MRZ and Other services category products from search results
     const filtered = products.filter(p => 
-        p.category !== 'MRZ' && (
+        p.category !== 'MRZ' && p.category !== 'Other services' && (
             p.name.toLowerCase().includes(searchTerm) || 
             p.description.toLowerCase().includes(searchTerm) ||
             p.category.toLowerCase().includes(searchTerm)
@@ -1352,7 +1363,9 @@ function showAdminTab(tabName, button) {
         'categories': 'admin-categories',
         'orders': 'admin-orders',
         'settings': 'admin-settings',
-        'contacts-admin': 'admin-contacts'
+        'contacts-admin': 'admin-contacts',
+        'database': 'admin-database',
+        'services': 'admin-services'
     };
     
     const elementId = tabIdMap[tabName] || `admin-${tabName}`;
@@ -1379,6 +1392,9 @@ function showAdminTab(tabName, button) {
             break;
         case 'database':
             loadAdminDatabase();
+            break;
+        case 'services':
+            loadAdminServices();
             break;
     }
 }
@@ -3402,6 +3418,246 @@ if (document.readyState === 'loading') {
 } else {
     checkUserAuth();
 }
+
+// ===== OTHER SERVICES =====
+let services = [];
+
+async function loadServices() {
+    try {
+        const response = await fetch(`${API_URL}/api/services`);
+        services = await response.json();
+    } catch (error) {
+        console.error('Error loading services:', error);
+        services = [];
+    }
+}
+
+function renderOtherServices() {
+    const container = document.getElementById('services-list');
+    if (!container) return;
+    
+    // Reload services before rendering
+    loadServices().then(() => {
+        if (!services || services.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #888;">
+                    <i class="fas fa-concierge-bell" style="font-size: 48px; margin-bottom: 20px; color: var(--gold);"></i>
+                    <p style="font-size: 18px;">No services available at the moment.</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Check back soon for new services!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = services.map(service => `
+            <div class="service-item">
+                <div class="service-title">
+                    <i class="fas fa-star"></i>
+                    ${service.name}
+                </div>
+                <div class="service-description">
+                    ${service.description}
+                </div>
+                <a href="${service.telegramLink}" target="_blank" class="service-telegram-link" rel="noopener noreferrer">
+                    <i class="fab fa-telegram-plane"></i>
+                    View on Telegram
+                </a>
+            </div>
+        `).join('');
+    });
+}
+
+// Admin: Load services management
+function loadAdminServices() {
+    const container = document.getElementById('admin-services');
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 style="color: var(--gold); margin: 0;">Other Services Management</h2>
+            <button class="btn btn-primary" onclick="showAddServiceModal()">
+                <i class="fas fa-plus"></i> Add Service
+            </button>
+        </div>
+        <div id="admin-services-list"></div>
+    `;
+    renderAdminServicesList();
+}
+
+function renderAdminServicesList() {
+    const listContainer = document.getElementById('admin-services-list');
+    if (!listContainer) return;
+    
+    loadServices().then(() => {
+        if (!services || services.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; color: #aaa; padding: 40px;">No services yet. Click "Add Service" to create one.</p>';
+            return;
+        }
+        
+        listContainer.innerHTML = `
+            <div style="display: grid; gap: 20px;">
+                ${services.map(service => `
+                    <div style="background: var(--black-lighter); padding: 20px; border-radius: 15px; border: 2px solid var(--gray);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="color: var(--gold); margin: 0 0 10px 0; font-size: 20px;">${service.name}</h3>
+                                <p style="color: #ccc; margin: 0; line-height: 1.6;">${service.description}</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-secondary btn-small" onclick="editService(${service.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-small" onclick="deleteService(${service.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <a href="${service.telegramLink}" target="_blank" style="color: var(--gold); text-decoration: underline;">
+                                <i class="fab fa-telegram-plane"></i> ${service.telegramLink}
+                            </a>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    });
+}
+
+function showAddServiceModal() {
+    const modal = `
+        <div class="modal-overlay active" onclick="closeModal()">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div class="modal-title">Add New Service</div>
+                <form id="add-service-form">
+                    <div class="form-group">
+                        <label>Service Name *:</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g., Custom Design Service">
+                    </div>
+                    <div class="form-group">
+                        <label>Description *:</label>
+                        <textarea name="description" class="form-control" rows="4" required placeholder="Brief description of the service..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Telegram Link *:</label>
+                        <input type="url" name="telegramLink" class="form-control" required placeholder="https://t.me/yourgroup">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Link to Telegram group/channel where this service is demonstrated</small>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="button" class="btn btn-primary" onclick="submitServiceForm()" style="flex: 1;">
+                            <i class="fas fa-plus"></i> Add Service
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.getElementById('modals').innerHTML = modal;
+}
+
+function showEditServiceModal(serviceId) {
+    const service = services.find(s => s.id === serviceId);
+    if (!service) return;
+    
+    const modal = `
+        <div class="modal-overlay active" onclick="closeModal()">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div class="modal-title">Edit Service</div>
+                <form id="edit-service-form">
+                    <div class="form-group">
+                        <label>Service Name *:</label>
+                        <input type="text" name="name" class="form-control" value="${service.name}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description *:</label>
+                        <textarea name="description" class="form-control" rows="4" required>${service.description}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Telegram Link *:</label>
+                        <input type="url" name="telegramLink" class="form-control" value="${service.telegramLink}" required>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Link to Telegram group/channel where this service is demonstrated</small>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="button" class="btn btn-primary" onclick="submitServiceForm(true, ${service.id})" style="flex: 1;">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.getElementById('modals').innerHTML = modal;
+}
+
+async function submitServiceForm(isEdit = false, serviceId = null) {
+    const form = document.getElementById(isEdit ? 'edit-service-form' : 'add-service-form');
+    const formData = {
+        name: form.name.value,
+        description: form.description.value,
+        telegramLink: form.telegramLink.value
+    };
+    
+    try {
+        const url = isEdit ? `${API_URL}/api/services/${serviceId}` : `${API_URL}/api/services`;
+        const method = isEdit ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            closeModal();
+            await loadServices();
+            renderAdminServicesList();
+            showAlert('Service ' + (isEdit ? 'updated' : 'added') + ' successfully!');
+        } else {
+            showAlert(result.error || 'Error saving service', 'error');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.', 'error');
+        console.error('Service save error:', error);
+    }
+}
+
+function editService(serviceId) {
+    showEditServiceModal(serviceId);
+}
+
+async function deleteService(serviceId) {
+    if (!confirm('Delete this service?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/services/${serviceId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            await loadServices();
+            renderAdminServicesList();
+            showAlert('Service deleted successfully!');
+        } else {
+            showAlert(result.error || 'Error deleting service', 'error');
+        }
+    } catch (error) {
+        showAlert('Network error. Please try again.', 'error');
+        console.error('Service delete error:', error);
+    }
+}
+
+// Load services on page load
+loadServices();
 
 // ===== UTILITIES =====
 function closeModal() {

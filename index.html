@@ -1798,7 +1798,73 @@
 
     <!-- Barcode Generation Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.8.0/dist/browser-bwipjs-min.js"></script>
+    <!-- Load bwip-js with fallback options -->
+    <script>
+        (function() {
+            const sources = [
+                {
+                    url: 'https://unpkg.com/bwip-js@4.8.0/dist/browser-bwipjs-min.js',
+                    name: 'unpkg browser build'
+                },
+                {
+                    url: 'https://cdn.jsdelivr.net/npm/bwip-js@4.8.0/dist/browser-bwipjs-min.js',
+                    name: 'jsdelivr browser build'
+                },
+                {
+                    url: 'https://unpkg.com/bwip-js@4.8.0/dist/bwip-js-min.js',
+                    name: 'unpkg standard build'
+                }
+            ];
+            
+            function tryLoad(index) {
+                if (index >= sources.length) {
+                    console.error('All CDN sources failed to load bwip-js');
+                    window.bwipjsLoadError = true;
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = sources[index].url;
+                script.onload = function() {
+                    console.log('Script loaded from:', sources[index].name);
+                    // Check multiple times as library might initialize asynchronously
+                    let checkCount = 0;
+                    const checkInterval = setInterval(function() {
+                        checkCount++;
+                        if (typeof bwipjs !== 'undefined') {
+                            console.log('bwip-js loaded successfully as "bwipjs" from:', sources[index].name);
+                            window.bwipjsLoaded = true;
+                            clearInterval(checkInterval);
+                        } else if (typeof window.bwipjs !== 'undefined') {
+                            console.log('bwip-js loaded successfully as "window.bwipjs" from:', sources[index].name);
+                            window.bwipjsLoaded = true;
+                            clearInterval(checkInterval);
+                        } else if (checkCount > 20) {
+                            // Tried for 2 seconds, move to next source
+                            console.warn('Script loaded but bwipjs not found after 2s, trying next source...');
+                            clearInterval(checkInterval);
+                            if (index < sources.length - 1) {
+                                tryLoad(index + 1);
+                            } else {
+                                window.bwipjsLoadError = true;
+                            }
+                        }
+                    }, 100);
+                };
+                script.onerror = function() {
+                    console.warn('Failed to load from:', sources[index].name);
+                    if (index < sources.length - 1) {
+                        tryLoad(index + 1);
+                    } else {
+                        window.bwipjsLoadError = true;
+                    }
+                };
+                document.head.appendChild(script);
+            }
+            
+            tryLoad(0);
+        })();
+    </script>
     <script src="app.js"></script>
 </body>
 </html>

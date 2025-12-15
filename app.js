@@ -543,18 +543,16 @@ function renderHomeCategories() {
     const container = document.getElementById('home-categories');
     if (!container) return;
     
-    // Show all categories on home page (including MRZ for navigation)
-    const mainCategories = categories.filter(c => !c.isCountry).slice(0, 8);
+    // Show all categories on home page (including MRZ for navigation, but exclude Barcode Generator)
+    const mainCategories = categories.filter(c => !c.isCountry && c.name !== 'Barcode Generator').slice(0, 8);
     
     container.innerHTML = mainCategories.map(cat => {
-        // Don't show product count for MRZ and Barcode Generator categories
-        const productCount = (cat.name === 'MRZ' || cat.name === 'Barcode Generator') ? 0 : products.filter(p => p.category === cat.name).length;
+        // Don't show product count for MRZ category
+        const productCount = (cat.name === 'MRZ') ? 0 : products.filter(p => p.category === cat.name).length;
         const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates'); // Remove 's' for singular if needed
         let displayText = `${productCount} ${templateText}`;
         if (cat.name === 'MRZ') {
             displayText = t('mrzGenerator') || 'MRZ Generator';
-        } else if (cat.name === 'Barcode Generator') {
-            displayText = t('barcodeGenerator') || 'Barcode Generator';
         }
         return `
             <div class="category-card" onclick="viewCategory('${cat.name}')">
@@ -576,12 +574,12 @@ function viewCategory(categoryName) {
         return;
     }
     
-    // Special handling for Barcode Generator
-    if (categoryName === 'Barcode Generator') {
-        showSection('barcode-generator');
-        initializeBarcodeGenerator();
-        return;
-    }
+    // Barcode Generator is hidden for now
+    // if (categoryName === 'Barcode Generator') {
+    //     showSection('barcode-generator');
+    //     initializeBarcodeGenerator();
+    //     return;
+    // }
     
     currentFilter = categoryName;
     showSection('products');

@@ -407,10 +407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCategoryFilters();
     renderContacts();
     
-    if (localStorage.getItem('admin_logged_in') === 'true') {
-        isAdmin = true;
-        showAdminPanel();
-    }
+    // Admin panel should only be accessed via password in search, not automatically
+    // Removed automatic admin panel redirect
     
     document.getElementById('search-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -435,12 +433,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ===== DATA LOADING =====
 async function loadData() {
     try {
+        // Add cache-busting timestamp to ensure fresh data from server
+        const cacheBuster = `?t=${Date.now()}`;
         const [productsRes, categoriesRes, settingsRes, contactsRes, ordersRes] = await Promise.all([
-            fetch(`${API_URL}/api/products`),
-            fetch(`${API_URL}/api/categories`),
-            fetch(`${API_URL}/api/settings`),
-            fetch(`${API_URL}/api/contacts`),
-            fetch(`${API_URL}/api/orders`).catch(() => ({ json: async () => [] }))
+            fetch(`${API_URL}/api/products${cacheBuster}`),
+            fetch(`${API_URL}/api/categories${cacheBuster}`),
+            fetch(`${API_URL}/api/settings${cacheBuster}`, { cache: 'no-store' }),
+            fetch(`${API_URL}/api/contacts${cacheBuster}`),
+            fetch(`${API_URL}/api/orders${cacheBuster}`).catch(() => ({ json: async () => [] }))
         ]);
         
         products = await productsRes.json();
@@ -496,6 +496,37 @@ function updateSiteSettings() {
     if (settings.backgroundImage) {
         document.body.classList.add('custom-background');
         document.body.style.setProperty('--bg-image', `url(${API_URL}${settings.backgroundImage})`);
+    }
+    
+    // Apply hero background if set
+    const heroEl = document.querySelector('.hero');
+    if (heroEl && settings.heroBackground) {
+        heroEl.style.backgroundImage = `url(${API_URL}${settings.heroBackground})`;
+        heroEl.style.backgroundSize = 'cover';
+        heroEl.style.backgroundPosition = 'center';
+        heroEl.style.backgroundRepeat = 'no-repeat';
+        // Add overlay for better text readability
+        if (!heroEl.querySelector('.hero-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'hero-overlay';
+            overlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 0;';
+            heroEl.insertBefore(overlay, heroEl.firstChild);
+        }
+        // Ensure text is above overlay
+        const heroContent = heroEl.querySelector('h1, p, button');
+        if (heroContent) {
+            heroContent.style.position = 'relative';
+            heroContent.style.zIndex = '1';
+        }
+    } else if (heroEl && !settings.heroBackground) {
+        // Remove background image if not set
+        heroEl.style.backgroundImage = '';
+        heroEl.style.backgroundSize = '';
+        heroEl.style.backgroundPosition = '';
+        heroEl.style.backgroundRepeat = '';
+        // Remove overlay if exists
+        const overlay = heroEl.querySelector('.hero-overlay');
+        if (overlay) overlay.remove();
     }
 }
 
@@ -934,7 +965,6 @@ function viewProduct(productId) {
                         <div style="color: #ccc; margin: 20px 0; line-height: 1.8; font-size: 16px;">${product.description}</div>
                         <div style="background: var(--black); padding: 20px; border-radius: 12px; margin: 25px 0;">
                             <div style="margin-bottom: 10px;"><strong>Downloads:</strong> ${product.downloads || 0}</div>
-                            <div style="margin-bottom: 10px;"><strong>File Size:</strong> ${product.fileSize || 'N/A'}</div>
                             <div><strong>Added:</strong> ${new Date(product.createdAt).toLocaleDateString()}</div>
                         </div>
                         <button class="btn btn-primary" onclick="addToCart(${product.id}); closeModal();" style="width: 100%; padding: 18px; font-size: 18px;">
@@ -2009,9 +2039,16 @@ function loadAdminSettings() {
                 <input type="file" id="setting-logo" class="form-control" accept="image/*">
             </div>
             <div class="form-group">
-                <label>Background Image:</label>
+                <label>Background Image (Body):</label>
                 ${settings.backgroundImage ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.backgroundImage}" style="max-width: 200px; border-radius: 10px;"></div>` : ''}
                 <input type="file" id="setting-background" class="form-control" accept="image/*">
+                <small style="color: #aaa; display: block; margin-top: 5px;">Background for entire page</small>
+            </div>
+            <div class="form-group">
+                <label>Hero Block Background:</label>
+                ${settings.heroBackground ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.heroBackground}" style="max-width: 200px; border-radius: 10px; border: 2px solid var(--gold);"></div>` : ''}
+                <input type="file" id="setting-hero-background" class="form-control" accept="image/*">
+                <small style="color: #aaa; display: block; margin-top: 5px;">Background image for the hero block (main title section)</small>
             </div>
             
             <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
@@ -2165,10 +2202,26 @@ async function saveSettings() {
                 });
             }
             
+            // Upload hero background if selected
+            const heroBgFile = document.getElementById('setting-hero-background').files[0];
+            if (heroBgFile) {
+                const heroBgData = new FormData();
+                heroBgData.append('heroBackground', heroBgFile);
+                await fetch(`${API_URL}/api/upload-hero-background`, {
+                    method: 'POST',
+                    body: heroBgData
+                });
+            }
+            
             showAlert('Settings saved successfully!');
+            // Reload all data from server to ensure consistency across devices
+            // Add cache-busting to ensure fresh data
             await loadData();
+            // Force refresh of home page to show updated settings
+            if (document.getElementById('home')?.classList.contains('active')) {
+                renderHomePage();
+            }
             loadAdminSettings();
-            renderHomePage(); // Update home page statistics
             // Re-apply language to update displayed text
             updateSiteSettings();
         } else {
@@ -3251,11 +3304,17 @@ function updateAuthUI() {
     const guestButtons = document.getElementById('guest-account-buttons');
     
     if (currentUser && authToken) {
-        if (userButtons) userButtons.style.display = 'flex';
+        if (userButtons) {
+            userButtons.style.display = 'flex';
+            userButtons.style.gap = '10px';
+        }
         if (guestButtons) guestButtons.style.display = 'none';
     } else {
         if (userButtons) userButtons.style.display = 'none';
-        if (guestButtons) guestButtons.style.display = 'flex';
+        if (guestButtons) {
+            guestButtons.style.display = 'flex';
+            guestButtons.style.gap = '10px';
+        }
     }
 }
 

@@ -307,6 +307,11 @@ function setLanguage(lang) {
         document.documentElement.lang = lang;
         applyTranslations();
         updateLanguageSelector();
+        updateSiteSettings();
+        // Re-render home page to update language-specific settings
+        if (document.getElementById('home')?.classList.contains('active')) {
+            renderHomePage();
+        }
     }
 }
 
@@ -461,25 +466,32 @@ function updateSiteSettings() {
         const heroTitleEl = document.getElementById('hero-title');
         if (heroTitleEl) heroTitleEl.textContent = settings.shopName;
     }
+    // Helper function to get language-specific text
+    function getLocalizedText(textObj) {
+        if (!textObj) return '';
+        if (typeof textObj === 'string') return textObj; // Backward compatibility
+        return textObj[currentLanguage] || textObj.en || textObj.uk || '';
+    }
+    
     if (settings.heroTitle) {
         const heroTitleEl = document.getElementById('hero-title');
-        if (heroTitleEl) heroTitleEl.textContent = settings.heroTitle;
+        if (heroTitleEl) heroTitleEl.textContent = getLocalizedText(settings.heroTitle);
     }
     if (settings.heroSubtitle) {
         const heroSubtitleEl = document.getElementById('hero-subtitle');
-        if (heroSubtitleEl) heroSubtitleEl.textContent = settings.heroSubtitle;
+        if (heroSubtitleEl) heroSubtitleEl.textContent = getLocalizedText(settings.heroSubtitle);
     }
     if (settings.footerTagline) {
         const footerTaglineEl = document.getElementById('footer-tagline');
-        if (footerTaglineEl) footerTaglineEl.textContent = settings.footerTagline;
+        if (footerTaglineEl) footerTaglineEl.textContent = getLocalizedText(settings.footerTagline);
     }
     if (settings.footerCopyright) {
         const footerCopyrightEl = document.getElementById('footer-copyright');
-        if (footerCopyrightEl) footerCopyrightEl.textContent = settings.footerCopyright;
+        if (footerCopyrightEl) footerCopyrightEl.textContent = getLocalizedText(settings.footerCopyright);
     }
     if (settings.footerPayment) {
         const footerPaymentEl = document.getElementById('footer-payment');
-        if (footerPaymentEl) footerPaymentEl.textContent = settings.footerPayment;
+        if (footerPaymentEl) footerPaymentEl.textContent = getLocalizedText(settings.footerPayment);
     }
     if (settings.backgroundImage) {
         document.body.classList.add('custom-background');
@@ -1949,6 +1961,9 @@ function renderOrdersList() {
 
 // ===== SETTINGS =====
 function loadAdminSettings() {
+    // Reset language tab to English
+    settingsCurrentLang = 'en';
+    
     document.getElementById('admin-settings').innerHTML = `
         <h3 style="color: var(--gold); margin-bottom: 30px; font-size: 24px;"><i class="fas fa-cog"></i> Shop Settings</h3>
         <form id="settings-form">
@@ -1968,13 +1983,25 @@ function loadAdminSettings() {
                 <label>Admin Password:</label>
                 <input type="password" id="setting-password" class="form-control" placeholder="Leave empty to keep current">
             </div>
-            <div class="form-group">
-                <label>Header Title:</label>
-                <input type="text" id="setting-hero-title" class="form-control" value="${settings.heroTitle || settings.shopName || ''}" placeholder="Site title shown in header and hero">
-            </div>
-            <div class="form-group">
-                <label>Hero Subtitle:</label>
-                <textarea id="setting-hero-subtitle" class="form-control" rows="2" placeholder="Hero subtitle on the home page">${settings.heroSubtitle || ''}</textarea>
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
+                <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-globe"></i> Language-Specific Text Settings</h3>
+                <p style="color: #aaa; margin-bottom: 20px;">Configure text settings separately for English and Ukrainian languages.</p>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--gray); padding-bottom: 15px;">
+                    <button type="button" class="btn btn-secondary" id="lang-tab-en" onclick="switchSettingsLanguage('en', this)" style="flex: 1; background: var(--gold); color: var(--black);">English</button>
+                    <button type="button" class="btn btn-secondary" id="lang-tab-uk" onclick="switchSettingsLanguage('uk', this)" style="flex: 1; background: var(--black-lighter); color: var(--gold);">Ukrainian</button>
+                </div>
+                
+                <div id="settings-lang-content">
+                    <div class="form-group">
+                        <label>Header Title:</label>
+                        <input type="text" id="setting-hero-title" class="form-control" value="${typeof settings.heroTitle === 'object' ? (settings.heroTitle.en || '') : (settings.heroTitle || settings.shopName || '')}" placeholder="Site title shown in header and hero">
+                    </div>
+                    <div class="form-group">
+                        <label>Hero Subtitle:</label>
+                        <textarea id="setting-hero-subtitle" class="form-control" rows="3" placeholder="Hero subtitle on the home page">${typeof settings.heroSubtitle === 'object' ? (settings.heroSubtitle.en || '') : (settings.heroSubtitle || '')}</textarea>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label>Logo:</label>
@@ -2010,21 +2037,21 @@ function loadAdminSettings() {
             
             <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--gold);">
                 <h3 style="color: var(--gold); margin-bottom: 25px; font-size: 22px;"><i class="fas fa-file-alt"></i> Footer Text</h3>
-                <p style="color: #aaa; margin-bottom: 20px;">Configure the text displayed in the footer section.</p>
+                <p style="color: #aaa; margin-bottom: 20px;">Configure the text displayed in the footer section (language-specific).</p>
                 
                 <div class="form-group">
                     <label>Footer Tagline:</label>
-                    <input type="text" id="setting-footer-tagline" class="form-control" value="${settings.footerTagline || ''}" placeholder="Premium digital templates for USDT">
+                    <input type="text" id="setting-footer-tagline" class="form-control" value="${typeof settings.footerTagline === 'object' ? (settings.footerTagline.en || '') : (settings.footerTagline || '')}" placeholder="Premium digital templates for USDT">
                     <small style="color: #aaa; display: block; margin-top: 5px;">Text shown below the logo in footer</small>
                 </div>
                 <div class="form-group">
                     <label>Footer Copyright:</label>
-                    <input type="text" id="setting-footer-copyright" class="form-control" value="${settings.footerCopyright || ''}" placeholder="© 2024 JOHN'S LAB TEMPLATES. All rights reserved.">
+                    <input type="text" id="setting-footer-copyright" class="form-control" value="${typeof settings.footerCopyright === 'object' ? (settings.footerCopyright.en || '') : (settings.footerCopyright || '')}" placeholder="© 2024 JOHN'S LAB TEMPLATES. All rights reserved.">
                     <small style="color: #aaa; display: block; margin-top: 5px;">Copyright text in footer</small>
                 </div>
                 <div class="form-group">
                     <label>Footer Payment Info:</label>
-                    <input type="text" id="setting-footer-payment" class="form-control" value="${settings.footerPayment || ''}" placeholder="Payment: USDT (TRC20) | Instant Digital Delivery">
+                    <input type="text" id="setting-footer-payment" class="form-control" value="${typeof settings.footerPayment === 'object' ? (settings.footerPayment.en || '') : (settings.footerPayment || '')}" placeholder="Payment: USDT (TRC20) | Instant Digital Delivery">
                     <small style="color: #aaa; display: block; margin-top: 5px;">Payment information text in footer</small>
                 </div>
             </div>
@@ -2036,16 +2063,58 @@ function loadAdminSettings() {
     `;
 }
 
+// Language tab for settings
+let settingsCurrentLang = 'en';
+
+function switchSettingsLanguage(lang, button) {
+    settingsCurrentLang = lang;
+    document.querySelectorAll('#lang-tab-en, #lang-tab-uk').forEach(btn => {
+        btn.style.background = 'var(--black-lighter)';
+        btn.style.color = 'var(--gold)';
+    });
+    button.style.background = 'var(--gold)';
+    button.style.color = 'var(--black)';
+    
+    // Update form values with current language data
+    const currentSettings = settings;
+    
+    // Helper to get language-specific value
+    function getLangValue(obj) {
+        if (!obj) return '';
+        if (typeof obj === 'string') return obj; // Backward compatibility
+        return obj[lang] || '';
+    }
+    
+    document.getElementById('setting-hero-title').value = getLangValue(currentSettings.heroTitle);
+    document.getElementById('setting-hero-subtitle').value = getLangValue(currentSettings.heroSubtitle);
+    document.getElementById('setting-footer-tagline').value = getLangValue(currentSettings.footerTagline);
+    document.getElementById('setting-footer-copyright').value = getLangValue(currentSettings.footerCopyright);
+    document.getElementById('setting-footer-payment').value = getLangValue(currentSettings.footerPayment);
+}
+
 async function saveSettings() {
+    // Get current settings to preserve other language data
+    const currentSettings = settings;
+    
+    // Helper to update language-specific object
+    function updateLangValue(obj, value, lang) {
+        if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+            return { ...obj, [lang]: value };
+        }
+        // If it's a string or doesn't exist, create new object
+        const existing = typeof obj === 'string' ? { en: obj, uk: obj } : { en: '', uk: '' };
+        return { ...existing, [lang]: value };
+    }
+    
     const updatedSettings = {
         shopName: document.getElementById('setting-shop-name').value,
         walletAddress: document.getElementById('setting-wallet').value,
         adminEmail: document.getElementById('setting-email').value,
-        heroTitle: document.getElementById('setting-hero-title').value,
-        heroSubtitle: document.getElementById('setting-hero-subtitle').value,
-        footerTagline: document.getElementById('setting-footer-tagline').value,
-        footerCopyright: document.getElementById('setting-footer-copyright').value,
-        footerPayment: document.getElementById('setting-footer-payment').value
+        heroTitle: updateLangValue(currentSettings.heroTitle, document.getElementById('setting-hero-title').value, settingsCurrentLang),
+        heroSubtitle: updateLangValue(currentSettings.heroSubtitle, document.getElementById('setting-hero-subtitle').value, settingsCurrentLang),
+        footerTagline: updateLangValue(currentSettings.footerTagline, document.getElementById('setting-footer-tagline').value, settingsCurrentLang),
+        footerCopyright: updateLangValue(currentSettings.footerCopyright, document.getElementById('setting-footer-copyright').value, settingsCurrentLang),
+        footerPayment: updateLangValue(currentSettings.footerPayment, document.getElementById('setting-footer-payment').value, settingsCurrentLang)
     };
     
     const newPassword = document.getElementById('setting-password').value;
@@ -2100,6 +2169,8 @@ async function saveSettings() {
             await loadData();
             loadAdminSettings();
             renderHomePage(); // Update home page statistics
+            // Re-apply language to update displayed text
+            updateSiteSettings();
         } else {
             showAlert('Error saving settings', 'error');
         }

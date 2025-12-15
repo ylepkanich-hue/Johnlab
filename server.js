@@ -7,8 +7,6 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const cron = require('node-cron');
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1567,21 +1565,6 @@ async function sendOrderFiles(email, items, orderId, downloadToken) {
     }
 }
 
-// ===== START SERVER =====
-app.listen(PORT, async () => {
-    await initData();
-    console.log(`
-╔════════════════════════════════════════════════════════════╗
-║           🚀 JOHN'S LAB TEMPLATES - RUNNING                ║
-╠════════════════════════════════════════════════════════════╣
-║ 🌐 URL:      ${CONFIG.SITE_URL.padEnd(43)} ║
-║ 💰 Wallet:   ${CONFIG.WALLET_ADDRESS.padEnd(43)} ║
-║ 👑 Admin:    Password: ${CONFIG.ADMIN_PASSWORD.padEnd(33)} ║
-║ ⏱️  Timeout:  ${CONFIG.PAYMENT_TIMEOUT} minutes payment window${' '.repeat(24)} ║
-╚════════════════════════════════════════════════════════════╝
-    `);
-});
-
 // ===== MRZ GENERATOR ENDPOINTS =====
 // All MRZ generation uses standard ICAO 9303 formats:
 // - TD2 format for passports (2 lines of 44 characters each)
@@ -1953,111 +1936,6 @@ app.get('/api/orders/:id/manual-check', async (req, res) => {
     }
 });
 
-// Debug endpoint: Check all recent transactions on wallet
-app.get('/api/debug/transactions', async (req, res) => {
-    try {
-        console.log(`\n🔍 DEBUG: Checking all recent transactions for wallet ${CONFIG.WALLET_ADDRESS}`);
-        
-        const response = await axios.get(
-            `https://api.trongrid.io/v1/accounts/${CONFIG.WALLET_ADDRESS}/transactions/trc20`,
-            {
-                params: {
-                    limit: 20,
-                    only_confirmed: true,
-                    only_to: true
-                },
-                headers: CONFIG.TRON_API_KEY ? {
-                    'TRON-PRO-API-KEY': CONFIG.TRON_API_KEY
-                } : {}
-            }
-        );
-
-        const transactions = [];
-        if (response && response.data && response.data.data) {
-            for (const tx of response.data.data) {
-                if (tx.token_info && (tx.token_info.symbol === 'USDT' || tx.token_info.address === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')) {
-                    const amount = parseFloat(tx.value) / 1000000;
-                    transactions.push({
-                        txId: tx.transaction_id,
-                        amount: amount.toFixed(2),
-                        from: tx.from,
-                        timestamp: new Date(tx.block_timestamp).toISOString(),
-                        confirmed: tx.confirmed
-                    });
-                }
-            }
-        }
-
-        res.json({
-            success: true,
-            wallet: CONFIG.WALLET_ADDRESS,
-            totalTransactions: transactions.length,
-            transactions: transactions,
-            apiResponse: response?.data,
-            apiKeyUsed: !!CONFIG.TRON_API_KEY,
-            apiKeyValid: response ? true : false
-        });
-    } catch (error) {
-        console.error('Debug transaction check error:', error);
-        
-        // If API key is invalid, try without it
-        if (error.response?.status === 401 && CONFIG.TRON_API_KEY) {
-            try {
-                console.log('Retrying without API key...');
-                const retryResponse = await axios.get(
-                    `https://api.trongrid.io/v1/accounts/${CONFIG.WALLET_ADDRESS}/transactions/trc20`,
-                    {
-                        params: {
-                            limit: 20,
-                            only_confirmed: true,
-                            only_to: true
-                        }
-                    }
-                );
-                
-                const transactions = [];
-                if (retryResponse.data && retryResponse.data.data) {
-                    for (const tx of retryResponse.data.data) {
-                        if (tx.token_info && (tx.token_info.symbol === 'USDT' || tx.token_info.address === 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t')) {
-                            const amount = parseFloat(tx.value) / 1000000;
-                            transactions.push({
-                                txId: tx.transaction_id,
-                                amount: amount.toFixed(2),
-                                from: tx.from,
-                                timestamp: new Date(tx.block_timestamp).toISOString(),
-                                confirmed: tx.confirmed
-                            });
-                        }
-                    }
-                }
-                
-                res.json({
-                    success: true,
-                    wallet: CONFIG.WALLET_ADDRESS,
-                    totalTransactions: transactions.length,
-                    transactions: transactions,
-                    apiResponse: retryResponse.data,
-                    apiKeyUsed: false,
-                    apiKeyValid: false,
-                    note: 'API key was invalid, used public API (rate limited)'
-                });
-            } catch (retryError) {
-                res.status(500).json({ 
-                    success: false, 
-                    error: retryError.message,
-                    details: retryError.response?.data 
-                });
-            }
-        } else {
-            res.status(500).json({ 
-                success: false, 
-                error: error.message,
-                details: error.response?.data 
-            });
-        }
-    }
-});
-
 // Test email endpoint
 app.get('/api/test-email', async (req, res) => {
     try {
@@ -2084,4 +1962,19 @@ app.get('/api/test-email', async (req, res) => {
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ error: 'Not found' });
+});
+
+// ===== START SERVER =====
+app.listen(PORT, async () => {
+    await initData();
+    console.log(`
+╔════════════════════════════════════════════════════════════╗
+║           🚀 JOHN'S LAB TEMPLATES - RUNNING                ║
+╠════════════════════════════════════════════════════════════╣
+║ 🌐 URL:      ${CONFIG.SITE_URL.padEnd(43)} ║
+║ 💰 Wallet:   ${CONFIG.WALLET_ADDRESS.padEnd(43)} ║
+║ 👑 Admin:    Password: ${CONFIG.ADMIN_PASSWORD.padEnd(33)} ║
+║ ⏱️  Timeout:  ${CONFIG.PAYMENT_TIMEOUT} minutes payment window${' '.repeat(24)} ║
+╚════════════════════════════════════════════════════════════╝
+    `);
 });

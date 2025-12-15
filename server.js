@@ -6,6 +6,9 @@ const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const cron = require('node-cron');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +23,8 @@ const CONFIG = {
     SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
     SITE_NAME: "JOHN'S LAB TEMPLATES",
     PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
-    CHECK_INTERVAL: parseInt(process.env.PAYMENT_CHECK_INTERVAL_SECONDS) || 30
+    CHECK_INTERVAL: parseInt(process.env.PAYMENT_CHECK_INTERVAL_SECONDS) || 30,
+    JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-change-in-production-' + Date.now()
 };
 
 // ===== FILE UPLOAD CONFIGURATION =====
@@ -938,20 +942,269 @@ app.get('/download/:token', async (req, res) => {
             } : null;
         }).filter(f => f !== null);
 
-        // For simplicity, redirect to first file or show download page
-        if (files.length > 0) {
+        if (files.length === 0) {
+            return res.status(404).json({ success: false, error: 'No files found' });
+        }
+
+        // If single file, serve it directly
+        if (files.length === 1) {
+            const filePath = files[0].path.startsWith('/') ? files[0].path.substring(1) : files[0].path;
+            const fullPath = path.join(__dirname, '..', filePath);
+            
+            // Check if file exists
+            try {
+                await fs.access(fullPath);
+                res.download(fullPath, files[0].filename || path.basename(fullPath));
+            } catch (fileError) {
+                console.error('File not found:', fullPath);
+                return res.status(404).send('File not found on server');
+            }
+        } else {
+            // Multiple files - return JSON with download links
             res.json({
                 success: true,
                 files: files.map(f => ({
                     name: f.name,
-                    downloadUrl: `${CONFIG.SITE_URL}${f.path}`,
+                    downloadUrl: `${CONFIG.SITE_URL}/download/${req.params.token}/${encodeURIComponent(f.filename || path.basename(f.path))}`,
                     filename: f.filename
                 }))
             });
-        } else {
-            res.status(404).json({ success: false, error: 'No files found' });
         }
     } catch (error) {
+        console.error('Download error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Download specific file by token and filename
+app.get('/download/:token/:filename', async (req, res) => {
+    try {
+        const orders = await readData('orders');
+        const order = orders.find(o => o.downloadToken === req.params.token);
+        
+        if (!order || order.status !== 'paid') {
+            return res.status(404).send('Download not found or payment not confirmed');
+        }
+
+        const products = await readData('products');
+        const requestedFilename = decodeURIComponent(req.params.filename);
+        
+        // Find the product file matching the requested filename
+        let filePath = null;
+        let fileName = null;
+        
+        for (const item of order.items) {
+            const product = products.find(p => p.id === item.id);
+            if (product && product.file) {
+                const productFilename = product.fileName || path.basename(product.file);
+                if (productFilename === requestedFilename || path.basename(product.file) === requestedFilename) {
+                    filePath = product.file;
+                    fileName = product.fileName || productFilename;
+                    break;
+                }
+            }
+        }
+
+        if (!filePath) {
+            return res.status(404).send('File not found in order');
+        }
+
+        const fullPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+        const absolutePath = path.join(__dirname, '..', fullPath);
+        
+        // Check if file exists
+        try {
+            await fs.access(absolutePath);
+            res.download(absolutePath, fileName || path.basename(absolutePath));
+        } catch (fileError) {
+            console.error('File not found:', absolutePath);
+            return res.status(404).send('File not found on server');
+        }
+    } catch (error) {
+        console.error('Download error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== USER ACCOUNT SYSTEM =====
+
+// Simple token generation
+function generateToken(userId, email) {
+    const payload = { userId, email, timestamp: Date.now() };
+    return Buffer.from(JSON.stringify(payload)).toString('base64');
+}
+
+function verifyToken(token) {
+    try {
+        const payload = JSON.parse(Buffer.from(token, 'base64').toString());
+        // Token valid for 30 days
+        if (Date.now() - payload.timestamp > 30 * 24 * 60 * 60 * 1000) {
+            return null;
+        }
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
+// Middleware to verify token
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+        return res.status(403).json({ success: false, error: 'Invalid or expired token' });
+    }
+    
+    req.user = payload;
+    next();
+}
+
+// User registration
+app.post('/api/users/register', async (req, res) => {
+    try {
+        const { email, password, name } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ success: false, error: 'Email and password are required' });
+        }
+
+        const users = await readData('users').catch(() => []);
+        
+        // Check if user already exists
+        if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+            return res.status(400).json({ success: false, error: 'Email already registered' });
+        }
+
+        // Simple password hash (base64)
+        const hashedPassword = Buffer.from(password).toString('base64');
+        
+        const newUser = {
+            id: uuidv4(),
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            name: name || '',
+            createdAt: new Date().toISOString(),
+            orders: []
+        };
+
+        users.push(newUser);
+        await writeData('users', users);
+
+        // Create token
+        const token = generateToken(newUser.id, newUser.email);
+
+        res.json({
+            success: true,
+            user: {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name
+            },
+            token
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// User login
+app.post('/api/users/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ success: false, error: 'Email and password are required' });
+        }
+
+        const users = await readData('users').catch(() => []);
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        
+        if (!user) {
+            return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        }
+
+        // Verify password
+        const hashedPassword = Buffer.from(password).toString('base64');
+        if (user.password !== hashedPassword) {
+            return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        }
+
+        // Create token
+        const token = generateToken(user.id, user.email);
+
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
+            },
+            token
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user profile with purchase history
+app.get('/api/users/me', authenticateToken, async (req, res) => {
+    try {
+        const users = await readData('users').catch(() => []);
+        const user = users.find(u => u.id === req.user.userId);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // Get user's orders (by email match)
+        const orders = await readData('orders');
+        const userOrders = orders
+            .filter(o => o.email.toLowerCase() === user.email.toLowerCase() && o.status === 'paid')
+            .map(o => {
+                const products = require('./data/products.json');
+                const orderItems = o.items.map(item => {
+                    const product = products.find(p => p.id === item.id);
+                    return product ? {
+                        id: product.id,
+                        name: product.name,
+                        price: item.price,
+                        file: product.file,
+                        fileName: product.fileName,
+                        downloadUrl: `${CONFIG.SITE_URL}/download/${o.downloadToken}/${encodeURIComponent(product.fileName || 'file')}`
+                    } : null;
+                }).filter(i => i !== null);
+
+                return {
+                    id: o.id,
+                    items: orderItems,
+                    total: o.total,
+                    paidAt: o.paidAt,
+                    downloadToken: o.downloadToken,
+                    downloadUrl: `${CONFIG.SITE_URL}/download/${o.downloadToken}`
+                };
+            });
+
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                createdAt: user.createdAt,
+                totalOrders: userOrders.length,
+                orders: userOrders
+            }
+        });
+    } catch (error) {
+        console.error('Get user error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -1152,7 +1405,7 @@ app.get('/api/customers/export', async (req, res) => {
 });
 
 // ===== EMAIL FUNCTIONS =====
-async function sendPaymentEmail(email, orderId, amount) {
+async function sendPaymentEmail(email, orderId, amount, suggestAccount = false) {
     try {
         // Generate QR code URL for email
         const qrData = `tron:${CONFIG.WALLET_ADDRESS}?amount=${amount}&token=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`;
@@ -1246,7 +1499,7 @@ async function sendOrderFiles(email, items, orderId, downloadToken) {
                     <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 10px 0;">
                         <h3 style="margin: 0 0 10px 0; color: #D4AF37;">${product.name}</h3>
                         <p style="margin: 0; color: #888;">File: ${product.fileName || 'Download'} (${product.fileSize || 'N/A'})</p>
-                        <a href="${CONFIG.SITE_URL}${product.file}" 
+                        <a href="${CONFIG.SITE_URL}/download/${downloadToken}/${encodeURIComponent(product.fileName || 'file')}" 
                            style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold;">
                             Download File
                         </a>

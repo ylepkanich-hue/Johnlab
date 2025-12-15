@@ -478,7 +478,8 @@ async function initData() {
                 { id: 5, name: "Credit", slug: "credit", icon: "fa-credit-card" },
                 { id: 6, name: "USA", slug: "usa", icon: "🇺🇸" },
                 { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" },
-                { id: 8, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
+                { id: 8, name: "Other services", slug: "other-services", icon: "fa-concierge-bell" },
+                { id: 9, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
             ],
             orders: [],
             settings: {
@@ -503,7 +504,8 @@ async function initData() {
                 about: "Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive, high-quality digital templates. If you have any questions, feel free to contact me."
             },
             customers: [],
-            users: []
+            users: [],
+            services: []
         };
 
         for (const [key, data] of Object.entries(initialData)) {

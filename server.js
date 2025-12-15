@@ -13,10 +13,10 @@ const PORT = process.env.PORT || 3000;
 // ===== CONFIGURATION =====
 const CONFIG = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
-    WALLET_ADDRESS: process.env.WALLET_ADDRESS || 'TYourWalletAddress',
-    TRON_API_KEY: process.env.TRON_API_KEY || '',
-    EMAIL_USER: process.env.EMAIL_USER || 'your-email@gmail.com',
-    EMAIL_PASS: process.env.EMAIL_PASS || 'your-password',
+    WALLET_ADDRESS: process.env.WALLET_ADDRESS || 'TLN2r1R9Bod7sMEWoqZrL4Awue29LCJohn',
+    TRON_API_KEY: process.env.TRON_API_KEY || '244c879d-e9ee-456d-911a-92dd800b8eac',
+    EMAIL_USER: process.env.EMAIL_USER || 'john.psd.lab@gmail.com',
+    EMAIL_PASS: process.env.EMAIL_PASS || 'vkvn nfxh whve oemu'.replace(/\s/g, ''),
     SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
     SITE_NAME: "JOHN'S LAB TEMPLATES",
     PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
@@ -210,6 +210,50 @@ const paymentChecker = new TronPaymentChecker();
 cron.schedule('*/5 * * * *', () => {
     paymentChecker.cleanupExpired();
     console.log('🧹 Cleaned up expired payments');
+});
+
+// Automatically check pending payments every CHECK_INTERVAL seconds
+cron.schedule(`*/${CONFIG.CHECK_INTERVAL} * * * * *`, async () => {
+    try {
+        const orders = await readData('orders');
+        const pendingOrders = orders.filter(o => o.status === 'pending' && new Date(o.expiresAt) > new Date());
+        
+        if (pendingOrders.length > 0) {
+            console.log(`🔍 Checking ${pendingOrders.length} pending payment(s)...`);
+            
+            for (const order of pendingOrders) {
+                const verification = await paymentChecker.verifyPayment(order.id);
+                
+                if (verification.verified) {
+                    console.log(`✅ Payment confirmed for order ${order.id}`);
+                    
+                    // Update order status
+                    order.status = 'paid';
+                    order.paidAt = new Date().toISOString();
+                    order.txId = verification.transaction.txId;
+                    
+                    await writeData('orders', orders);
+                    
+                    // Send files email automatically
+                    await sendOrderFiles(order.email, order.items, order.id, order.downloadToken);
+                    
+                    // Update download counts
+                    const products = await readData('products');
+                    order.items.forEach(item => {
+                        const product = products.find(p => p.id === item.id);
+                        if (product) {
+                            product.downloads = (product.downloads || 0) + 1;
+                        }
+                    });
+                    await writeData('products', products);
+                    
+                    console.log(`📧 Files email sent to ${order.email} for order ${order.id}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error in automatic payment check:', error);
+    }
 });
 
 // ===== CATEGORY HELPERS =====
@@ -1403,6 +1447,29 @@ app.post('/api/mrz/control-digit', (req, res) => {
         const digit = calculateMRZCheckDigit(str);
         res.json({ success: true, digit });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Test email endpoint
+app.get('/api/test-email', async (req, res) => {
+    try {
+        const testEmail = CONFIG.EMAIL_USER;
+        await transporter.sendMail({
+            from: `${CONFIG.SITE_NAME} <${CONFIG.EMAIL_USER}>`,
+            to: testEmail,
+            subject: 'Test Email from Payment System',
+            html: `
+                <div style="background: #1a1a1a; color: #fff; padding: 20px; border-radius: 10px; border: 2px solid #D4AF37;">
+                    <h1 style="color: #D4AF37;">✅ Email is Working!</h1>
+                    <p>If you receive this, your email configuration is correct.</p>
+                    <p>Your system is ready to send order confirmation emails automatically.</p>
+                </div>
+            `
+        });
+        res.json({ success: true, message: 'Test email sent! Check your inbox.' });
+    } catch (error) {
+        console.error('Email test error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

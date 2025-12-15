@@ -2719,33 +2719,40 @@ async function generatePDF417() {
         }
         
         // Check if bwip-js is available
-        // Wait a moment for async loading
+        // The standard build (bwip-js-min.js) loads successfully but might expose differently
         let bwipjsLib = null;
         let attempts = 0;
-        const maxAttempts = 10;
+        const maxAttempts = 30; // Wait up to 3 seconds
         
         while (attempts < maxAttempts && !bwipjsLib) {
-            if (typeof bwipjs !== 'undefined') {
+            // Check all possible ways the library might be exposed
+            if (typeof bwipjs !== 'undefined' && typeof bwipjs.toCanvas === 'function') {
                 bwipjsLib = bwipjs;
                 break;
-            } else if (typeof window.bwipjs !== 'undefined') {
+            } else if (typeof window.bwipjs !== 'undefined' && typeof window.bwipjs.toCanvas === 'function') {
                 bwipjsLib = window.bwipjs;
                 break;
+            } else if (typeof window.BWIPJS !== 'undefined' && typeof window.BWIPJS.toCanvas === 'function') {
+                bwipjsLib = window.BWIPJS;
+                break;
             }
+            
+            // Also check if it's available but not yet initialized
+            const possibleNames = ['bwipjs', 'BWIPJS', 'bwip', 'BWIP'];
+            for (const name of possibleNames) {
+                const lib = window[name];
+                if (lib && typeof lib.toCanvas === 'function') {
+                    bwipjsLib = lib;
+                    window.bwipjs = lib; // Make it available as bwipjs
+                    break;
+                }
+            }
+            
+            if (bwipjsLib) break;
+            
             attempts++;
             if (attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        }
-        
-        if (!bwipjsLib) {
-            // Try to find it in window with different names
-            const possibleNames = ['bwipjs', 'BWIPJS', 'bwip', 'BWIP'];
-            for (const name of possibleNames) {
-                if (window[name] && typeof window[name].toCanvas === 'function') {
-                    bwipjsLib = window[name];
-                    break;
-                }
             }
         }
         
@@ -2754,7 +2761,8 @@ async function generatePDF417() {
             console.error('Available globals with "bwip":', Object.keys(window).filter(k => k.toLowerCase().includes('bwip')));
             console.error('window.bwipjs:', typeof window.bwipjs, window.bwipjs);
             console.error('typeof bwipjs:', typeof bwipjs);
-            showAlert('Barcode library (bwip-js) not loaded. Please check the browser console for CDN loading errors. You may need to refresh the page or check your internet connection.', 'error');
+            console.error('window keys:', Object.keys(window).slice(0, 50)); // First 50 keys for debugging
+            showAlert('Barcode library (bwip-js) not loaded. The library file loaded but is not accessible. Please check the browser console for details.', 'error');
             return;
         }
         
@@ -2785,6 +2793,8 @@ async function generatePDF417() {
         
         // Generate PDF417 barcode using bwip-js (callback-based API)
         // Note: Not specifying backgroundcolor makes it transparent by default
+        // The standard build uses a different API - it might need the canvas ID as a string
+        const canvasId = canvas.id || 'barcode-pdf417-canvas';
         bwipjsLib.toCanvas(canvas, {
             bcid: 'pdf417',
             text: aamvaString,

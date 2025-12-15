@@ -1166,10 +1166,10 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
 
         // Get user's orders (by email match)
         const orders = await readData('orders');
+        const products = await readData('products');
         const userOrders = orders
             .filter(o => o.email.toLowerCase() === user.email.toLowerCase() && o.status === 'paid')
             .map(o => {
-                const products = require('./data/products.json');
                 const orderItems = o.items.map(item => {
                     const product = products.find(p => p.id === item.id);
                     return product ? {
@@ -1185,7 +1185,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
                 return {
                     id: o.id,
                     items: orderItems,
-                    total: o.total,
+                    total: o.total || o.baseAmount,
                     paidAt: o.paidAt,
                     downloadToken: o.downloadToken,
                     downloadUrl: `${CONFIG.SITE_URL}/download/${o.downloadToken}`

@@ -1919,6 +1919,121 @@
             </div>
         </section>
 
+        <!-- USER REGISTRATION -->
+        <section id="register" class="section">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2 class="section-title" data-i18n="createAccount">Create Account</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 30px;" data-i18n="registerDescription">Create an account to access all your purchases and download files anytime</p>
+                    
+                    <form id="register-form" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label data-i18n="fullName">Full Name (Optional)</label>
+                            <input type="text" id="register-name" placeholder="John Doe" autocomplete="name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="email">Email *</label>
+                            <input type="email" id="register-email" required placeholder="your@email.com" autocomplete="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="password">Password *</label>
+                            <input type="password" id="register-password" required placeholder="••••••••" autocomplete="new-password" minlength="6">
+                            <small style="color: #888; font-size: 12px;" data-i18n="passwordMinLength">Minimum 6 characters</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="confirmPassword">Confirm Password *</label>
+                            <input type="password" id="register-password-confirm" required placeholder="••••••••" autocomplete="new-password">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-user-plus"></i> <span data-i18n="createAccount">Create Account</span>
+                        </button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 20px; color: #888;">
+                        <span data-i18n="alreadyHaveAccount">Already have an account?</span>
+                        <a href="#" onclick="showSection('login'); return false;" style="color: var(--gold); margin-left: 5px;" data-i18n="loginHere">Login here</a>
+                    </div>
+                    
+                    <div id="register-error" class="error-message" style="display: none;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- USER LOGIN -->
+        <section id="login" class="section">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2 class="section-title" data-i18n="login">Login</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 30px;" data-i18n="loginDescription">Login to access your account and download your purchases</p>
+                    
+                    <form id="login-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label data-i18n="email">Email</label>
+                            <input type="email" id="login-email" required placeholder="your@email.com" autocomplete="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label data-i18n="password">Password</label>
+                            <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-sign-in-alt"></i> <span data-i18n="login">Login</span>
+                        </button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 20px; color: #888;">
+                        <span data-i18n="dontHaveAccount">Don't have an account?</span>
+                        <a href="#" onclick="showSection('register'); return false;" style="color: var(--gold); margin-left: 5px;" data-i18n="registerHere">Register here</a>
+                    </div>
+                    
+                    <div id="login-error" class="error-message" style="display: none;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- USER ACCOUNT DASHBOARD -->
+        <section id="account" class="section">
+            <div class="account-header">
+                <h2 class="section-title" data-i18n="myAccount">My Account</h2>
+                <div id="account-loading" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--gold);"></i>
+                    <p style="margin-top: 15px; color: #888;" data-i18n="loading">Loading...</p>
+                </div>
+            </div>
+            
+            <div id="account-content" style="display: none;">
+                <div class="account-info-card">
+                    <h3 data-i18n="accountInformation">Account Information</h3>
+                    <div class="info-row">
+                        <span data-i18n="email">Email:</span>
+                        <span id="account-email"></span>
+                    </div>
+                    <div class="info-row">
+                        <span data-i18n="fullName">Name:</span>
+                        <span id="account-name"></span>
+                    </div>
+                    <div class="info-row">
+                        <span data-i18n="memberSince">Member Since:</span>
+                        <span id="account-created"></span>
+                    </div>
+                    <div class="info-row">
+                        <span data-i18n="totalOrders">Total Orders:</span>
+                        <span id="account-orders-count"></span>
+                    </div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 40px;" data-i18n="purchaseHistory">Purchase History</div>
+                <div id="account-orders" class="orders-list">
+                    <div class="empty-state" data-i18n="noOrdersYet">No orders yet. Start shopping!</div>
+                </div>
+            </div>
+        </section>
+
         <!-- CONTACTS -->
         <section id="contacts" class="section">
             <div class="section-title" data-i18n="contact">Contact</div>

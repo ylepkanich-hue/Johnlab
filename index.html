@@ -1075,6 +1075,66 @@
             font-size: 18px;
         }
 
+        /* === OTHER SERVICES === */
+        .services-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .service-item {
+            background: linear-gradient(135deg, var(--black-lighter), var(--gray));
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--gold);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .service-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .service-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .service-description {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .service-telegram-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0088cc, #006699);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .service-telegram-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+        }
+
+        .service-telegram-link i {
+            font-size: 18px;
+        }
+
         /* === MODAL === */
         .modal-overlay {
             position: fixed;
@@ -1673,6 +1733,17 @@
             </div>
         </section>
 
+        <!-- OTHER SERVICES -->
+        <section id="other-services" class="section">
+            <div class="section-title">Other Services by John</div>
+            <div id="services-list" class="services-container">
+                <div style="text-align: center; padding: 60px 20px; color: #888;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 20px;"></i>
+                    <p>Loading services...</p>
+                </div>
+            </div>
+        </section>
+
         <!-- BARCODE GENERATOR -->
         <section id="barcode-generator" class="section">
             <div class="section-title" data-i18n="barcodeGenerator">Barcode Generator</div>
@@ -2083,6 +2154,9 @@
                 <button class="admin-tab-btn" onclick="showAdminTab('database', this)">
                     <i class="fas fa-database"></i> Customer Database
                 </button>
+                <button class="admin-tab-btn" onclick="showAdminTab('services', this)">
+                    <i class="fas fa-concierge-bell"></i> Other Services
+                </button>
             </div>
             
             <div class="admin-content">
@@ -2093,6 +2167,7 @@
                 <div id="admin-settings" class="admin-tab"></div>
                 <div id="admin-contacts" class="admin-tab"></div>
                 <div id="admin-database" class="admin-tab"></div>
+                <div id="admin-services" class="admin-tab"></div>
             </div>
         </section>
     </div>

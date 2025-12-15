@@ -504,6 +504,7 @@ function showSection(sectionId) {
         else if (sectionId === 'mrz-generator') initializeMRZGenerator();
         else if (sectionId === 'barcode-generator') initializeBarcodeGenerator();
         else if (sectionId === 'account') loadUserAccount();
+        else if (sectionId === 'account') loadUserAccount();
     }
 }
 

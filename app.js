@@ -2719,13 +2719,26 @@ async function generatePDF417() {
         }
         
         // Check if bwip-js is available
-        if (typeof bwipjs === 'undefined') {
+        // bwip-js exposes itself as 'bwipjs' in the browser build
+        let bwipjsLib = null;
+        if (typeof bwipjs !== 'undefined') {
+            bwipjsLib = bwipjs;
+        } else if (typeof window.bwipjs !== 'undefined') {
+            bwipjsLib = window.bwipjs;
+        } else {
             console.error('bwipjs is undefined. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('bwip')));
-            showAlert('Barcode library (bwip-js) not loaded. Please refresh the page.', 'error');
+            console.error('Checking window object:', window.bwipjs, typeof window.bwipjs);
+            showAlert('Barcode library (bwip-js) not loaded. Please check the browser console for loading errors and ensure the CDN is accessible.', 'error');
             return;
         }
         
-        console.log('bwipjs library loaded:', typeof bwipjs);
+        if (!bwipjsLib || typeof bwipjsLib.toCanvas !== 'function') {
+            console.error('bwipjs found but toCanvas is not a function:', typeof bwipjsLib);
+            showAlert('Barcode library (bwip-js) is loaded but incomplete. Please refresh the page.', 'error');
+            return;
+        }
+        
+        console.log('bwipjs library loaded:', typeof bwipjsLib, 'has toCanvas:', typeof bwipjsLib.toCanvas);
         console.log('AAMVA string length:', aamvaString.length);
         
         // Validate AAMVA string
@@ -2752,7 +2765,7 @@ async function generatePDF417() {
         
         // Generate PDF417 barcode using bwip-js (callback-based API)
         // Note: Not specifying backgroundcolor makes it transparent by default
-        bwipjs.toCanvas(canvas, {
+        bwipjsLib.toCanvas(canvas, {
             bcid: 'pdf417',
             text: aamvaString,
             scale: scale,

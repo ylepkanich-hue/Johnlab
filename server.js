@@ -2083,4 +2083,5 @@ app.get('/api/test-email', async (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-    res.status(
+    res.status(404).json({ error: 'Not found' });
+});

@@ -36,6 +36,7 @@ const storage = multer.diskStorage({
             if (file.fieldname === 'ownerPhoto') uploadPath = 'uploads/owner/';
             if (file.fieldname === 'logo') uploadPath = 'uploads/logo/';
             if (file.fieldname === 'backgroundImage') uploadPath = 'uploads/backgrounds/';
+            if (file.fieldname === 'heroBackground') uploadPath = 'uploads/hero/';
             
             await fs.mkdir(uploadPath, { recursive: true });
             cb(null, uploadPath);
@@ -509,7 +510,8 @@ async function initData() {
                 },
                 telegram: "John_refund",
                 logo: "",
-                backgroundImage: ""
+                backgroundImage: "",
+                heroBackground: ""
             },
             contacts: {
                 ownerName: "John",
@@ -1415,6 +1417,20 @@ app.post('/api/upload-background', upload.single('backgroundImage'), async (req,
         await writeData('settings', settings);
         
         res.json({ success: true, backgroundUrl });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Upload hero background
+app.post('/api/upload-hero-background', upload.single('heroBackground'), async (req, res) => {
+    try {
+        const heroBackgroundUrl = `/uploads/hero/${req.file.filename}`;
+        const settings = await readData('settings');
+        settings.heroBackground = heroBackgroundUrl;
+        await writeData('settings', settings);
+        
+        res.json({ success: true, heroBackgroundUrl });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

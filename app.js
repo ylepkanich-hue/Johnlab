@@ -1524,8 +1524,14 @@ function showAddProductModal() {
                         <input type="file" name="productImage" class="form-control" accept="image/*">
                     </div>
                     <div class="form-group">
-                        <label>Product File:</label>
-                        <input type="file" name="productFile" class="form-control" required>
+                        <label>TeraBox Download Link *:</label>
+                        <input type="url" name="downloadLink" class="form-control" placeholder="https://terabox.com/s/..." required>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Link to the TeraBox folder containing the product files</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Archive Password:</label>
+                        <input type="text" name="downloadPassword" class="form-control" placeholder="JohnSaysThankYou" value="JohnSaysThankYou">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Password for the archive. Default: "JohnSaysThankYou"</small>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
                         <button type="button" class="btn btn-primary" onclick="submitProductForm()" style="flex: 1;">
@@ -1629,9 +1635,15 @@ function editProduct(productId) {
                         <input type="file" name="productImage" class="form-control" accept="image/*">
                     </div>
                     <div class="form-group">
-                        <label>Product File (leave empty to keep current):</label>
-                        ${product.fileName ? `<div style="margin-bottom: 10px; color: #aaa;">Current: ${product.fileName}</div>` : ''}
-                        <input type="file" name="productFile" class="form-control">
+                        <label>TeraBox Download Link *:</label>
+                        ${product.downloadLink ? `<div style="margin-bottom: 10px; color: #aaa;">Current: <a href="${product.downloadLink}" target="_blank" style="color: var(--gold);">${product.downloadLink}</a></div>` : ''}
+                        <input type="url" name="downloadLink" class="form-control" value="${product.downloadLink || ''}" placeholder="https://terabox.com/s/..." required>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Link to the TeraBox folder containing the product files</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Archive Password:</label>
+                        <input type="text" name="downloadPassword" class="form-control" value="${product.downloadPassword || 'JohnSaysThankYou'}" placeholder="JohnSaysThankYou">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Password for the archive. Default: "JohnSaysThankYou"</small>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
                         <button type="button" class="btn btn-primary" onclick="submitProductForm(true, ${product.id})" style="flex: 1;">
@@ -3325,15 +3337,38 @@ function renderUserOrders(orders) {
     
     ordersDiv.innerHTML = orders.map(order => {
         const orderDate = order.paidAt ? new Date(order.paidAt).toLocaleDateString() : 'N/A';
-        const itemsHtml = order.items.map(item => `
-            <div class="order-item">
-                <div class="order-item-name">${item.name}</div>
-                <div class="order-item-price">$${item.price.toFixed(2)}</div>
-                <a href="${item.downloadUrl}" target="_blank" class="order-item-download">
-                    <i class="fas fa-download"></i> ${t('downloadFile')}
-                </a>
+        const itemsHtml = order.items.map(item => {
+            const downloadLink = item.downloadLink;
+            const password = item.downloadPassword || 'JohnSaysThankYou';
+            
+            return `
+            <div class="order-item" style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="order-item-name">${item.name}</div>
+                    <div class="order-item-price">$${item.price.toFixed(2)}</div>
+                </div>
+                ${downloadLink ? `
+                    <div style="background: var(--black); padding: 15px; border-radius: 10px; border: 1px solid var(--gray);">
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: #888; font-size: 12px; display: block; margin-bottom: 5px;">Download Link:</label>
+                            <a href="${downloadLink}" target="_blank" style="color: var(--gold); word-break: break-all; text-decoration: underline;">
+                                ${downloadLink}
+                            </a>
+                        </div>
+                        <div>
+                            <label style="color: #888; font-size: 12px; display: block; margin-bottom: 5px;">Archive Password:</label>
+                            <div style="background: var(--black-lighter); padding: 10px; border-radius: 5px; font-family: monospace; color: var(--gold); font-weight: bold; letter-spacing: 1px;">
+                                ${password}
+                            </div>
+                        </div>
+                    </div>
+                    <a href="${downloadLink}" target="_blank" class="order-item-download" rel="noopener noreferrer" style="text-align: center;">
+                        <i class="fas fa-external-link-alt"></i> ${t('downloadFile')} from TeraBox
+                    </a>
+                ` : '<span style="color: #888;">No download available</span>'}
             </div>
-        `).join('');
+        `;
+        }).join('');
         
         return `
             <div class="order-card">

@@ -501,7 +501,8 @@ async function initData() {
                 telegram: "John_refund",
                 about: "Welcome to JOHN'S LAB TEMPLATES! Here you'll find exclusive, high-quality digital templates. If you have any questions, feel free to contact me."
             },
-            customers: []
+            customers: [],
+            users: []
         };
 
         for (const [key, data] of Object.entries(initialData)) {
@@ -1072,10 +1073,10 @@ app.post('/api/users/register', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Email and password are required' });
         }
 
-        const users = await readData('users').catch(() => []);
+        const users = (await readData('users').catch(() => null)) || [];
         
         // Check if user already exists
-        if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+        if (users && users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
             return res.status(400).json({ success: false, error: 'Email already registered' });
         }
 
@@ -1121,7 +1122,7 @@ app.post('/api/users/login', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Email and password are required' });
         }
 
-        const users = await readData('users').catch(() => []);
+        const users = (await readData('users').catch(() => null)) || [];
         const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
         
         if (!user) {
@@ -1155,7 +1156,7 @@ app.post('/api/users/login', async (req, res) => {
 // Get user profile with purchase history
 app.get('/api/users/me', authenticateToken, async (req, res) => {
     try {
-        const users = await readData('users').catch(() => []);
+        const users = (await readData('users').catch(() => null)) || [];
         const user = users.find(u => u.id === req.user.userId);
         
         if (!user) {

@@ -487,11 +487,26 @@ async function initData() {
                 walletAddress: CONFIG.WALLET_ADDRESS,
                 adminEmail: CONFIG.EMAIL_USER,
                 adminPassword: CONFIG.ADMIN_PASSWORD,
-                heroTitle: "JOHN'S LAB TEMPLATES",
-                heroSubtitle: "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.",
-                footerTagline: "Premium digital templates for USDT",
-                footerCopyright: "© 2024 JOHN'S LAB TEMPLATES. All rights reserved.",
-                footerPayment: "Payment: USDT (TRC20) | Instant Digital Delivery",
+                heroTitle: {
+                    en: "JOHN'S LAB TEMPLATES",
+                    uk: "JOHN'S LAB TEMPLATES"
+                },
+                heroSubtitle: {
+                    en: "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.",
+                    uk: "Преміальні цифрові шаблони для сучасного бізнесу. Високоякісні дизайни, миттєва доставка через USDT."
+                },
+                footerTagline: {
+                    en: "Premium digital templates for USDT",
+                    uk: "Преміальні цифрові шаблони за USDT"
+                },
+                footerCopyright: {
+                    en: "© 2024 JOHN'S LAB TEMPLATES. All rights reserved.",
+                    uk: "© 2024 JOHN'S LAB TEMPLATES. Всі права захищені."
+                },
+                footerPayment: {
+                    en: "Payment: USDT (TRC20) | Instant Digital Delivery",
+                    uk: "Оплата: USDT (TRC20) | Миттєва цифрова доставка"
+                },
                 telegram: "John_refund",
                 logo: "",
                 backgroundImage: ""

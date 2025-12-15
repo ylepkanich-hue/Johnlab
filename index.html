@@ -1798,72 +1798,73 @@
 
     <!-- Barcode Generation Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <!-- Load bwip-js with fallback options -->
+    <!-- Load bwip-js - using the standard build that actually works -->
+    <script src="https://unpkg.com/bwip-js@4.8.0/dist/bwip-js-min.js" 
+            onload="console.log('bwip-js-min.js script loaded'); checkBwipJs();" 
+            onerror="console.error('Failed to load bwip-js-min.js')"></script>
     <script>
-        (function() {
-            const sources = [
-                {
-                    url: 'https://unpkg.com/bwip-js@4.8.0/dist/browser-bwipjs-min.js',
-                    name: 'unpkg browser build'
-                },
-                {
-                    url: 'https://cdn.jsdelivr.net/npm/bwip-js@4.8.0/dist/browser-bwipjs-min.js',
-                    name: 'jsdelivr browser build'
-                },
-                {
-                    url: 'https://unpkg.com/bwip-js@4.8.0/dist/bwip-js-min.js',
-                    name: 'unpkg standard build'
-                }
-            ];
-            
-            function tryLoad(index) {
-                if (index >= sources.length) {
-                    console.error('All CDN sources failed to load bwip-js');
-                    window.bwipjsLoadError = true;
-                    return;
-                }
-                
-                const script = document.createElement('script');
-                script.src = sources[index].url;
-                script.onload = function() {
-                    console.log('Script loaded from:', sources[index].name);
-                    // Check multiple times as library might initialize asynchronously
-                    let checkCount = 0;
-                    const checkInterval = setInterval(function() {
-                        checkCount++;
-                        if (typeof bwipjs !== 'undefined') {
-                            console.log('bwip-js loaded successfully as "bwipjs" from:', sources[index].name);
-                            window.bwipjsLoaded = true;
-                            clearInterval(checkInterval);
-                        } else if (typeof window.bwipjs !== 'undefined') {
-                            console.log('bwip-js loaded successfully as "window.bwipjs" from:', sources[index].name);
-                            window.bwipjsLoaded = true;
-                            clearInterval(checkInterval);
-                        } else if (checkCount > 20) {
-                            // Tried for 2 seconds, move to next source
-                            console.warn('Script loaded but bwipjs not found after 2s, trying next source...');
-                            clearInterval(checkInterval);
-                            if (index < sources.length - 1) {
-                                tryLoad(index + 1);
-                            } else {
-                                window.bwipjsLoadError = true;
-                            }
-                        }
-                    }, 100);
-                };
-                script.onerror = function() {
-                    console.warn('Failed to load from:', sources[index].name);
-                    if (index < sources.length - 1) {
-                        tryLoad(index + 1);
-                    } else {
-                        window.bwipjsLoadError = true;
-                    }
-                };
-                document.head.appendChild(script);
+        // The standard build might expose the library differently
+        // Check immediately and periodically
+        function checkBwipJs() {
+            // Check immediately
+            if (typeof bwipjs !== 'undefined') {
+                console.log('✓ bwip-js found as "bwipjs"');
+                window.bwipjs = bwipjs;
+                window.bwipjsLoaded = true;
+                return;
             }
             
-            tryLoad(0);
-        })();
+            // Check window object
+            if (typeof window.bwipjs !== 'undefined') {
+                console.log('✓ bwip-js found as "window.bwipjs"');
+                window.bwipjsLoaded = true;
+                return;
+            }
+            
+            // Check for UMD/CommonJS exports
+            if (typeof module !== 'undefined' && module.exports && module.exports.toCanvas) {
+                console.log('✓ bwip-js found as "module.exports", mapping to window.bwipjs');
+                window.bwipjs = module.exports;
+                window.bwipjsLoaded = true;
+                return;
+            }
+            
+            // Check all window properties for anything with 'toCanvas'
+            const windowKeys = Object.keys(window);
+            for (const key of windowKeys) {
+                const obj = window[key];
+                if (obj && typeof obj === 'object' && typeof obj.toCanvas === 'function') {
+                    console.log('✓ bwip-js found as window.' + key + ', mapping to window.bwipjs');
+                    window.bwipjs = obj;
+                    window.bwipjsLoaded = true;
+                    return;
+                }
+            }
+            
+            // If not found, wait and check again
+            let checkCount = 0;
+            const maxChecks = 30;
+            const checkInterval = setInterval(function() {
+                checkCount++;
+                checkBwipJs(); // Recursive check
+                
+                if (window.bwipjsLoaded || checkCount >= maxChecks) {
+                    if (!window.bwipjsLoaded) {
+                        console.error('✗ bwip-js not found after 3 seconds');
+                        console.log('Available globals with "bwip":', windowKeys.filter(k => k.toLowerCase().includes('bwip')));
+                        window.bwipjsLoadError = true;
+                    }
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+        }
+        
+        // Also check when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkBwipJs);
+        } else {
+            checkBwipJs();
+        }
     </script>
     <script src="app.js"></script>
 </body>

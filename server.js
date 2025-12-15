@@ -706,6 +706,93 @@ app.get('/api/categories', async (req, res) => {
     }
 });
 
+// ===== SERVICES API =====
+
+// Get all services
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = (await readData('services').catch(() => null)) || [];
+        res.json(services);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get single service
+app.get('/api/services/:id', async (req, res) => {
+    try {
+        const services = (await readData('services').catch(() => null)) || [];
+        const service = services.find(s => s.id === parseInt(req.params.id));
+        if (service) {
+            res.json(service);
+        } else {
+            res.status(404).json({ error: 'Service not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add service
+app.post('/api/services', async (req, res) => {
+    try {
+        const services = (await readData('services').catch(() => null)) || [];
+        
+        const newService = {
+            id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
+            name: req.body.name,
+            description: req.body.description,
+            telegramLink: req.body.telegramLink,
+            createdAt: new Date().toISOString()
+        };
+
+        services.push(newService);
+        await writeData('services', services);
+        
+        res.json({ success: true, service: newService });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update service
+app.put('/api/services/:id', async (req, res) => {
+    try {
+        const services = (await readData('services').catch(() => null)) || [];
+        const index = services.findIndex(s => s.id === parseInt(req.params.id));
+        
+        if (index === -1) {
+            return res.status(404).json({ success: false, error: 'Service not found' });
+        }
+
+        services[index] = {
+            ...services[index],
+            name: req.body.name || services[index].name,
+            description: req.body.description || services[index].description,
+            telegramLink: req.body.telegramLink || services[index].telegramLink,
+            updatedAt: new Date().toISOString()
+        };
+
+        await writeData('services', services);
+        res.json({ success: true, service: services[index] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete service
+app.delete('/api/services/:id', async (req, res) => {
+    try {
+        const services = (await readData('services').catch(() => null)) || [];
+        const filtered = services.filter(s => s.id !== parseInt(req.params.id));
+        
+        await writeData('services', filtered);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Get all countries for filtering
 app.get('/api/countries', async (req, res) => {
     try {

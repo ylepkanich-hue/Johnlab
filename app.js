@@ -2719,26 +2719,46 @@ async function generatePDF417() {
         }
         
         // Check if bwip-js is available
-        // bwip-js exposes itself as 'bwipjs' in the browser build
+        // Wait a moment for async loading
         let bwipjsLib = null;
-        if (typeof bwipjs !== 'undefined') {
-            bwipjsLib = bwipjs;
-        } else if (typeof window.bwipjs !== 'undefined') {
-            bwipjsLib = window.bwipjs;
-        } else {
-            console.error('bwipjs is undefined. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('bwip')));
-            console.error('Checking window object:', window.bwipjs, typeof window.bwipjs);
-            showAlert('Barcode library (bwip-js) not loaded. Please check the browser console for loading errors and ensure the CDN is accessible.', 'error');
-            return;
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        while (attempts < maxAttempts && !bwipjsLib) {
+            if (typeof bwipjs !== 'undefined') {
+                bwipjsLib = bwipjs;
+                break;
+            } else if (typeof window.bwipjs !== 'undefined') {
+                bwipjsLib = window.bwipjs;
+                break;
+            }
+            attempts++;
+            if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+        
+        if (!bwipjsLib) {
+            // Try to find it in window with different names
+            const possibleNames = ['bwipjs', 'BWIPJS', 'bwip', 'BWIP'];
+            for (const name of possibleNames) {
+                if (window[name] && typeof window[name].toCanvas === 'function') {
+                    bwipjsLib = window[name];
+                    break;
+                }
+            }
         }
         
         if (!bwipjsLib || typeof bwipjsLib.toCanvas !== 'function') {
-            console.error('bwipjs found but toCanvas is not a function:', typeof bwipjsLib);
-            showAlert('Barcode library (bwip-js) is loaded but incomplete. Please refresh the page.', 'error');
+            console.error('bwipjs is undefined after', attempts, 'attempts');
+            console.error('Available globals with "bwip":', Object.keys(window).filter(k => k.toLowerCase().includes('bwip')));
+            console.error('window.bwipjs:', typeof window.bwipjs, window.bwipjs);
+            console.error('typeof bwipjs:', typeof bwipjs);
+            showAlert('Barcode library (bwip-js) not loaded. Please check the browser console for CDN loading errors. You may need to refresh the page or check your internet connection.', 'error');
             return;
         }
         
-        console.log('bwipjs library loaded:', typeof bwipjsLib, 'has toCanvas:', typeof bwipjsLib.toCanvas);
+        console.log('bwipjs library loaded successfully:', typeof bwipjsLib, 'has toCanvas:', typeof bwipjsLib.toCanvas);
         console.log('AAMVA string length:', aamvaString.length);
         
         // Validate AAMVA string

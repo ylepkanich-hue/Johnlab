@@ -2708,10 +2708,17 @@ function buildAAMVAString() {
 }
 
 async function generatePDF417() {
+    console.log('generatePDF417() called');
     try {
+        console.log('Building AAMVA string...');
         const aamvaString = buildAAMVAString();
+        console.log('AAMVA string built, length:', aamvaString.length);
+        
         const svgContainer = document.getElementById('barcode-svg');
         const resultsDiv = document.getElementById('barcode-results');
+        
+        console.log('SVG container:', svgContainer ? 'found' : 'not found');
+        console.log('Results div:', resultsDiv ? 'found' : 'not found');
         
         if (!svgContainer || !resultsDiv) {
             showAlert('Barcode container not found', 'error');
@@ -2720,6 +2727,11 @@ async function generatePDF417() {
         
         // Check if bwip-js is available
         // The standard build (bwip-js-min.js) loads successfully but might expose differently
+        console.log('Checking for bwip-js library...');
+        console.log('typeof bwipjs:', typeof bwipjs);
+        console.log('typeof window.bwipjs:', typeof window.bwipjs);
+        console.log('window.bwipjsLoaded:', window.bwipjsLoaded);
+        
         let bwipjsLib = null;
         let attempts = 0;
         const maxAttempts = 30; // Wait up to 3 seconds
@@ -2793,47 +2805,62 @@ async function generatePDF417() {
         
         // Generate PDF417 barcode using bwip-js (callback-based API)
         // Note: Not specifying backgroundcolor makes it transparent by default
-        // The standard build uses a different API - it might need the canvas ID as a string
-        const canvasId = canvas.id || 'barcode-pdf417-canvas';
-        bwipjsLib.toCanvas(canvas, {
+        console.log('Calling bwipjsLib.toCanvas with:', {
             bcid: 'pdf417',
-            text: aamvaString,
+            textLength: aamvaString.length,
             scale: scale,
-            height: 10,
-            width: 2,
             columns: columns,
             rows: rows,
-            ecclevel: ecc,
-            includetext: false
-            // backgroundcolor is not specified to keep it transparent
-        }, function(err) {
-            if (err) {
-                console.error('PDF417 generation error:', err);
-                showAlert('Error generating PDF417 barcode: ' + (err.message || err), 'error');
-                return;
-            }
-            
-            // Convert canvas to SVG
-            const svg = canvasToSVG(canvas);
-            svgContainer.innerHTML = '';
-            svg.setAttribute('width', '100%');
-            svg.setAttribute('height', 'auto');
-            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            svgContainer.appendChild(svg);
-            
-            // Show results
-            resultsDiv.style.display = 'block';
-            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
-            // Store SVG and canvas for download
-            window.currentBarcodeSVG = svg.outerHTML;
-            window.currentBarcodeCanvas = canvas;
-            window.currentBarcodeType = 'PDF417';
-            
-            showAlert('PDF417 barcode generated successfully!', 'success');
+            ecclevel: ecc
         });
+        
+        try {
+            bwipjsLib.toCanvas(canvas, {
+                bcid: 'pdf417',
+                text: aamvaString,
+                scale: scale,
+                height: 10,
+                width: 2,
+                columns: columns,
+                rows: rows,
+                ecclevel: ecc,
+                includetext: false
+                // backgroundcolor is not specified to keep it transparent
+            }, function(err) {
+                if (err) {
+                    console.error('PDF417 generation error:', err);
+                    showAlert('Error generating PDF417 barcode: ' + (err.message || err), 'error');
+                    return;
+                }
+                
+                console.log('PDF417 barcode generated successfully on canvas');
+                
+                // Convert canvas to SVG
+                const svg = canvasToSVG(canvas);
+                svgContainer.innerHTML = '';
+                svg.setAttribute('width', '100%');
+                svg.setAttribute('height', 'auto');
+                svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                svgContainer.appendChild(svg);
+                
+                // Show results
+                resultsDiv.style.display = 'block';
+                resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Store SVG and canvas for download
+                window.currentBarcodeSVG = svg.outerHTML;
+                window.currentBarcodeCanvas = canvas;
+                window.currentBarcodeType = 'PDF417';
+                
+                showAlert('PDF417 barcode generated successfully!', 'success');
+            });
+        } catch (canvasError) {
+            console.error('Error calling toCanvas:', canvasError);
+            showAlert('Error calling barcode generation: ' + canvasError.message, 'error');
+        }
     } catch (error) {
         console.error('PDF417 generation error:', error);
+        console.error('Error stack:', error.stack);
         showAlert('Error generating PDF417 barcode: ' + error.message, 'error');
     }
 }

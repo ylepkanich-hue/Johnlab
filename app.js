@@ -3597,11 +3597,26 @@ function showEditServiceModal(serviceId) {
 
 async function submitServiceForm(isEdit = false, serviceId = null) {
     const form = document.getElementById(isEdit ? 'edit-service-form' : 'add-service-form');
+    if (!form) {
+        showAlert('Form not found', 'error');
+        return;
+    }
+    
     const formData = {
-        name: form.name.value,
-        description: form.description.value,
-        telegramLink: form.telegramLink.value
+        name: form.name.value.trim(),
+        description: form.description.value.trim(),
+        telegramLink: form.telegramLink.value.trim()
     };
+    
+    // Validate Telegram link - if it doesn't start with http, add https://t.me/
+    if (formData.telegramLink && !formData.telegramLink.startsWith('http')) {
+        formData.telegramLink = `https://t.me/${formData.telegramLink.replace(/^@?/, '')}`;
+    }
+    
+    if (!formData.name || !formData.description || !formData.telegramLink) {
+        showAlert('Please fill in all required fields', 'error');
+        return;
+    }
     
     try {
         const url = isEdit ? `${API_URL}/api/services/${serviceId}` : `${API_URL}/api/services`;
@@ -3612,6 +3627,11 @@ async function submitServiceForm(isEdit = false, serviceId = null) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Server error' }));
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
         
         const result = await response.json();
         
@@ -3624,8 +3644,8 @@ async function submitServiceForm(isEdit = false, serviceId = null) {
             showAlert(result.error || 'Error saving service', 'error');
         }
     } catch (error) {
-        showAlert('Network error. Please try again.', 'error');
         console.error('Service save error:', error);
+        showAlert(error.message || 'Network error. Please try again.', 'error');
     }
 }
 

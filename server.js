@@ -21,6 +21,7 @@ const CONFIG = {
     SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
     SITE_NAME: "JOHN'S LAB TEMPLATES",
     PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
+    TERABOX_PASSWORD: process.env.TERABOX_PASSWORD || 'JohnSaysThankYou',
     CHECK_INTERVAL: parseInt(process.env.PAYMENT_CHECK_INTERVAL_SECONDS) || 30,
     JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-change-in-production-' + Date.now()
 };
@@ -610,11 +611,13 @@ app.post('/api/products', upload.fields([
             newProduct.image = `/uploads/images/${req.files.productImage[0].filename}`;
         }
 
-        if (req.files?.productFile) {
-            newProduct.file = `/uploads/products/${req.files.productFile[0].filename}`;
-            newProduct.fileName = req.files.productFile[0].originalname;
-            newProduct.fileSize = formatFileSize(req.files.productFile[0].size);
+        // TeraBox download link is required (no file uploads)
+        if (!req.body.downloadLink) {
+            return res.status(400).json({ success: false, error: 'TeraBox download link is required' });
         }
+        
+        newProduct.downloadLink = req.body.downloadLink;
+        newProduct.downloadPassword = req.body.downloadPassword || CONFIG.TERABOX_PASSWORD;
 
         products.push(newProduct);
         await writeData('products', products);
@@ -656,11 +659,17 @@ app.put('/api/products/:id', upload.fields([
             products[index].image = `/uploads/images/${req.files.productImage[0].filename}`;
         }
 
-        // Update file if provided
-        if (req.files?.productFile) {
-            products[index].file = `/uploads/products/${req.files.productFile[0].filename}`;
-            products[index].fileName = req.files.productFile[0].originalname;
-            products[index].fileSize = formatFileSize(req.files.productFile[0].size);
+        // Update TeraBox download link (required)
+        if (req.body.downloadLink !== undefined) {
+            if (!req.body.downloadLink) {
+                return res.status(400).json({ success: false, error: 'TeraBox download link is required' });
+            }
+            products[index].downloadLink = req.body.downloadLink;
+        }
+        
+        // Update download password
+        if (req.body.downloadPassword !== undefined) {
+            products[index].downloadPassword = req.body.downloadPassword || CONFIG.TERABOX_PASSWORD;
         }
 
         await writeData('products', products);
@@ -857,11 +866,12 @@ app.get('/api/orders/:id/check', async (req, res) => {
 
         // If already paid, return success
         if (order.status === 'paid') {
+            const siteUrl = req.protocol + '://' + req.get('host') || CONFIG.SITE_URL;
             return res.json({ 
                 success: true, 
                 status: 'paid',
                 paid: true,
-                downloadUrl: `${CONFIG.SITE_URL}/download/${order.downloadToken}`
+                downloadUrl: `${siteUrl}/download/${order.downloadToken}`
             });
         }
 
@@ -900,12 +910,13 @@ app.get('/api/orders/:id/check', async (req, res) => {
             });
             await writeData('products', products);
             
+            const siteUrl = req.protocol + '://' + req.get('host') || CONFIG.SITE_URL;
             return res.json({ 
                 success: true, 
                 status: 'paid',
                 paid: true,
                 txId: order.txId,
-                downloadUrl: `${CONFIG.SITE_URL}/download/${order.downloadToken}`
+                downloadUrl: `${siteUrl}/download/${order.downloadToken}`
             });
         }
 
@@ -934,38 +945,34 @@ app.get('/download/:token', async (req, res) => {
         const products = await readData('products');
         const files = order.items.map(item => {
             const product = products.find(p => p.id === item.id);
-            return product ? {
+            if (!product || !product.downloadLink) return null;
+            
+            // Return TeraBox link with password
+            return {
                 name: product.name,
-                path: product.file,
-                filename: product.fileName
-            } : null;
+                downloadLink: product.downloadLink,
+                downloadPassword: product.downloadPassword || CONFIG.TERABOX_PASSWORD,
+                isExternal: true
+            };
         }).filter(f => f !== null);
 
+        // All downloads are TeraBox links now
         if (files.length === 0) {
-            return res.status(404).json({ success: false, error: 'No files found' });
+            return res.status(404).json({ success: false, error: 'No download links found' });
         }
-
-        // If single file, serve it directly
+        
+        // If single file, redirect to TeraBox link
         if (files.length === 1) {
-            const filePath = files[0].path.startsWith('/') ? files[0].path.substring(1) : files[0].path;
-            const fullPath = path.join(__dirname, '..', filePath);
-            
-            // Check if file exists
-            try {
-                await fs.access(fullPath);
-                res.download(fullPath, files[0].filename || path.basename(fullPath));
-            } catch (fileError) {
-                console.error('File not found:', fullPath);
-                return res.status(404).send('File not found on server');
-            }
+            return res.redirect(files[0].downloadLink);
         } else {
-            // Multiple files - return JSON with download links
+            // Multiple files - return JSON with download links and passwords
             res.json({
                 success: true,
                 files: files.map(f => ({
                     name: f.name,
-                    downloadUrl: `${CONFIG.SITE_URL}/download/${req.params.token}/${encodeURIComponent(f.filename || path.basename(f.path))}`,
-                    filename: f.filename
+                    downloadLink: f.downloadLink,
+                    downloadPassword: f.downloadPassword,
+                    isExternal: true
                 }))
             });
         }
@@ -1008,17 +1015,34 @@ app.get('/download/:token/:filename', async (req, res) => {
             return res.status(404).send('File not found in order');
         }
 
-        const fullPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-        const absolutePath = path.join(__dirname, '..', fullPath);
+        // Handle file path - remove leading slash if present
+        let fullPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
         
-        // Check if file exists
-        try {
-            await fs.access(absolutePath);
-            res.download(absolutePath, fileName || path.basename(absolutePath));
-        } catch (fileError) {
-            console.error('File not found:', absolutePath);
-            return res.status(404).send('File not found on server');
+        // Try multiple possible paths
+        const possiblePaths = [
+            path.join(__dirname, '..', fullPath),  // Relative to project root
+            path.join(__dirname, fullPath),        // Relative to src folder
+            fullPath                                // Absolute path
+        ];
+        
+        let absolutePath = null;
+        for (const possiblePath of possiblePaths) {
+            try {
+                await fs.access(possiblePath);
+                absolutePath = possiblePath;
+                break;
+            } catch (e) {
+                // Try next path
+            }
         }
+        
+        if (!absolutePath) {
+            console.error('File not found. Tried paths:', possiblePaths);
+            console.error('Original file path:', filePath);
+            return res.status(404).json({ error: 'File not found on server', triedPaths: possiblePaths });
+        }
+        
+        res.download(absolutePath, fileName || path.basename(absolutePath));
     } catch (error) {
         console.error('Download error:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -1166,19 +1190,25 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         // Get user's orders (by email match)
         const orders = await readData('orders');
         const products = await readData('products');
+        
+        // Get the actual site URL from request origin or use CONFIG
+        const siteUrl = req.protocol + '://' + req.get('host') || CONFIG.SITE_URL;
+        
         const userOrders = orders
             .filter(o => o.email.toLowerCase() === user.email.toLowerCase() && o.status === 'paid')
             .map(o => {
                 const orderItems = o.items.map(item => {
                     const product = products.find(p => p.id === item.id);
-                    return product ? {
+                    if (!product) return null;
+                    
+                    // TeraBox download link (required)
+                    return {
                         id: product.id,
                         name: product.name,
                         price: item.price,
-                        file: product.file,
-                        fileName: product.fileName,
-                        downloadUrl: `${CONFIG.SITE_URL}/download/${o.downloadToken}/${encodeURIComponent(product.fileName || 'file')}`
-                    } : null;
+                        downloadLink: product.downloadLink,
+                        downloadPassword: product.downloadPassword || CONFIG.TERABOX_PASSWORD
+                    };
                 }).filter(i => i !== null);
 
                 return {
@@ -1187,7 +1217,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
                     total: o.total || o.baseAmount,
                     paidAt: o.paidAt,
                     downloadToken: o.downloadToken,
-                    downloadUrl: `${CONFIG.SITE_URL}/download/${o.downloadToken}`
+                    downloadUrl: `${siteUrl}/download/${o.downloadToken}`
                 };
             });
 
@@ -1493,14 +1523,27 @@ async function sendOrderFiles(email, items, orderId, downloadToken) {
         let filesHtml = '';
         items.forEach(item => {
             const product = products.find(p => p.id === item.id);
-            if (product) {
+            if (product && product.downloadLink) {
+                const password = product.downloadPassword || CONFIG.TERABOX_PASSWORD;
                 filesHtml += `
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                        <h3 style="margin: 0 0 10px 0; color: #D4AF37;">${product.name}</h3>
-                        <p style="margin: 0; color: #888;">File: ${product.fileName || 'Download'} (${product.fileSize || 'N/A'})</p>
-                        <a href="${CONFIG.SITE_URL}/download/${downloadToken}/${encodeURIComponent(product.fileName || 'file')}" 
-                           style="display: inline-block; margin-top: 10px; padding: 10px 20px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold;">
-                            Download File
+                    <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin: 15px 0; border: 2px solid #D4AF37;">
+                        <h3 style="margin: 0 0 15px 0; color: #D4AF37; font-size: 20px;">${product.name}</h3>
+                        <div style="background: #1a1a1a; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                            <p style="margin: 0 0 10px 0; color: #888; font-size: 14px;"><strong>Download Link:</strong></p>
+                            <a href="${product.downloadLink}" target="_blank" 
+                               style="display: inline-block; word-break: break-all; color: #D4AF37; text-decoration: underline; margin-bottom: 15px;">
+                                ${product.downloadLink}
+                            </a>
+                        </div>
+                        <div style="background: #1a1a1a; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                            <p style="margin: 0 0 10px 0; color: #888; font-size: 14px;"><strong>Archive Password:</strong></p>
+                            <p style="margin: 0; color: #D4AF37; font-size: 18px; font-weight: bold; font-family: monospace; letter-spacing: 2px;">
+                                ${password}
+                            </p>
+                        </div>
+                        <a href="${product.downloadLink}" target="_blank" 
+                           style="display: inline-block; margin-top: 15px; padding: 12px 25px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
+                            🔗 Open TeraBox Link
                         </a>
                     </div>
                 `;
@@ -1536,15 +1579,7 @@ async function sendOrderFiles(email, items, orderId, downloadToken) {
                             <h3 style="color: #D4AF37; margin-top: 30px;">📦 Your Files:</h3>
                             ${filesHtml}
                             
-                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
-                                <p style="margin: 0 0 15px 0;">Or use this download link:</p>
-                                <a href="${CONFIG.SITE_URL}/download/${downloadToken}" 
-                                   style="display: inline-block; padding: 15px 30px; background: #D4AF37; color: #000; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
-                                    Download All Files
-                                </a>
-                            </div>
-                            
-                            <p><strong>⚠️ Note:</strong> Download links are valid for 30 days.</p>
+                            <p><strong>⚠️ Important:</strong> Use the password above to extract the archive files from TeraBox.</p>
                             
                             <p>If you have any questions, feel free to contact us on Telegram: @${await readData('contacts').then(c => c.telegram)}</p>
                         </div>

@@ -54,11 +54,20 @@ const upload = multer({
 });
 
 // ===== EMAIL CONFIGURATION =====
+// Gmail app password should be 16 characters without spaces
+const gmailAppPassword = CONFIG.EMAIL_PASS.replace(/\s/g, '');
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
     auth: {
         user: CONFIG.EMAIL_USER,
-        pass: CONFIG.EMAIL_PASS
+        pass: gmailAppPassword
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 

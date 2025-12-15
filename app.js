@@ -176,6 +176,32 @@ const translations = {
         sendPayment: 'Відправити платіж',
         backToCart: 'Назад до кошика',
         
+        // User Account
+        login: 'Вхід',
+        register: 'Реєстрація',
+        logout: 'Вихід',
+        myAccount: 'Мій акаунт',
+        createAccount: 'Створити акаунт',
+        registerDescription: 'Створіть акаунт, щоб отримати доступ до всіх ваших покупок та завантажувати файли в будь-який час',
+        alreadyHaveAccount: 'Вже є акаунт?',
+        loginHere: 'Увійти тут',
+        loginDescription: 'Увійдіть, щоб отримати доступ до вашого акаунту та завантажити покупки',
+        dontHaveAccount: 'Немає акаунту?',
+        registerHere: 'Зареєструватися тут',
+        fullName: "Повне ім'я",
+        email: 'Електронна пошта',
+        password: 'Пароль',
+        confirmPassword: 'Підтвердити пароль',
+        passwordMinLength: 'Мінімум 6 символів',
+        accountInformation: 'Інформація про акаунт',
+        memberSince: 'Учасник з',
+        purchaseHistory: 'Історія покупок',
+        noOrdersYet: 'Поки що немає замовлень. Почніть покупки!',
+        loading: 'Завантаження...',
+        downloadFile: 'Завантажити файл',
+        orderDate: 'Дата замовлення',
+        orderTotal: 'Сума замовлення',
+        
         // MRZ Generator
         mrzGenerator: 'Генератор MRZ',
         mrzDescription: 'Генеруйте коди машинно-читабельної зони (MRZ) для паспортів та посвідчень особи. Заповніть необхідну інформацію нижче для генерації точних MRZ кодів, що відповідають міжнародним стандартам.',
@@ -477,6 +503,7 @@ function showSection(sectionId) {
         else if (sectionId === 'products') renderProducts();
         else if (sectionId === 'mrz-generator') initializeMRZGenerator();
         else if (sectionId === 'barcode-generator') initializeBarcodeGenerator();
+        else if (sectionId === 'account') loadUserAccount();
     }
 }
 
@@ -3076,6 +3103,269 @@ async function saveCode128PNG() {
     }
 }
 
+
+// ===== USER AUTHENTICATION =====
+let currentUser = null;
+let authToken = localStorage.getItem('authToken');
+
+// Check if user is logged in on page load
+async function checkUserAuth() {
+    if (!authToken) {
+        updateAuthUI();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/me`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                updateAuthUI();
+            } else {
+                localStorage.removeItem('authToken');
+                authToken = null;
+                updateAuthUI();
+            }
+        } else {
+            localStorage.removeItem('authToken');
+            authToken = null;
+            updateAuthUI();
+        }
+    } catch (error) {
+        console.error('Auth check error:', error);
+        localStorage.removeItem('authToken');
+        authToken = null;
+        updateAuthUI();
+    }
+}
+
+// Update UI based on auth status
+function updateAuthUI() {
+    const userButtons = document.getElementById('user-account-buttons');
+    const guestButtons = document.getElementById('guest-account-buttons');
+    
+    if (currentUser && authToken) {
+        if (userButtons) userButtons.style.display = 'flex';
+        if (guestButtons) guestButtons.style.display = 'none';
+    } else {
+        if (userButtons) userButtons.style.display = 'none';
+        if (guestButtons) guestButtons.style.display = 'flex';
+    }
+}
+
+// Handle user registration
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+    const passwordConfirm = document.getElementById('register-password-confirm').value;
+    const errorDiv = document.getElementById('register-error');
+    
+    // Clear previous errors
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Validation
+    if (password.length < 6) {
+        errorDiv.textContent = t('passwordMinLength') || 'Password must be at least 6 characters';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    if (password !== passwordConfirm) {
+        errorDiv.textContent = 'Passwords do not match';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, name })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('authToken', authToken);
+            updateAuthUI();
+            showAlert(t('createAccount') + ' ' + (t('success') || 'Success') + '!', 'success');
+            showSection('account');
+            loadUserAccount();
+        } else {
+            errorDiv.textContent = data.error || 'Registration failed';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+        console.error('Registration error:', error);
+    }
+}
+
+// Handle user login
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+    
+    // Clear previous errors
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('authToken', authToken);
+            updateAuthUI();
+            showAlert(t('login') + ' ' + (t('success') || 'Success') + '!', 'success');
+            showSection('account');
+            loadUserAccount();
+        } else {
+            errorDiv.textContent = data.error || 'Login failed';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Network error. Please try again.';
+        errorDiv.style.display = 'block';
+        console.error('Login error:', error);
+    }
+}
+
+// User logout
+function userLogout() {
+    currentUser = null;
+    authToken = null;
+    localStorage.removeItem('authToken');
+    updateAuthUI();
+    showAlert(t('logout') + ' ' + (t('success') || 'Success') + '!', 'success');
+    showSection('home');
+}
+
+// Load user account data
+async function loadUserAccount() {
+    if (!authToken) {
+        showSection('login');
+        return;
+    }
+    
+    const loadingDiv = document.getElementById('account-loading');
+    const contentDiv = document.getElementById('account-content');
+    
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/me`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = data.user;
+            
+            // Update account info
+            document.getElementById('account-email').textContent = currentUser.email;
+            document.getElementById('account-name').textContent = currentUser.name || 'N/A';
+            document.getElementById('account-created').textContent = new Date(currentUser.createdAt).toLocaleDateString();
+            document.getElementById('account-orders-count').textContent = currentUser.totalOrders || 0;
+            
+            // Render orders
+            renderUserOrders(currentUser.orders);
+            
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+        } else {
+            throw new Error(data.error || 'Failed to load account');
+        }
+    } catch (error) {
+        console.error('Load account error:', error);
+        loadingDiv.innerHTML = `<p style="color: var(--danger);">${t('error')}: ${error.message}</p>`;
+    }
+}
+
+// Render user orders
+function renderUserOrders(orders) {
+    const ordersDiv = document.getElementById('account-orders');
+    
+    if (!orders || orders.length === 0) {
+        ordersDiv.innerHTML = `<div class="empty-state">${t('noOrdersYet')}</div>`;
+        return;
+    }
+    
+    ordersDiv.innerHTML = orders.map(order => {
+        const orderDate = order.paidAt ? new Date(order.paidAt).toLocaleDateString() : 'N/A';
+        const itemsHtml = order.items.map(item => `
+            <div class="order-item">
+                <div class="order-item-name">${item.name}</div>
+                <div class="order-item-price">$${item.price.toFixed(2)}</div>
+                <a href="${item.downloadUrl}" target="_blank" class="order-item-download">
+                    <i class="fas fa-download"></i> ${t('downloadFile')}
+                </a>
+            </div>
+        `).join('');
+        
+        return `
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <div class="order-id">${t('order')} #${order.id}</div>
+                        <div class="order-date">${t('orderDate')}: ${orderDate}</div>
+                    </div>
+                    <div class="order-total">$${order.total.toFixed(2)}</div>
+                </div>
+                <div class="order-items">
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Update showSection to handle account section
+const originalShowSection = showSection;
+showSection = function(sectionId) {
+    originalShowSection(sectionId);
+    if (sectionId === 'account') {
+        loadUserAccount();
+    }
+};
+
+// Check auth on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkUserAuth);
+} else {
+    checkUserAuth();
+}
 
 // ===== UTILITIES =====
 function closeModal() {

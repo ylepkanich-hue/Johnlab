@@ -630,11 +630,20 @@ function renderHomeCategories() {
     
     // Show all visible categories on home page (including MRZ for navigation, but exclude Barcode Generator)
     // visible defaults to true if not set (for backward compatibility)
-    const mainCategories = categories.filter(c => 
-        !c.isCountry && 
-        c.name !== 'Barcode Generator' && 
-        (c.visible !== false) // Show if visible is true or undefined
-    ).slice(0, 8);
+    // Sort by order field if available, otherwise by id
+    const mainCategories = categories
+        .filter(c => 
+            !c.isCountry && 
+            c.name !== 'Barcode Generator' && 
+            (c.visible !== false) // Show if visible is true or undefined
+        )
+        .sort((a, b) => {
+            // Sort by order field if available, otherwise by id
+            const orderA = a.order !== undefined ? a.order : a.id;
+            const orderB = b.order !== undefined ? b.order : b.id;
+            return orderA - orderB;
+        })
+        .slice(0, 8);
     
     container.innerHTML = mainCategories.map(cat => {
         // Don't show product count for MRZ and Other services categories
@@ -1772,27 +1781,43 @@ function loadAdminCategories() {
             </button>
         </div>
         <div class="stats-grid">
-            ${categories.map(cat => `
+            ${categories
+                .map((c, i) => ({ ...c, index: i, order: c.order !== undefined ? c.order : c.id }))
+                .sort((a, b) => a.order - b.order)
+                .map((cat, idx, sorted) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === sorted.length - 1;
+                    return `
                 <div class="stat-card">
                     <div style="font-size: 48px; color: var(--gold); margin-bottom: 15px;">
                         ${cat.flag ? `<span>${cat.flag}</span>` : renderCategoryIcon(cat.icon)}
                     </div>
                     <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">${cat.flag ? `${cat.flag} ${cat.name}` : cat.name}</div>
                     <div style="color: #777; margin-bottom: 10px;">${products.filter(p => p.category === cat.name).length} products</div>
-                    <div style="color: ${cat.visible !== false ? '#4CAF50' : '#f44336'}; margin-bottom: 20px; font-size: 14px;">
+                    <div style="color: ${cat.visible !== false ? '#4CAF50' : '#f44336'}; margin-bottom: 10px; font-size: 14px;">
                         <i class="fas fa-${cat.visible !== false ? 'eye' : 'eye-slash'}"></i> 
                         ${cat.visible !== false ? 'Visible' : 'Hidden'} on home page
                     </div>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button class="btn btn-secondary btn-small" onclick="editCategory(${cat.id})">
+                    <div style="color: #aaa; margin-bottom: 20px; font-size: 12px;">
+                        Order: ${cat.order}
+                    </div>
+                    <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary btn-small" onclick="moveCategoryOrder(${cat.id}, 'up')" ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} title="Move up">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="moveCategoryOrder(${cat.id}, 'down')" ${isLast ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} title="Move down">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="editCategory(${cat.id})" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger btn-small" onclick="deleteCategory(${cat.id})">
+                        <button class="btn btn-danger btn-small" onclick="deleteCategory(${cat.id})" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-            `).join('')}
+            `;
+                }).join('')}
         </div>
     `;
 }
@@ -1867,6 +1892,8 @@ async function submitCategoryForm(isEdit = false, categoryId = null) {
             await loadData();
             loadAdminCategories();
             renderCategoryFilters();
+            // Always re-render home page to update visible categories and order
+            renderHomePage();
         } else {
             showAlert('Error saving category', 'error');
         }

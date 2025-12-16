@@ -567,15 +567,32 @@ async function initData() {
             }
         }
 
-        // Clean up any existing country categories (only if categories exist)
-        // Don't call this if it would overwrite existing data
-        const existingCategories = await readData('categories');
-        if (existingCategories && Array.isArray(existingCategories) && existingCategories.length > 0) {
-            // Only cleanup if there are country categories to remove
+        // Sync categories - add new categories from initialData if they don't exist
+        const existingCategories = await readData('categories') || [];
+        if (Array.isArray(existingCategories) && existingCategories.length > 0) {
+            const initialCategories = initialData.categories || [];
+            let categoriesUpdated = false;
+            
+            // Add new categories that don't exist yet
+            for (const newCat of initialCategories) {
+                const exists = existingCategories.some(c => c.id === newCat.id || c.slug === newCat.slug);
+                if (!exists) {
+                    existingCategories.push(newCat);
+                    categoriesUpdated = true;
+                    console.log(`➕ Added new category: ${newCat.name}`);
+                }
+            }
+            
+            // Remove country categories if they exist
             const hasCountryCategories = existingCategories.some(c => c.isCountry);
             if (hasCountryCategories) {
-                await cleanupCategories();
+                const mainCategories = existingCategories.filter(c => !c.isCountry);
+                await writeData('categories', mainCategories);
                 console.log('🧹 Cleaned up country categories');
+            } else if (categoriesUpdated) {
+                // Save updated categories if new ones were added
+                await writeData('categories', existingCategories);
+                console.log('💾 Categories synced');
             }
         }
         

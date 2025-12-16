@@ -895,7 +895,9 @@ app.post('/api/categories', async (req, res) => {
             id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
             name: req.body.name,
             slug: buildSlug(req.body.name),
-            icon: req.body.icon || 'fa-folder'
+            icon: req.body.icon || 'fa-folder',
+            flag: req.body.flag || '',
+            visible: req.body.visible !== undefined ? req.body.visible : true
         };
         
         categories.push(newCategory);
@@ -920,7 +922,9 @@ app.put('/api/categories/:id', async (req, res) => {
             ...categories[index],
             name: req.body.name || categories[index].name,
             slug: req.body.name ? buildSlug(req.body.name) : categories[index].slug,
-            icon: req.body.icon || categories[index].icon
+            icon: req.body.icon || categories[index].icon,
+            flag: req.body.flag !== undefined ? req.body.flag : categories[index].flag,
+            visible: req.body.visible !== undefined ? req.body.visible : (categories[index].visible !== undefined ? categories[index].visible : true)
         };
 
         await writeData('categories', categories);

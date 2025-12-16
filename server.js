@@ -998,11 +998,14 @@ app.post('/api/categories/:id/order', async (req, res) => {
                 categories[index].order = swapOrder;
                 categories[swapIndex].order = currentOrder;
             }
+        } else {
+            return res.status(400).json({ success: false, error: 'Invalid direction. Use "up" or "down"' });
         }
         
         await writeData('categories', categories);
         res.json({ success: true, categories });
     } catch (error) {
+        console.error('Error updating category order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

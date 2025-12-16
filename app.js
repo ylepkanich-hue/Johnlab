@@ -379,6 +379,9 @@ function applyTranslations() {
     renderCategoryFilters();
     renderContacts();
     
+    // Update site settings after language change to ensure hero text is correct
+    updateSiteSettings();
+    
     // Update MRZ generator if visible
     if (document.getElementById('mrz-generator')?.classList.contains('active')) {
         initializeMRZGenerator();
@@ -402,6 +405,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCartCount();
     updateLanguageSelector();
     applyTranslations();
+    // Update site settings after loading data to ensure hero text is correct
+    updateSiteSettings();
     renderHomePage();
     renderProducts();
     renderCategoryFilters();
@@ -585,6 +590,9 @@ function renderHomePage() {
 
     // Render categories on home page
     renderHomeCategories();
+    
+    // Ensure hero text is updated after rendering
+    updateSiteSettings();
 
     // Exclude MRZ and Other services category products from featured products
     const featured = [...products]
@@ -607,15 +615,26 @@ function renderCategoryIcon(icon) {
 
 // Helper function to filter out MRZ, Other services, and Barcode Generator categories from store display
 function getStoreCategories() {
-    return categories.filter(c => !c.isCountry && c.name !== 'MRZ' && c.name !== 'Other services' && c.name !== 'Barcode Generator');
+    return categories.filter(c => 
+        !c.isCountry && 
+        c.name !== 'MRZ' && 
+        c.name !== 'Other services' && 
+        c.name !== 'Barcode Generator' &&
+        (c.visible !== false) // Show if visible is true or undefined
+    );
 }
 
 function renderHomeCategories() {
     const container = document.getElementById('home-categories');
     if (!container) return;
     
-    // Show all categories on home page (including MRZ for navigation, but exclude Barcode Generator)
-    const mainCategories = categories.filter(c => !c.isCountry && c.name !== 'Barcode Generator').slice(0, 8);
+    // Show all visible categories on home page (including MRZ for navigation, but exclude Barcode Generator)
+    // visible defaults to true if not set (for backward compatibility)
+    const mainCategories = categories.filter(c => 
+        !c.isCountry && 
+        c.name !== 'Barcode Generator' && 
+        (c.visible !== false) // Show if visible is true or undefined
+    ).slice(0, 8);
     
     container.innerHTML = mainCategories.map(cat => {
         // Don't show product count for MRZ and Other services categories
@@ -1759,7 +1778,11 @@ function loadAdminCategories() {
                         ${cat.flag ? `<span>${cat.flag}</span>` : renderCategoryIcon(cat.icon)}
                     </div>
                     <div style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">${cat.flag ? `${cat.flag} ${cat.name}` : cat.name}</div>
-                    <div style="color: #777; margin-bottom: 20px;">${products.filter(p => p.category === cat.name).length} products</div>
+                    <div style="color: #777; margin-bottom: 10px;">${products.filter(p => p.category === cat.name).length} products</div>
+                    <div style="color: ${cat.visible !== false ? '#4CAF50' : '#f44336'}; margin-bottom: 20px; font-size: 14px;">
+                        <i class="fas fa-${cat.visible !== false ? 'eye' : 'eye-slash'}"></i> 
+                        ${cat.visible !== false ? 'Visible' : 'Hidden'} on home page
+                    </div>
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <button class="btn btn-secondary btn-small" onclick="editCategory(${cat.id})">
                             <i class="fas fa-edit"></i>
@@ -1822,7 +1845,8 @@ async function submitCategoryForm(isEdit = false, categoryId = null) {
     const data = {
         name: formData.get('name'),
         icon: formData.get('icon'),
-        flag: formData.get('flag') || ''
+        flag: formData.get('flag') || '',
+        visible: formData.get('visible') === 'on' || formData.get('visible') === 'true'
     };
     
     try {
@@ -1877,6 +1901,15 @@ function editCategory(categoryId) {
                         <input type="text" name="flag" class="form-control" value="${category.flag || ''}" placeholder="🇺🇸">
                         <small style="color: #aaa; display: block; margin-top: 5px;">
                             Use this to show a country flag next to the category name.
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" name="visible" ${category.visible !== false ? 'checked' : ''} style="width: auto; margin: 0;">
+                            <span>Visible on home page</span>
+                        </label>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">
+                            Uncheck to hide this category from the home page (it will still be available in admin panel)
                         </small>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">

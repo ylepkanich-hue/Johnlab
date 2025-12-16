@@ -817,19 +817,6 @@ app.put('/api/services/:id', async (req, res) => {
     }
 });
 
-// Delete service
-app.delete('/api/services/:id', async (req, res) => {
-    try {
-        const services = (await readData('services').catch(() => null)) || [];
-        const filtered = services.filter(s => s.id !== parseInt(req.params.id));
-        
-        await writeData('services', filtered);
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 // Get all countries for filtering
 app.get('/api/countries', async (req, res) => {
     try {

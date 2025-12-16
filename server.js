@@ -529,7 +529,16 @@ async function initData() {
             const filePath = `data/${key}.json`;
             try {
                 await fs.access(filePath);
+                // File exists - check if it's empty or has default data
+                const existingData = await readData(key);
+                // Only initialize if file is empty or doesn't have meaningful data
+                if (!existingData || (Array.isArray(existingData) && existingData.length === 0) || 
+                    (typeof existingData === 'object' && Object.keys(existingData).length <= 2)) {
+                    // File exists but is empty or has minimal data, initialize it
+                    await writeData(key, data);
+                }
             } catch {
+                // File doesn't exist, create it
                 await fs.writeFile(filePath, JSON.stringify(data, null, 2));
             }
         }

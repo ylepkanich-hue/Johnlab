@@ -11,6 +11,14 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ===== DATA STORAGE PATH =====
+// On Render, persistent disk is mounted at /opt/render/project/src/uploads
+// So we store data in uploads/data/ to ensure persistence
+// Locally, use relative path ./data
+const DATA_DIR = process.env.RENDER 
+    ? '/opt/render/project/src/uploads/data' 
+    : path.join(__dirname, 'data');
+
 // ===== CONFIGURATION =====
 const CONFIG = {
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
@@ -422,13 +430,16 @@ async function getAllCountries() {
 // ===== DATA INITIALIZATION =====
 async function initData() {
     try {
+        // Ensure data directory exists (using persistent path on Render)
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        
         const folders = [
             'uploads/products', 
             'uploads/images', 
             'uploads/owner', 
             'uploads/logo',
             'uploads/backgrounds',
-            'data'
+            'uploads/hero'
         ];
         
         for (const folder of folders) {
@@ -526,7 +537,7 @@ async function initData() {
         };
 
         for (const [key, data] of Object.entries(initialData)) {
-            const filePath = `data/${key}.json`;
+            const filePath = path.join(DATA_DIR, `${key}.json`);
             try {
                 await fs.access(filePath);
                 // File exists - read it to check if it has content
@@ -550,12 +561,22 @@ async function initData() {
             } catch {
                 // File doesn't exist, create it with default data
                 console.log(`📝 Creating new file: ${key}.json`);
-                await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+                await writeData(key, data);
             }
         }
 
-        // Clean up any existing country categories
-        await cleanupCategories();
+        // Clean up any existing country categories (only if categories exist)
+        // Don't call this if it would overwrite existing data
+        const existingCategories = await readData('categories');
+        if (existingCategories && Array.isArray(existingCategories) && existingCategories.length > 0) {
+            // Only cleanup if there are country categories to remove
+            const hasCountryCategories = existingCategories.some(c => c.isCountry);
+            if (hasCountryCategories) {
+                await cleanupCategories();
+                console.log('🧹 Cleaned up country categories');
+            }
+        }
+        
         console.log('✅ Data initialized');
     } catch (error) {
         console.error('❌ Initialization error:', error);
@@ -565,7 +586,10 @@ async function initData() {
 // ===== HELPER FUNCTIONS =====
 async function readData(filename) {
     try {
-        const data = await fs.readFile(`data/${filename}.json`, 'utf8');
+        // Ensure directory exists
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        const filePath = path.join(DATA_DIR, `${filename}.json`);
+        const data = await fs.readFile(filePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
         console.error(`Error reading ${filename}:`, error);
@@ -575,7 +599,11 @@ async function readData(filename) {
 
 async function writeData(filename, data) {
     try {
-        await fs.writeFile(`data/${filename}.json`, JSON.stringify(data, null, 2));
+        // Ensure directory exists
+        await fs.mkdir(DATA_DIR, { recursive: true });
+        const filePath = path.join(DATA_DIR, `${filename}.json`);
+        await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+        console.log(`💾 Saved ${filename}.json to ${filePath}`);
         return true;
     } catch (error) {
         console.error(`Error writing ${filename}:`, error);

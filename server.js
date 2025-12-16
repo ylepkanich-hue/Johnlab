@@ -628,18 +628,6 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// ===== API ROUTES =====
-
-// Get all products
-app.get('/api/products', async (req, res) => {
-    try {
-        const products = await readData('products');
-        res.json(products || []);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Get single product
 app.get('/api/products/:id', async (req, res) => {
     try {

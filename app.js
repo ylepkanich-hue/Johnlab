@@ -615,6 +615,10 @@ function renderCategoryIcon(icon) {
     if (!icon) return '<i class="fas fa-folder"></i>';
     // Check if it's an emoji (doesn't start with "fa-")
     if (!icon.startsWith('fa-')) {
+        // Special handling for USA flag - make it gold/yellow
+        if (icon === '🇺🇸') {
+            return `<span class="category-emoji usa-flag">${icon}</span>`;
+        }
         return `<span class="category-emoji">${icon}</span>`;
     }
     return `<i class="fas ${icon}"></i>`;
@@ -649,8 +653,8 @@ function renderHomeCategories() {
             const orderA = a.order !== undefined ? a.order : a.id;
             const orderB = b.order !== undefined ? b.order : b.id;
             return orderA - orderB;
-        })
-        .slice(0, 8);
+        });
+        // Removed .slice(0, 8) to show all visible categories
     
     // Debug: log categories for troubleshooting
     if (mainCategories.length === 0 && categories.length > 0) {

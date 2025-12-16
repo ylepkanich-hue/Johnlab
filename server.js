@@ -487,11 +487,13 @@ async function initData() {
                 { id: 2, name: "ID", slug: "id", icon: "fa-id-card" },
                 { id: 3, name: "Driving", slug: "driving", icon: "fa-truck" },
                 { id: 4, name: "Bill", slug: "bill", icon: "fa-file-invoice" },
-                { id: 5, name: "Credit", slug: "credit", icon: "fa-credit-card" },
-                { id: 6, name: "USA", slug: "usa", icon: "🇺🇸" },
-                { id: 7, name: "MRZ", slug: "mrz", icon: "fa-lock" },
-                { id: 8, name: "Other services", slug: "other-services", icon: "fa-concierge-bell" },
-                { id: 9, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
+                { id: 5, name: "Courier Receipts", slug: "courier-receipts", icon: "fa-box" },
+                { id: 6, name: "Store Receipts", slug: "store-receipts", icon: "fa-shopping-bag" },
+                { id: 7, name: "Credit", slug: "credit", icon: "fa-credit-card" },
+                { id: 8, name: "USA", slug: "usa", icon: "🇺🇸" },
+                { id: 9, name: "MRZ", slug: "mrz", icon: "fa-lock" },
+                { id: 10, name: "Other services", slug: "other-services", icon: "fa-concierge-bell" },
+                { id: 11, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
             ],
             orders: [],
             settings: {

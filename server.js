@@ -573,11 +573,30 @@ async function initData() {
             const initialCategories = initialData.categories || [];
             let categoriesUpdated = false;
             
+            // Update existing categories to ensure they have order and visible fields
+            for (let i = 0; i < existingCategories.length; i++) {
+                const cat = existingCategories[i];
+                if (cat.order === undefined) {
+                    cat.order = cat.id;
+                    categoriesUpdated = true;
+                }
+                if (cat.visible === undefined) {
+                    cat.visible = true;
+                    categoriesUpdated = true;
+                }
+            }
+            
             // Add new categories that don't exist yet
             for (const newCat of initialCategories) {
                 const exists = existingCategories.some(c => c.id === newCat.id || c.slug === newCat.slug);
                 if (!exists) {
-                    existingCategories.push(newCat);
+                    // Ensure new category has order and visible
+                    const catToAdd = {
+                        ...newCat,
+                        order: newCat.order !== undefined ? newCat.order : newCat.id,
+                        visible: newCat.visible !== undefined ? newCat.visible : true
+                    };
+                    existingCategories.push(catToAdd);
                     categoriesUpdated = true;
                     console.log(`➕ Added new category: ${newCat.name}`);
                 }
@@ -590,7 +609,7 @@ async function initData() {
                 await writeData('categories', mainCategories);
                 console.log('🧹 Cleaned up country categories');
             } else if (categoriesUpdated) {
-                // Save updated categories if new ones were added
+                // Save updated categories if new ones were added or fields were updated
                 await writeData('categories', existingCategories);
                 console.log('💾 Categories synced');
             }
@@ -891,13 +910,16 @@ app.get('/api/countries', async (req, res) => {
 app.post('/api/categories', async (req, res) => {
     try {
         const categories = await readData('categories');
+        // Calculate order - set to max order + 1, or 0 if no categories
+        const maxOrder = categories.length > 0 ? Math.max(...categories.map(c => c.order !== undefined ? c.order : c.id), 0) : -1;
         const newCategory = {
             id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
             name: req.body.name,
             slug: buildSlug(req.body.name),
             icon: req.body.icon || 'fa-folder',
             flag: req.body.flag || '',
-            visible: req.body.visible !== undefined ? req.body.visible : true
+            visible: req.body.visible !== undefined ? req.body.visible : true,
+            order: req.body.order !== undefined ? req.body.order : maxOrder + 1
         };
         
         categories.push(newCategory);
@@ -924,11 +946,62 @@ app.put('/api/categories/:id', async (req, res) => {
             slug: req.body.name ? buildSlug(req.body.name) : categories[index].slug,
             icon: req.body.icon || categories[index].icon,
             flag: req.body.flag !== undefined ? req.body.flag : categories[index].flag,
-            visible: req.body.visible !== undefined ? req.body.visible : (categories[index].visible !== undefined ? categories[index].visible : true)
+            visible: req.body.visible !== undefined ? req.body.visible : (categories[index].visible !== undefined ? categories[index].visible : true),
+            order: req.body.order !== undefined ? req.body.order : (categories[index].order !== undefined ? categories[index].order : categories[index].id)
         };
 
         await writeData('categories', categories);
         res.json({ success: true, category: categories[index] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update category order
+app.post('/api/categories/:id/order', async (req, res) => {
+    try {
+        const categories = await readData('categories');
+        const categoryId = parseInt(req.params.id);
+        const { direction } = req.body; // 'up' or 'down'
+        
+        const index = categories.findIndex(c => c.id === categoryId);
+        if (index === -1) {
+            return res.status(404).json({ success: false, error: 'Category not found' });
+        }
+        
+        // Get current order or use id as fallback
+        const currentOrder = categories[index].order !== undefined ? categories[index].order : categories[index].id;
+        
+        if (direction === 'up') {
+            // Find category with highest order less than current
+            const candidates = categories
+                .map((c, i) => ({ ...c, index: i, order: c.order !== undefined ? c.order : c.id }))
+                .filter(c => c.order < currentOrder)
+                .sort((a, b) => b.order - a.order);
+            
+            if (candidates.length > 0) {
+                const swapIndex = candidates[0].index;
+                const swapOrder = categories[swapIndex].order !== undefined ? categories[swapIndex].order : categories[swapIndex].id;
+                categories[index].order = swapOrder;
+                categories[swapIndex].order = currentOrder;
+            }
+        } else if (direction === 'down') {
+            // Find category with lowest order greater than current
+            const candidates = categories
+                .map((c, i) => ({ ...c, index: i, order: c.order !== undefined ? c.order : c.id }))
+                .filter(c => c.order > currentOrder)
+                .sort((a, b) => a.order - b.order);
+            
+            if (candidates.length > 0) {
+                const swapIndex = candidates[0].index;
+                const swapOrder = categories[swapIndex].order !== undefined ? categories[swapIndex].order : categories[swapIndex].id;
+                categories[index].order = swapOrder;
+                categories[swapIndex].order = currentOrder;
+            }
+        }
+        
+        await writeData('categories', categories);
+        res.json({ success: true, categories });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

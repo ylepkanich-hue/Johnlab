@@ -454,6 +454,13 @@ async function loadData() {
         contacts = await contactsRes.json();
         orders = await ordersRes.json();
         
+        // Ensure all categories have order and visible fields
+        categories = categories.map(cat => ({
+            ...cat,
+            order: cat.order !== undefined ? cat.order : cat.id,
+            visible: cat.visible !== undefined ? cat.visible : true
+        }));
+        
         updateSiteSettings();
         updateContactsDisplay();
     } catch (error) {
@@ -644,6 +651,12 @@ function renderHomeCategories() {
             return orderA - orderB;
         })
         .slice(0, 8);
+    
+    // Debug: log categories for troubleshooting
+    if (mainCategories.length === 0 && categories.length > 0) {
+        console.log('⚠️ No visible categories found. All categories:', categories);
+        console.log('Categories with visible=false:', categories.filter(c => c.visible === false));
+    }
     
     container.innerHTML = mainCategories.map(cat => {
         // Don't show product count for MRZ and Other services categories
@@ -1894,6 +1907,8 @@ async function submitCategoryForm(isEdit = false, categoryId = null) {
             renderCategoryFilters();
             // Always re-render home page to update visible categories and order
             renderHomePage();
+            // Force update of home categories
+            renderHomeCategories();
         } else {
             showAlert('Error saving category', 'error');
         }
@@ -1955,6 +1970,33 @@ function editCategory(categoryId) {
     document.getElementById('modals').innerHTML = modal;
 }
 
+async function moveCategoryOrder(categoryId, direction) {
+    try {
+        const response = await fetch(`${API_URL}/api/categories/${categoryId}/order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ direction })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert(`Category moved ${direction === 'up' ? 'up' : 'down'}`);
+            await loadData();
+            loadAdminCategories();
+            renderCategoryFilters();
+            // Always re-render home page to update category order
+            renderHomePage();
+            renderHomeCategories();
+        } else {
+            showAlert(result.error || 'Error moving category', 'error');
+        }
+    } catch (error) {
+        console.error('Error moving category:', error);
+        showAlert('Network error: ' + error.message, 'error');
+    }
+}
+
 async function deleteCategory(categoryId) {
     if (!confirm('Delete this category?')) return;
     
@@ -1970,6 +2012,9 @@ async function deleteCategory(categoryId) {
             await loadData();
             loadAdminCategories();
             renderCategoryFilters();
+            // Always re-render home page to update visible categories
+            renderHomePage();
+            renderHomeCategories();
         }
     } catch (error) {
         showAlert('Error deleting category', 'error');

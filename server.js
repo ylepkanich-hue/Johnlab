@@ -529,16 +529,27 @@ async function initData() {
             const filePath = `data/${key}.json`;
             try {
                 await fs.access(filePath);
-                // File exists - check if it's empty or has default data
+                // File exists - read it to check if it has content
                 const existingData = await readData(key);
-                // Only initialize if file is empty or doesn't have meaningful data
-                if (!existingData || (Array.isArray(existingData) && existingData.length === 0) || 
-                    (typeof existingData === 'object' && Object.keys(existingData).length <= 2)) {
-                    // File exists but is empty or has minimal data, initialize it
+                
+                // Only initialize if file is truly empty or corrupted
+                // For arrays: only initialize if completely empty
+                // For objects: only initialize if completely empty (no keys at all)
+                const shouldInitialize = 
+                    !existingData || 
+                    existingData === null ||
+                    (Array.isArray(existingData) && existingData.length === 0) ||
+                    (typeof existingData === 'object' && !Array.isArray(existingData) && Object.keys(existingData).length === 0);
+                
+                if (shouldInitialize) {
+                    console.log(`⚠️  Initializing empty file: ${key}.json`);
                     await writeData(key, data);
+                } else {
+                    console.log(`✅ Keeping existing data: ${key}.json (${Array.isArray(existingData) ? existingData.length + ' items' : Object.keys(existingData).length + ' keys'})`);
                 }
             } catch {
-                // File doesn't exist, create it
+                // File doesn't exist, create it with default data
+                console.log(`📝 Creating new file: ${key}.json`);
                 await fs.writeFile(filePath, JSON.stringify(data, null, 2));
             }
         }

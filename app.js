@@ -770,7 +770,13 @@ function renderCountryFilters(categoryName) {
     const productCountries = new Set();
     categoryProducts.forEach(p => {
         if (p.countries && Array.isArray(p.countries)) {
-            p.countries.forEach(c => productCountries.add(c));
+            p.countries.forEach(c => {
+                // Clean country name - remove brackets and quotes if present
+                const cleanCountry = String(c).replace(/^\[|\]$/g, '').replace(/^"|"$/g, '').trim();
+                if (cleanCountry) {
+                    productCountries.add(cleanCountry);
+                }
+            });
         }
     });
     
@@ -779,25 +785,53 @@ function renderCountryFilters(categoryName) {
         return;
     }
     
+    // Remove duplicates and sort
     const countryList = Array.from(productCountries).sort();
-    const allCountriesButton = `<button class="btn-filter ${currentCountryFilter === null ? 'active' : ''}" onclick="filterByCountry(null, '${categoryName}')">${t('all')} ${t('countries')}</button>`;
     
-    const countryButtons = countryList.map(countryName => {
-        const country = allCountries.find(c => c.name === countryName);
-        const flag = country ? country.flag : '';
-        return `<button class="btn-filter ${currentCountryFilter === countryName ? 'active' : ''}" onclick="filterByCountry('${countryName}', '${categoryName}')">
-            ${flag} ${countryName}
-        </button>`;
-    }).join('');
+    // Get selected country name for display
+    const selectedCountryName = currentCountryFilter 
+        ? (allCountries.find(c => c.name === currentCountryFilter)?.name || currentCountryFilter)
+        : null;
+    
+    const selectedCountryFlag = currentCountryFilter && allCountries.find(c => c.name === currentCountryFilter)
+        ? allCountries.find(c => c.name === currentCountryFilter).flag
+        : '';
     
     container.innerHTML = `
-        <div style="margin-bottom: 15px;">
-            <h4 style="color: var(--gold); margin-bottom: 10px;"><i class="fas fa-globe"></i> Filter by Country</h4>
-            <div class="category-filters">
-                ${allCountriesButton}${countryButtons}
+        <div class="country-filter-dropdown" style="margin-bottom: 15px;">
+            <button class="country-filter-toggle" onclick="toggleCountryFilter()">
+                <i class="fas fa-globe"></i> 
+                <span>${currentCountryFilter ? `${selectedCountryFlag} ${selectedCountryName}` : t('all') + ' ' + t('countries')}</span>
+                <i class="fas fa-chevron-down" id="country-filter-chevron"></i>
+            </button>
+            <div class="country-filter-content" id="country-filter-content" style="display: none;">
+                <div class="category-filters">
+                    <button class="btn-filter ${currentCountryFilter === null ? 'active' : ''}" onclick="filterByCountry(null, '${categoryName}'); toggleCountryFilter();">
+                        ${t('all')} ${t('countries')}
+                    </button>
+                    ${countryList.map(countryName => {
+                        const country = allCountries.find(c => c.name === countryName);
+                        const flag = country ? country.flag : '';
+                        return `<button class="btn-filter ${currentCountryFilter === countryName ? 'active' : ''}" onclick="filterByCountry('${countryName}', '${categoryName}'); toggleCountryFilter();">
+                            ${flag} ${countryName}
+                        </button>`;
+                    }).join('')}
+                </div>
             </div>
         </div>
     `;
+}
+
+// Toggle country filter dropdown
+function toggleCountryFilter() {
+    const content = document.getElementById('country-filter-content');
+    const chevron = document.getElementById('country-filter-chevron');
+    if (!content || !chevron) return;
+    
+    const isVisible = content.style.display !== 'none';
+    content.style.display = isVisible ? 'none' : 'block';
+    chevron.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+    chevron.style.transition = 'transform 0.3s ease';
 }
 
 function filterByCountry(countryName, categoryName) {

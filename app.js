@@ -1025,11 +1025,11 @@ function viewProduct(productId) {
             <div class="modal" onclick="event.stopPropagation()">
                 <button class="modal-close" onclick="closeModal()">&times;</button>
                 <div class="modal-title">${product.name}</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <div class="product-detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                     <div>
-                        <div class="product-image" style="height: 350px; border-radius: 15px;">
+                        <div class="product-image" style="height: 350px; border-radius: 15px; aspect-ratio: 1 / 1;">
                             ${product.image ? 
-                                `<img src="${API_URL}${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">` :
+                                `<img src="${API_URL}${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 15px;">` :
                                 `<i class="fas fa-box" style="font-size: 96px;"></i>`
                             }
                         </div>

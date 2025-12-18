@@ -1027,9 +1027,9 @@ function viewProduct(productId) {
                 <div class="modal-title">${product.name}</div>
                 <div class="product-detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
                     <div>
-                        <div class="product-image" style="height: 350px; border-radius: 15px; aspect-ratio: 1 / 1;">
+                        <div class="product-image-modal" style="border-radius: 15px; display: flex; align-items: center; justify-content: center; background: var(--black); min-height: 300px;">
                             ${product.image ? 
-                                `<img src="${API_URL}${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 15px;">` :
+                                `<img src="${API_URL}${product.image}" alt="${product.name}" style="max-width: 100%; max-height: 70vh; width: auto; height: auto; object-fit: contain; border-radius: 15px; cursor: zoom-in;" onclick="this.style.maxHeight = this.style.maxHeight === 'none' ? '70vh' : 'none'; this.style.cursor = this.style.maxHeight === 'none' ? 'zoom-out' : 'zoom-in';">` :
                                 `<i class="fas fa-box" style="font-size: 96px;"></i>`
                             }
                         </div>

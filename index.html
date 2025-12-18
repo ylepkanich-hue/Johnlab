@@ -1232,13 +1232,26 @@
             background: linear-gradient(135deg, var(--black-lighter), var(--gray));
             border-radius: 20px;
             padding: 40px;
-            max-width: 900px;
+            max-width: 1200px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             border: 3px solid var(--gold);
             position: relative;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        
+        .product-image-modal {
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .product-image-modal img {
+            transition: transform 0.3s ease;
+        }
+        
+        .product-image-modal img:hover {
+            transform: scale(1.02);
         }
 
         .modal-close {
@@ -1467,9 +1480,12 @@
                 gap: 20px !important;
             }
             
-            .modal .product-image {
-                height: 300px !important;
-                aspect-ratio: 1 / 1 !important;
+            .product-image-modal {
+                min-height: 250px !important;
+            }
+            
+            .product-image-modal img {
+                max-height: 60vh !important;
             }
             
             .modal .product-price {

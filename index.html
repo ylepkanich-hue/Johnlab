@@ -119,6 +119,7 @@
             font-weight: 800;
             background: linear-gradient(135deg, var(--gold), var(--gold-light));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -515,6 +516,65 @@
             background: linear-gradient(135deg, var(--gold), var(--gold-dark));
             color: var(--black);
             border-color: var(--gold);
+        }
+
+        /* Country Filter Dropdown */
+        .country-filter-dropdown {
+            position: relative;
+        }
+
+        .country-filter-toggle {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--black-lighter);
+            border: 2px solid var(--gray);
+            color: #fff;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .country-filter-toggle:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .country-filter-toggle.active {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--black);
+            border-color: var(--gold);
+        }
+
+        .country-filter-toggle i.fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        .country-filter-content {
+            margin-top: 10px;
+            padding: 15px;
+            background: var(--black-lighter);
+            border: 2px solid var(--gray);
+            border-radius: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .country-filter-content .category-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .country-filter-content .btn-filter {
+            width: 100%;
+            text-align: left;
+            padding: 10px 15px;
         }
 
         .sort-select {

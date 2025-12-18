@@ -1388,18 +1388,39 @@
             .header-content {
                 flex-direction: column;
                 text-align: center;
+                gap: 15px;
             }
             
             .search-box {
                 max-width: 100%;
+                width: 100%;
             }
             
             .nav-buttons {
                 justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .nav-buttons button {
+                flex: 1 1 auto;
+                min-width: calc(50% - 4px);
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .nav-buttons button span {
+                display: none;
+            }
+            
+            .nav-buttons button i {
+                margin-right: 0;
             }
             
             .products-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
             
             .hero h1 {
@@ -1416,6 +1437,48 @@
 
             .category-filters {
                 justify-content: center;
+            }
+            
+            /* Modal адаптація для мобільних */
+            .modal {
+                padding: 20px;
+                max-width: 95%;
+                max-height: 95vh;
+                margin: 10px;
+            }
+            
+            .modal-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+                padding-right: 40px;
+            }
+            
+            .modal-close {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+            
+            /* Product detail modal grid адаптація */
+            .product-detail-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            
+            .modal .product-image {
+                height: 300px !important;
+                aspect-ratio: 1 / 1 !important;
+            }
+            
+            .modal .product-price {
+                font-size: 32px !important;
+            }
+            
+            .modal button.btn-primary {
+                padding: 14px !important;
+                font-size: 16px !important;
             }
         }
 

@@ -493,7 +493,8 @@ async function initData() {
                 { id: 8, name: "USA", slug: "usa", icon: "🇺🇸" },
                 { id: 9, name: "MRZ", slug: "mrz", icon: "fa-lock" },
                 { id: 10, name: "Other services", slug: "other-services", icon: "fa-concierge-bell" },
-                { id: 11, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" }
+                { id: 11, name: "Barcode Generator", slug: "barcode-generator", icon: "fa-barcode" },
+                { id: 12, name: "Bank", slug: "bank", icon: "fa-university" }
             ],
             orders: [],
             settings: {
@@ -524,6 +525,7 @@ async function initData() {
                 telegram: "John_refund",
                 logo: "",
                 backgroundImage: "",
+                totalVisitors: 0,
                 heroBackground: ""
             },
             contacts: {
@@ -1520,6 +1522,18 @@ app.put('/api/settings', async (req, res) => {
         }
         
         res.json({ success: true, settings: updatedSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Track visitor (increment visitor count)
+app.post('/api/visitors/track', async (req, res) => {
+    try {
+        const settings = await readData('settings');
+        settings.totalVisitors = (settings.totalVisitors || 0) + 1;
+        await writeData('settings', settings);
+        res.json({ success: true, totalVisitors: settings.totalVisitors });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

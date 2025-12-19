@@ -16,6 +16,7 @@ const translations = {
         exploreTemplates: 'Explore Templates',
         templates: 'Templates',
         downloads: 'Downloads',
+        visitors: 'Visitors',
         orders: 'Orders',
         customers: 'Customers',
         browseByCategory: 'Browse by Category',
@@ -142,6 +143,7 @@ const translations = {
         exploreTemplates: 'Переглянути шаблони',
         templates: 'Шаблони',
         downloads: 'Завантажень',
+        visitors: 'Відвідувачів',
         orders: 'Замовлень',
         customers: 'Клієнтів',
         browseByCategory: 'Перегляд за категоріями',
@@ -400,6 +402,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Set initial language
     document.documentElement.lang = currentLanguage;
     
+    // Track visitor
+    try {
+        await fetch(`${API_URL}/api/visitors/track`, { method: 'POST' });
+    } catch (error) {
+        console.error('Error tracking visitor:', error);
+    }
+    
     await loadData();
     await loadCountries();
     updateCartCount();
@@ -591,7 +600,7 @@ function renderHomePage() {
     const stats = settings.statistics || {};
     
     document.getElementById('total-products').textContent = stats.totalProducts !== undefined ? stats.totalProducts : products.length;
-    document.getElementById('total-sales').textContent = stats.totalDownloads !== undefined ? stats.totalDownloads : products.reduce((sum, p) => sum + (p.downloads || 0), 0);
+    document.getElementById('total-visitors').textContent = settings.totalVisitors || 0;
     document.getElementById('total-orders').textContent = stats.totalOrders !== undefined ? stats.totalOrders : orders.length;
     document.getElementById('total-users').textContent = stats.totalCustomers !== undefined ? stats.totalCustomers : new Set(orders.map(o => o.email)).size;
 

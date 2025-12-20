@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const cron = require('node-cron');
 const crypto = require('crypto');
+const compression = require('compression');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -60,6 +61,10 @@ const storage = multer.diskStorage({
         const ext = path.extname(file.originalname);
         const safeName = file.originalname.replace(ext, '').replace(/[^a-zA-Z0-9]/g, '-');
         cb(null, `${safeName}-${unique}${ext}`);
+    },
+    fileFilter: (req, file, cb) => {
+        // Accept all files for now, but you can add image optimization here
+        cb(null, true);
     }
 });
 
@@ -143,6 +148,18 @@ app.use((req, res, next) => {
     
     next();
 });
+
+// Enable compression for all responses (gzip)
+app.use(compression({
+    filter: (req, res) => {
+        // Don't compress if client doesn't support it
+        if (req.headers['x-no-compression']) {
+            return false;
+        }
+        return compression.filter(req, res);
+    },
+    level: 6 // Compression level (0-9, 6 is good balance)
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -301,8 +318,33 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 });
 
-app.use(express.static('.'));
-app.use('/uploads', express.static('uploads'));
+// Static files with caching
+const staticOptions = {
+    maxAge: '1y', // Cache for 1 year
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+        // Don't cache HTML files (they change with meta tags)
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        } else {
+            // Cache images, CSS, JS for 1 year
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
+};
+
+app.use(express.static('.', staticOptions));
+app.use('/uploads', express.static('uploads', {
+    maxAge: '1y',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+}));
 
 // ===== TRON BLOCKCHAIN FUNCTIONS =====
 class TronPaymentChecker {

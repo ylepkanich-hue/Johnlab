@@ -487,6 +487,55 @@ function updateSiteSettings() {
         }
     }
     
+    // Helper function to get language-specific text
+    function getLocalizedText(textObj) {
+        if (!textObj) return '';
+        if (typeof textObj === 'string') return textObj; // Backward compatibility
+        return textObj[currentLanguage] || textObj.en || textObj.uk || '';
+    }
+    
+    // Helper function to get language-specific text
+    function getLocalizedText(textObj) {
+        if (!textObj) return '';
+        if (typeof textObj === 'string') return textObj; // Backward compatibility
+        return textObj[currentLanguage] || textObj.en || textObj.uk || '';
+    }
+    
+    // Update meta tags for social media preview
+    const siteName = settings.shopName || "JOHN'S LAB TEMPLATES";
+    const siteTitle = `${siteName} | Premium Digital Templates`;
+    const siteDescription = getLocalizedText(settings.heroSubtitle) || "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.";
+    const siteUrl = window.location.origin;
+    const siteImage = settings.logo ? `${API_URL}${settings.logo}` : `${siteUrl}/favicon.ico`;
+    
+    // Update title
+    document.title = siteTitle;
+    
+    // Update meta tags
+    const metaTitle = document.getElementById('meta-title');
+    const metaDescription = document.getElementById('meta-description');
+    const ogTitle = document.getElementById('og-title');
+    const ogDescription = document.getElementById('og-description');
+    const ogImage = document.getElementById('og-image');
+    const ogUrl = document.getElementById('og-url');
+    const ogSiteName = document.getElementById('og-site-name');
+    const twitterTitle = document.getElementById('twitter-title');
+    const twitterDescription = document.getElementById('twitter-description');
+    const twitterImage = document.getElementById('twitter-image');
+    const twitterUrl = document.getElementById('twitter-url');
+    
+    if (metaTitle) metaTitle.setAttribute('content', siteTitle);
+    if (metaDescription) metaDescription.setAttribute('content', siteDescription);
+    if (ogTitle) ogTitle.setAttribute('content', siteTitle);
+    if (ogDescription) ogDescription.setAttribute('content', siteDescription);
+    if (ogImage) ogImage.setAttribute('content', siteImage);
+    if (ogUrl) ogUrl.setAttribute('content', siteUrl);
+    if (ogSiteName) ogSiteName.setAttribute('content', siteName);
+    if (twitterTitle) twitterTitle.setAttribute('content', siteTitle);
+    if (twitterDescription) twitterDescription.setAttribute('content', siteDescription);
+    if (twitterImage) twitterImage.setAttribute('content', siteImage);
+    if (twitterUrl) twitterUrl.setAttribute('content', siteUrl);
+    
     if (settings.logo) {
         document.getElementById('main-logo').innerHTML = `<img src="${API_URL}${settings.logo}" alt="Logo">`;
     }
@@ -494,12 +543,6 @@ function updateSiteSettings() {
         document.getElementById('site-name').textContent = settings.shopName;
         const heroTitleEl = document.getElementById('hero-title');
         if (heroTitleEl) heroTitleEl.textContent = settings.shopName;
-    }
-    // Helper function to get language-specific text
-    function getLocalizedText(textObj) {
-        if (!textObj) return '';
-        if (typeof textObj === 'string') return textObj; // Backward compatibility
-        return textObj[currentLanguage] || textObj.en || textObj.uk || '';
     }
     
     if (settings.heroTitle) {

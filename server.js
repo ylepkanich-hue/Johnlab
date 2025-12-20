@@ -26,7 +26,14 @@ const CONFIG = {
     TRON_API_KEY: process.env.TRON_API_KEY || '244c879d-e9ee-456d-911a-92dd800b8eac',
     EMAIL_USER: process.env.EMAIL_USER || 'john.psd.lab@gmail.com',
     EMAIL_PASS: process.env.EMAIL_PASS || 'vkvn nfxh whve oemu'.replace(/\s/g, ''),
-    SITE_URL: process.env.SITE_URL || `http://localhost:${PORT}`,
+    SITE_URL: process.env.SITE_URL || (process.env.NODE_ENV === 'production' ? 'https://www.passport-cloud.org' : `http://localhost:${PORT}`),
+    ALLOWED_DOMAINS: (process.env.ALLOWED_DOMAINS || 'www.passport-cloud.org,passport-cloud.org,localhost:3000,localhost').split(',').map(d => d.trim()),
+    ALLOWED_DOMAINS: [
+        'www.passport-cloud.org',
+        'passport-cloud.org',
+        'localhost:3000',
+        'localhost'
+    ],
     SITE_NAME: "JOHN'S LAB TEMPLATES",
     PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
     TERABOX_PASSWORD: process.env.TERABOX_PASSWORD || 'JohnSaysThankYou',
@@ -85,6 +92,46 @@ const transporter = nodemailer.createTransport({
 });
 
 // ===== MIDDLEWARE =====
+// CORS and domain handling
+app.use((req, res, next) => {
+    const origin = req.headers.origin || req.headers.host;
+    const host = req.get('host') || '';
+    
+    // Allow requests from allowed domains
+    const isAllowed = CONFIG.ALLOWED_DOMAINS.some(domain => 
+        host.includes(domain) || (origin && origin.includes(domain))
+    );
+    
+    if (isAllowed || !origin) {
+        // Set CORS headers
+        if (origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+        }
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    
+    next();
+});
+
+// Redirect non-www to www (optional - can be disabled)
+app.use((req, res, next) => {
+    const host = req.get('host') || '';
+    
+    // Only redirect in production (not localhost)
+    if (process.env.NODE_ENV === 'production' && host === 'passport-cloud.org') {
+        return res.redirect(301, `https://www.passport-cloud.org${req.originalUrl}`);
+    }
+    
+    next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('.'));

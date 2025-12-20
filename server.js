@@ -27,13 +27,8 @@ const CONFIG = {
     EMAIL_USER: process.env.EMAIL_USER || 'john.psd.lab@gmail.com',
     EMAIL_PASS: process.env.EMAIL_PASS || 'vkvn nfxh whve oemu'.replace(/\s/g, ''),
     SITE_URL: process.env.SITE_URL || (process.env.NODE_ENV === 'production' ? 'https://www.passport-cloud.org' : `http://localhost:${PORT}`),
+    // Allowed domains - can be set via environment variable or defaults
     ALLOWED_DOMAINS: (process.env.ALLOWED_DOMAINS || 'www.passport-cloud.org,passport-cloud.org,localhost:3000,localhost').split(',').map(d => d.trim()),
-    ALLOWED_DOMAINS: [
-        'www.passport-cloud.org',
-        'passport-cloud.org',
-        'localhost:3000',
-        'localhost'
-    ],
     SITE_NAME: "JOHN'S LAB TEMPLATES",
     PAYMENT_TIMEOUT: parseInt(process.env.PAYMENT_TIMEOUT_MINUTES) || 60,
     TERABOX_PASSWORD: process.env.TERABOX_PASSWORD || 'JohnSaysThankYou',
@@ -92,6 +87,20 @@ const transporter = nodemailer.createTransport({
 });
 
 // ===== MIDDLEWARE =====
+// Trust proxy (required for Render to get correct protocol/domain)
+app.set('trust proxy', 1);
+
+// Force HTTPS in production (if not already HTTPS)
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV === 'production' && 
+        !req.secure && 
+        req.get('x-forwarded-proto') !== 'https' &&
+        !req.headers.host?.includes('localhost')) {
+        return res.redirect(301, `https://${req.get('host')}${req.url}`);
+    }
+    next();
+});
+
 // CORS and domain handling
 app.use((req, res, next) => {
     const origin = req.headers.origin || req.headers.host;
@@ -124,9 +133,12 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     const host = req.get('host') || '';
     
-    // Only redirect in production (not localhost)
-    if (process.env.NODE_ENV === 'production' && host === 'passport-cloud.org') {
-        return res.redirect(301, `https://www.passport-cloud.org${req.originalUrl}`);
+    // Only redirect in production (not localhost) and only for passport-cloud.org
+    const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+    if (process.env.NODE_ENV === 'production' && 
+        host === 'passport-cloud.org' &&
+        !host.includes('localhost')) {
+        return res.redirect(301, `${protocol}://www.passport-cloud.org${req.originalUrl}`);
     }
     
     next();
@@ -134,6 +146,47 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve index.html with dynamic meta tags for social media preview
+app.get('/', async (req, res) => {
+    try {
+        const settings = await readData('settings');
+        const indexPath = path.join(__dirname, 'index.html');
+        let html = await fs.readFile(indexPath, 'utf8');
+        
+        // Get site information
+        const siteName = settings.shopName || "JOHN'S LAB TEMPLATES";
+        const siteTitle = `${siteName} | Premium Digital Templates`;
+        const siteDescription = typeof settings.heroSubtitle === 'object' 
+            ? (settings.heroSubtitle.en || settings.heroSubtitle.uk || "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.")
+            : (settings.heroSubtitle || "Premium digital templates for modern businesses. High-quality designs, instant delivery via USDT.");
+        const siteUrl = `${req.protocol}://${req.get('host')}`;
+        const siteImage = settings.logo 
+            ? `${siteUrl}${settings.logo}` 
+            : (settings.favicon ? `${siteUrl}${settings.favicon}` : `${siteUrl}/favicon.ico`);
+        
+        // Replace meta tags
+        html = html.replace(/<title>.*?<\/title>/, `<title>${siteTitle}</title>`);
+        html = html.replace(/<meta\s+name="title"[^>]*>/, `<meta name="title" content="${siteTitle}">`);
+        html = html.replace(/<meta\s+name="description"[^>]*>/, `<meta name="description" content="${siteDescription}">`);
+        html = html.replace(/<meta\s+property="og:url"[^>]*>/, `<meta property="og:url" content="${siteUrl}/">`);
+        html = html.replace(/<meta\s+property="og:title"[^>]*>/, `<meta property="og:title" content="${siteTitle}">`);
+        html = html.replace(/<meta\s+property="og:description"[^>]*>/, `<meta property="og:description" content="${siteDescription}">`);
+        html = html.replace(/<meta\s+property="og:image"[^>]*>/, `<meta property="og:image" content="${siteImage}">`);
+        html = html.replace(/<meta\s+property="og:site_name"[^>]*>/, `<meta property="og:site_name" content="${siteName}">`);
+        html = html.replace(/<meta\s+property="twitter:url"[^>]*>/, `<meta property="twitter:url" content="${siteUrl}/">`);
+        html = html.replace(/<meta\s+property="twitter:title"[^>]*>/, `<meta property="twitter:title" content="${siteTitle}">`);
+        html = html.replace(/<meta\s+property="twitter:description"[^>]*>/, `<meta property="twitter:description" content="${siteDescription}">`);
+        html = html.replace(/<meta\s+property="twitter:image"[^>]*>/, `<meta property="twitter:image" content="${siteImage}">`);
+        
+        res.send(html);
+    } catch (error) {
+        console.error('Error serving index.html:', error);
+        // Fallback to static file if error
+        res.sendFile(path.join(__dirname, 'index.html'));
+    }
+});
+
 app.use(express.static('.'));
 app.use('/uploads', express.static('uploads'));
 

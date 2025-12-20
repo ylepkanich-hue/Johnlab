@@ -149,23 +149,31 @@ app.use((req, res, next) => {
     next();
 });
 
-// Enable compression for all responses (gzip)
+// Enable compression for all responses (gzip) - optimized for speed
 app.use(compression({
     filter: (req, res) => {
         // Don't compress if client doesn't support it
         if (req.headers['x-no-compression']) {
             return false;
         }
+        // Use default filter but optimize
         return compression.filter(req, res);
     },
-    level: 6 // Compression level (0-9, 6 is good balance)
+    level: 4, // Lower level = faster compression (4 is good balance)
+    threshold: 1024, // Only compress responses larger than 1KB
+    chunkSize: 16 * 1024 // 16KB chunks for better performance
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve index.html with dynamic meta tags for social media preview
+// Set no-cache headers for HTML (since it's dynamic)
 app.get('/', async (req, res) => {
+    // Set no-cache for HTML
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     try {
         const settings = await readData('settings');
         const indexPath = path.join(__dirname, 'index.html');
@@ -318,32 +326,18 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 });
 
-// Static files with caching
-const staticOptions = {
-    maxAge: '1y', // Cache for 1 year
+// Static files with optimized caching (simplified for better performance)
+app.use(express.static('.', {
+    maxAge: 31536000000, // 1 year in milliseconds (more efficient than string)
     etag: true,
-    lastModified: true,
-    setHeaders: (res, filePath) => {
-        // Don't cache HTML files (they change with meta tags)
-        if (filePath.endsWith('.html')) {
-            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-            res.setHeader('Pragma', 'no-cache');
-            res.setHeader('Expires', '0');
-        } else {
-            // Cache images, CSS, JS for 1 year
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        }
-    }
-};
+    lastModified: true
+}));
 
-app.use(express.static('.', staticOptions));
+// Uploads with aggressive caching
 app.use('/uploads', express.static('uploads', {
-    maxAge: '1y',
+    maxAge: 31536000000, // 1 year
     etag: true,
-    lastModified: true,
-    setHeaders: (res) => {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
+    lastModified: true
 }));
 
 // ===== TRON BLOCKCHAIN FUNCTIONS =====

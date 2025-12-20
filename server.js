@@ -43,6 +43,7 @@ const storage = multer.diskStorage({
             if (file.fieldname === 'productImage') uploadPath = 'uploads/images/';
             if (file.fieldname === 'ownerPhoto') uploadPath = 'uploads/owner/';
             if (file.fieldname === 'logo') uploadPath = 'uploads/logo/';
+            if (file.fieldname === 'favicon') uploadPath = 'uploads/favicon/';
             if (file.fieldname === 'backgroundImage') uploadPath = 'uploads/backgrounds/';
             if (file.fieldname === 'heroBackground') uploadPath = 'uploads/hero/';
             
@@ -438,6 +439,7 @@ async function initData() {
             'uploads/images', 
             'uploads/owner', 
             'uploads/logo',
+            'uploads/favicon',
             'uploads/backgrounds',
             'uploads/hero'
         ];
@@ -524,6 +526,7 @@ async function initData() {
                 },
                 telegram: "John_refund",
                 logo: "",
+                favicon: "",
                 backgroundImage: "",
                 totalVisitors: 0,
                 heroBackground: ""
@@ -1564,6 +1567,20 @@ app.post('/api/upload-logo', upload.single('logo'), async (req, res) => {
         await writeData('settings', settings);
         
         res.json({ success: true, logoUrl });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Upload favicon
+app.post('/api/upload-favicon', upload.single('favicon'), async (req, res) => {
+    try {
+        const faviconUrl = `/uploads/favicon/${req.file.filename}`;
+        const settings = await readData('settings');
+        settings.favicon = faviconUrl;
+        await writeData('settings', settings);
+        
+        res.json({ success: true, faviconUrl });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }

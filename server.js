@@ -165,10 +165,15 @@ app.get('/', async (req, res) => {
             ? `${siteUrl}${settings.logo}` 
             : (settings.favicon ? `${siteUrl}${settings.favicon}` : `${siteUrl}/favicon.ico`);
         
+        // Keywords for SEO
+        const keywords = "passport templates, ID card templates, document templates, PSD templates, Photoshop templates, USDT payment, digital templates, passport-cloud, editable documents, driver license templates, passport PSD, ID card PSD";
+        
         // Replace meta tags
         html = html.replace(/<title>.*?<\/title>/, `<title>${siteTitle}</title>`);
         html = html.replace(/<meta\s+name="title"[^>]*>/, `<meta name="title" content="${siteTitle}">`);
         html = html.replace(/<meta\s+name="description"[^>]*>/, `<meta name="description" content="${siteDescription}">`);
+        html = html.replace(/<meta\s+name="keywords"[^>]*>/, `<meta name="keywords" content="${keywords}">`);
+        html = html.replace(/<link\s+rel="canonical"[^>]*>/, `<link rel="canonical" href="${siteUrl}/">`);
         html = html.replace(/<meta\s+property="og:url"[^>]*>/, `<meta property="og:url" content="${siteUrl}/">`);
         html = html.replace(/<meta\s+property="og:title"[^>]*>/, `<meta property="og:title" content="${siteTitle}">`);
         html = html.replace(/<meta\s+property="og:description"[^>]*>/, `<meta property="og:description" content="${siteDescription}">`);
@@ -179,11 +184,120 @@ app.get('/', async (req, res) => {
         html = html.replace(/<meta\s+property="twitter:description"[^>]*>/, `<meta property="twitter:description" content="${siteDescription}">`);
         html = html.replace(/<meta\s+property="twitter:image"[^>]*>/, `<meta property="twitter:image" content="${siteImage}">`);
         
+        // Add structured data (Schema.org JSON-LD) for better SEO
+        const structuredData = {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": siteName,
+            "url": siteUrl,
+            "description": siteDescription,
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": `${siteUrl}/?search={search_term_string}`
+                },
+                "query-input": "required name=search_term_string"
+            }
+        };
+        
+        // Add Organization schema
+        const organizationSchema = {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": siteName,
+            "url": siteUrl,
+            "logo": siteImage,
+            "description": siteDescription,
+            "sameAs": settings.telegram ? `https://t.me/${settings.telegram.replace('@', '')}` : undefined
+        };
+        
+        // Insert structured data before closing head tag
+        const structuredDataScript = `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>\n<script type="application/ld+json">${JSON.stringify(organizationSchema)}</script>`;
+        html = html.replace('</head>', `${structuredDataScript}</head>`);
+        
         res.send(html);
     } catch (error) {
         console.error('Error serving index.html:', error);
         // Fallback to static file if error
         res.sendFile(path.join(__dirname, 'index.html'));
+    }
+});
+
+// Robots.txt
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send(`User-agent: *
+Allow: /
+Disallow: /admin-panel
+Disallow: /api/
+Disallow: /download/
+
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml
+`);
+});
+
+// Sitemap.xml
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const products = await readData('products') || [];
+        const categories = await readData('categories') || [];
+        const siteUrl = `${req.protocol}://${req.get('host')}`;
+        
+        let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>${siteUrl}/</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>${siteUrl}/#products</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>${siteUrl}/#mrz-generator</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>${siteUrl}/#other-services</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>${siteUrl}/#contact</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>`;
+        
+        // Add category pages
+        categories.forEach(cat => {
+            if (cat.visible !== false && !cat.isCountry && cat.name !== 'Barcode Generator') {
+                sitemap += `
+    <url>
+        <loc>${siteUrl}/#products?category=${encodeURIComponent(cat.name)}</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>`;
+            }
+        });
+        
+        sitemap += `
+</urlset>`;
+        
+        res.type('application/xml');
+        res.send(sitemap);
+    } catch (error) {
+        console.error('Error generating sitemap:', error);
+        res.status(500).send('Error generating sitemap');
     }
 });
 

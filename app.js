@@ -479,6 +479,14 @@ async function loadData() {
 }
 
 function updateSiteSettings() {
+    // Update favicon if set
+    if (settings.favicon) {
+        const faviconLink = document.getElementById('favicon-link');
+        if (faviconLink) {
+            faviconLink.href = `${API_URL}${settings.favicon}`;
+        }
+    }
+    
     if (settings.logo) {
         document.getElementById('main-logo').innerHTML = `<img src="${API_URL}${settings.logo}" alt="Logo">`;
     }
@@ -2191,6 +2199,12 @@ function loadAdminSettings() {
                 <input type="file" id="setting-logo" class="form-control" accept="image/*">
             </div>
             <div class="form-group">
+                <label>Favicon (Site Icon):</label>
+                ${settings.favicon ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.favicon}" style="max-width: 32px; height: 32px; border-radius: 4px;"></div>` : ''}
+                <input type="file" id="setting-favicon" class="form-control" accept="image/*">
+                <small style="color: #aaa; display: block; margin-top: 5px;">Icon displayed in browser tab (recommended: 32x32px or 16x16px, .ico or .png)</small>
+            </div>
+            <div class="form-group">
                 <label>Background Image (Body):</label>
                 ${settings.backgroundImage ? `<div style="margin-bottom: 10px;"><img src="${API_URL}${settings.backgroundImage}" style="max-width: 200px; border-radius: 10px;"></div>` : ''}
                 <input type="file" id="setting-background" class="form-control" accept="image/*">
@@ -2341,6 +2355,25 @@ async function saveSettings() {
                     method: 'POST',
                     body: logoData
                 });
+            }
+            
+            // Upload favicon if selected
+            const faviconFile = document.getElementById('setting-favicon').files[0];
+            if (faviconFile) {
+                const faviconData = new FormData();
+                faviconData.append('favicon', faviconFile);
+                const faviconResponse = await fetch(`${API_URL}/api/upload-favicon`, {
+                    method: 'POST',
+                    body: faviconData
+                });
+                const faviconResult = await faviconResponse.json();
+                if (faviconResult.success) {
+                    // Update favicon link in HTML head
+                    const faviconLink = document.getElementById('favicon-link');
+                    if (faviconLink) {
+                        faviconLink.href = `${API_URL}${faviconResult.faviconUrl}`;
+                    }
+                }
             }
             
             // Upload background if selected

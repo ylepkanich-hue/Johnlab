@@ -851,6 +851,11 @@ function renderHomeCategories() {
         console.log('Categories with visible=false:', categories.filter(c => c.visible === false));
     }
     
+    // Detect mobile - use multiple methods for reliability
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isMobileWidth = window.innerWidth <= 768;
+    const isMobile = isMobileDevice || isMobileWidth;
+    
     container.innerHTML = mainCategories.map(cat => {
         // Don't show product count for MRZ and Other services categories
         let displayText = '';
@@ -863,31 +868,24 @@ function renderHomeCategories() {
             const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates');
             displayText = `${productCount} ${templateText}`;
         }
-        // Add mobile-responsive inline styles directly in HTML
-        const isMobile = window.innerWidth <= 768;
-        const mobileStyles = isMobile ? 'style="padding: 20px 12px !important; min-height: 140px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; text-align: center !important;"' : '';
-        const iconMobileStyle = isMobile ? 'style="font-size: 36px !important; margin-bottom: 10px !important;"' : '';
-        const h3MobileStyle = isMobile ? 'style="font-size: 15px !important; margin-bottom: 6px !important; line-height: 1.3 !important; word-break: break-word !important;"' : '';
-        const pMobileStyle = isMobile ? 'style="font-size: 11px !important; line-height: 1.4 !important; margin: 0 !important;"' : '';
         
+        // ALWAYS add mobile styles - they will be overridden by CSS on desktop
         return `
-            <div class="category-card" onclick="viewCategory('${cat.name}')" ${mobileStyles}>
-                <div class="category-icon" ${iconMobileStyle}>
+            <div class="category-card" onclick="viewCategory('${cat.name}')" style="padding: ${isMobile ? '20px 12px' : '30px'}; min-height: ${isMobile ? '140px' : 'auto'}; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <div class="category-icon" style="font-size: ${isMobile ? '36px' : '48px'}; margin-bottom: ${isMobile ? '10px' : '15px'};">
                     ${renderCategoryIcon(cat.icon)}
                 </div>
-                <h3 ${h3MobileStyle}>${cat.name}</h3>
-                <p ${pMobileStyle}>${displayText}</p>
+                <h3 style="font-size: ${isMobile ? '15px' : '20px'}; margin-bottom: ${isMobile ? '6px' : '10px'}; line-height: 1.3; word-break: break-word;">${cat.name}</h3>
+                <p style="font-size: ${isMobile ? '11px' : '14px'}; line-height: 1.4; margin: 0;">${displayText}</p>
             </div>
         `;
     }).join('');
     
-    // Force grid layout for mobile - apply immediately
-    if (window.innerWidth <= 768) {
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        container.style.gap = '15px';
-        container.style.margin = '20px 0';
-    }
+    // ALWAYS set grid layout - CSS will override on desktop if needed
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))';
+    container.style.gap = isMobile ? '15px' : '25px';
+    container.style.margin = isMobile ? '20px 0' : '40px 0';
     
     // Apply mobile styles directly via JavaScript to ensure they work
     // Use requestAnimationFrame to ensure DOM is ready

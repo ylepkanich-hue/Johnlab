@@ -790,7 +790,12 @@ async function initData() {
             },
             customers: [],
             users: [],
-            services: []
+            services: [],
+            visitors: {
+                uniqueIps: [],
+                dailyStats: {},
+                lastCleanup: new Date().toISOString().split('T')[0]
+            }
         };
 
         for (const [key, data] of Object.entries(initialData)) {
@@ -1780,15 +1785,127 @@ app.put('/api/settings', async (req, res) => {
     }
 });
 
-// Track visitor (increment visitor count)
+// Helper function to get client IP address (handles proxies)
+function getClientIp(req) {
+    // Check for IP in various headers (for proxy/load balancer)
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) {
+        // x-forwarded-for can contain multiple IPs, take the first one
+        return forwarded.split(',')[0].trim();
+    }
+    return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown';
+}
+
+// Track unique visitors by IP
 app.post('/api/visitors/track', async (req, res) => {
     try {
+        const clientIp = getClientIp(req);
+        const now = new Date();
+        const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        // Load visitors data
+        let visitors = await readData('visitors');
+        if (!visitors) {
+            visitors = {
+                uniqueIps: [], // Array of unique IP addresses
+                dailyStats: {}, // { "2024-01-01": { unique: 10, total: 15 } }
+                lastCleanup: today
+            };
+        }
+        
+        // Check if this IP is new
+        const isNewVisitor = !visitors.uniqueIps.includes(clientIp);
+        
+        if (isNewVisitor) {
+            visitors.uniqueIps.push(clientIp);
+        }
+        
+        // Update daily statistics
+        if (!visitors.dailyStats[today]) {
+            visitors.dailyStats[today] = {
+                unique: 0,
+                total: 0
+            };
+        }
+        
+        visitors.dailyStats[today].total += 1;
+        if (isNewVisitor) {
+            visitors.dailyStats[today].unique += 1;
+        }
+        
+        // Cleanup old data (keep only last 90 days)
+        const cleanupDate = new Date();
+        cleanupDate.setDate(cleanupDate.getDate() - 90);
+        const cleanupDateStr = cleanupDate.toISOString().split('T')[0];
+        
+        if (visitors.lastCleanup !== today) {
+            Object.keys(visitors.dailyStats).forEach(date => {
+                if (date < cleanupDateStr) {
+                    delete visitors.dailyStats[date];
+                }
+            });
+            visitors.lastCleanup = today;
+        }
+        
+        // Save visitors data
+        await writeData('visitors', visitors);
+        
+        // Also update totalVisitors in settings (for backward compatibility)
         const settings = await readData('settings');
-        settings.totalVisitors = (settings.totalVisitors || 0) + 1;
+        settings.totalVisitors = visitors.uniqueIps.length;
         await writeData('settings', settings);
-        res.json({ success: true, totalVisitors: settings.totalVisitors });
+        
+        res.json({ 
+            success: true, 
+            uniqueVisitors: visitors.uniqueIps.length,
+            isNewVisitor,
+            todayStats: visitors.dailyStats[today]
+        });
     } catch (error) {
+        console.error('Error tracking visitor:', error);
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get visitor statistics
+app.get('/api/visitors/stats', async (req, res) => {
+    try {
+        const visitors = await readData('visitors');
+        if (!visitors) {
+            return res.json({
+                uniqueVisitors: 0,
+                todayUnique: 0,
+                todayTotal: 0,
+                dailyStats: []
+            });
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        const todayStats = visitors.dailyStats[today] || { unique: 0, total: 0 };
+        
+        // Get last 30 days stats
+        const dailyStats = [];
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            const stats = visitors.dailyStats[dateStr] || { unique: 0, total: 0 };
+            dailyStats.push({
+                date: dateStr,
+                unique: stats.unique,
+                total: stats.total
+            });
+        }
+        
+        res.json({
+            uniqueVisitors: visitors.uniqueIps.length,
+            todayUnique: todayStats.unique,
+            todayTotal: todayStats.total,
+            dailyStats: dailyStats
+        });
+    } catch (error) {
+        console.error('Error getting visitor stats:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

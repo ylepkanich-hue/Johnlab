@@ -1049,9 +1049,10 @@ app.put('/api/products/:id', upload.fields([
         
         // Update featured status
         // FormData sends values as strings, so we need to check for 'true' string
-        if (req.body.featured !== undefined) {
+        // ALWAYS update featured, even if undefined (to handle unchecked checkboxes)
+        const featuredValue = req.body.featured;
+        if (featuredValue !== undefined) {
             // Handle both string and boolean values from FormData
-            const featuredValue = req.body.featured;
             const isFeatured = featuredValue === 'true' || featuredValue === true || featuredValue === '1' || featuredValue === 1;
             products[index].featured = isFeatured;
             console.log('✅ Updated featured status:', {
@@ -1060,14 +1061,13 @@ app.put('/api/products/:id', upload.fields([
                 receivedValue: featuredValue,
                 receivedType: typeof featuredValue,
                 isFeatured: isFeatured,
-                savedValue: products[index].featured
+                savedValue: products[index].featured,
+                savedType: typeof products[index].featured
             });
         } else {
-            // If not provided, explicitly set to false (don't keep existing if checkbox was unchecked)
-            // But only if the request is coming from a form submission (has other fields)
-            if (req.body.name !== undefined) {
-                products[index].featured = false;
-            }
+            // If not provided in request, set to false (checkbox was unchecked)
+            products[index].featured = false;
+            console.log('❌ Featured not provided, setting to false for product:', products[index].id, products[index].name);
         }
         
         // Update featured order

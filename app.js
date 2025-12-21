@@ -1188,19 +1188,51 @@ function renderCart() {
     
     container.innerHTML = html;
     
+    // Get applied promocode from localStorage
+    const appliedPromocode = JSON.parse(localStorage.getItem('appliedPromocode') || 'null');
+    let discountAmount = 0;
+    let finalTotal = total;
+    
+    if (appliedPromocode && appliedPromocode.valid) {
+        discountAmount = appliedPromocode.discountAmount;
+        finalTotal = appliedPromocode.finalAmount;
+    }
+    
     totalContainer.innerHTML = `
         <div class="cart-total">
+            <div style="margin-bottom: 20px;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="font-size: 14px; color: #aaa; margin-bottom: 5px; display: block;">
+                        <i class="fas fa-tag"></i> Promocode:
+                    </label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="promocode-input" class="form-control" placeholder="Enter promocode" 
+                               value="${appliedPromocode && appliedPromocode.valid ? appliedPromocode.promocode.code : ''}"
+                               style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="applyPromocode()" style="white-space: nowrap;">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                    </div>
+                    <div id="promocode-message" style="margin-top: 5px; font-size: 12px;"></div>
+                </div>
+            </div>
             <div class="total-row">
                 <span>Subtotal:</span>
                 <span>$${total.toFixed(2)}</span>
             </div>
+            ${discountAmount > 0 ? `
+            <div class="total-row" style="color: var(--success);">
+                <span>Discount (${appliedPromocode.promocode.code}):</span>
+                <span>-$${discountAmount.toFixed(2)}</span>
+            </div>
+            ` : ''}
             <div class="total-row">
                 <span>Network Fee:</span>
                 <span>$0.00</span>
             </div>
             <div class="total-row" style="border-top: 3px solid var(--gold); padding-top: 20px; margin-top: 20px; font-size: 24px;">
                 <span style="font-weight: 700;">${t('total')}:</span>
-                <span class="total-amount">$${total.toFixed(2)}</span>
+                <span class="total-amount">$${finalTotal.toFixed(2)}</span>
             </div>
             <button class="btn btn-primary" onclick="showPayment()" style="width: 100%; margin-top: 25px; padding: 18px; font-size: 18px;">
                 <i class="fas fa-lock"></i> ${t('checkout')}
@@ -1217,6 +1249,41 @@ function removeFromCart(index) {
     showAlert('Item removed from cart', 'warning');
 }
 
+// Apply promocode
+async function applyPromocode() {
+    const code = document.getElementById('promocode-input').value.trim();
+    const messageEl = document.getElementById('promocode-message');
+    
+    if (!code) {
+        messageEl.innerHTML = '<span style="color: var(--danger);">Please enter a promocode</span>';
+        return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+    
+    try {
+        const response = await fetch(`${API_URL}/api/promocodes/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, total })
+        });
+        
+        const result = await response.json();
+        
+        if (result.valid) {
+            localStorage.setItem('appliedPromocode', JSON.stringify(result));
+            messageEl.innerHTML = `<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Promocode applied! Discount: $${result.discountAmount}</span>`;
+            renderCart();
+        } else {
+            localStorage.removeItem('appliedPromocode');
+            messageEl.innerHTML = `<span style="color: var(--danger);"><i class="fas fa-times-circle"></i> ${result.error || 'Invalid promocode'}</span>`;
+            renderCart();
+        }
+    } catch (error) {
+        messageEl.innerHTML = '<span style="color: var(--danger);">Error validating promocode</span>';
+    }
+}
+
 // ===== PAYMENT =====
 function showPayment() {
     if (cart.length === 0) {
@@ -1226,13 +1293,26 @@ function showPayment() {
     
     showSection('payment');
     const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+    const appliedPromocode = JSON.parse(localStorage.getItem('appliedPromocode') || 'null');
+    const finalTotal = appliedPromocode && appliedPromocode.valid ? appliedPromocode.finalAmount : total;
+    const discountAmount = appliedPromocode && appliedPromocode.valid ? appliedPromocode.discountAmount : 0;
     
     document.getElementById('payment-details').innerHTML = `
         <div id="payment-step-1">
             <div style="background: var(--black); padding: 25px; border-radius: 12px; margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 18px;">
-                    <span>Amount to Pay:</span>
-                    <span style="font-weight: 700; color: var(--gold);">$${total.toFixed(2)} USDT</span>
+                    <span>Subtotal:</span>
+                    <span>$${total.toFixed(2)}</span>
+                </div>
+                ${discountAmount > 0 ? `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 18px; color: var(--success);">
+                    <span>Discount (${appliedPromocode.promocode.code}):</span>
+                    <span>-$${discountAmount.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 20px; border-top: 2px solid var(--gold); padding-top: 12px; margin-top: 12px;">
+                    <span style="font-weight: 700;">Amount to Pay:</span>
+                    <span style="font-weight: 700; color: var(--gold);">$${finalTotal.toFixed(2)} USDT</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 16px;">
                     <span>Network:</span>
@@ -1300,6 +1380,9 @@ async function createOrder() {
     const cleanTelegram = telegram.replace(/^@/, '');
     
     const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+    const appliedPromocode = JSON.parse(localStorage.getItem('appliedPromocode') || 'null');
+    const promocode = appliedPromocode && appliedPromocode.valid ? appliedPromocode.promocode.code : null;
+    
     const items = cart.map(item => ({
         id: item.id,
         name: item.name,
@@ -1311,7 +1394,7 @@ async function createOrder() {
         const response = await fetch(`${API_URL}/api/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, telegram: cleanTelegram, items, total })
+            body: JSON.stringify({ email, telegram: cleanTelegram, items, total, promocode })
         });
         
         const result = await response.json();
@@ -1564,6 +1647,9 @@ function showAdminTab(tabName, button) {
             break;
         case 'orders':
             loadAdminOrders();
+            break;
+        case 'promocodes':
+            loadAdminPromocodes();
             break;
         case 'settings':
             loadAdminSettings();

@@ -1002,11 +1002,15 @@ app.put('/api/products/:id', upload.fields([
     { name: 'productFile', maxCount: 1 }
 ]), async (req, res) => {
     try {
+        // Debug: Log ALL request data
         console.log('📥 PUT /api/products/:id - Received data:', {
             productId: req.params.id,
             featured: req.body.featured,
             featuredType: typeof req.body.featured,
-            allBodyKeys: Object.keys(req.body)
+            allBodyKeys: Object.keys(req.body),
+            allBodyValues: Object.entries(req.body).map(([key, value]) => ({ key, value, type: typeof value })).slice(0, 10),
+            hasFiles: !!req.files,
+            filesKeys: req.files ? Object.keys(req.files) : []
         });
         
         const products = await readData('products');
@@ -1051,7 +1055,15 @@ app.put('/api/products/:id', upload.fields([
         // FormData sends values as strings, so we need to check for 'true' string
         // ALWAYS update featured, even if undefined (to handle unchecked checkboxes)
         const featuredValue = req.body.featured;
-        if (featuredValue !== undefined) {
+        console.log('🔍 Processing featured:', {
+            featuredValue: featuredValue,
+            featuredType: typeof featuredValue,
+            featuredInBody: 'featured' in req.body,
+            bodyKeys: Object.keys(req.body),
+            beforeUpdate: products[index].featured
+        });
+        
+        if (featuredValue !== undefined && featuredValue !== null) {
             // Handle both string and boolean values from FormData
             const isFeatured = featuredValue === 'true' || featuredValue === true || featuredValue === '1' || featuredValue === 1;
             products[index].featured = isFeatured;
@@ -1067,7 +1079,7 @@ app.put('/api/products/:id', upload.fields([
         } else {
             // If not provided in request, set to false (checkbox was unchecked)
             products[index].featured = false;
-            console.log('❌ Featured not provided, setting to false for product:', products[index].id, products[index].name);
+            console.log('❌ Featured not provided or null, setting to false for product:', products[index].id, products[index].name);
         }
         
         // Update featured order

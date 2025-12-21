@@ -183,3 +183,42 @@
 html {
   font-size: var(--font-size);
 }
+
+/* === MOBILE CATEGORIES FIX === */
+@media screen and (max-width: 768px) {
+  #home-categories {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin: 20px 0 !important;
+  }
+  
+  #home-categories .category-card {
+    padding: 15px 10px !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  
+  #home-categories .category-icon,
+  #home-categories .category-emoji {
+    font-size: 32px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  #home-categories .category-card h3 {
+    font-size: 14px !important;
+    margin-bottom: 4px !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+  }
+  
+  #home-categories .category-card p {
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+    margin: 0 !important;
+  }
+}

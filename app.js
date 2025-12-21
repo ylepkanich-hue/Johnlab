@@ -4178,7 +4178,7 @@ function editService(serviceId) {
 async function deleteService(serviceId) {
     if (!confirm('Delete this service?')) return;
     
-    try {
+    try 
         const response = await fetch(`${API_URL}/api/services/${serviceId}`, {
             method: 'DELETE'
         });

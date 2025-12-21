@@ -970,6 +970,8 @@ app.post('/api/products', upload.fields([
             description: req.body.description,
             countries: req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : [],
             downloads: 0,
+            featured: req.body.featured === 'true' || req.body.featured === true,
+            featuredOrder: req.body.featuredOrder ? parseInt(req.body.featuredOrder) : undefined,
             createdAt: new Date().toISOString()
         };
 
@@ -1036,6 +1038,16 @@ app.put('/api/products/:id', upload.fields([
         // Update download password
         if (req.body.downloadPassword !== undefined) {
             products[index].downloadPassword = req.body.downloadPassword || CONFIG.TERABOX_PASSWORD;
+        }
+        
+        // Update featured status
+        if (req.body.featured !== undefined) {
+            products[index].featured = req.body.featured === 'true' || req.body.featured === true;
+        }
+        
+        // Update featured order
+        if (req.body.featuredOrder !== undefined) {
+            products[index].featuredOrder = req.body.featuredOrder ? parseInt(req.body.featuredOrder) : undefined;
         }
 
         await writeData('products', products);

@@ -1629,7 +1629,8 @@ function showAdminTab(tabName, button) {
         'settings': 'admin-settings',
         'contacts-admin': 'admin-contacts',
         'database': 'admin-database',
-        'services': 'admin-services'
+        'services': 'admin-services',
+        'promocodes': 'admin-promocodes'
     };
     
     const elementId = tabIdMap[tabName] || `admin-${tabName}`;
@@ -1687,8 +1688,12 @@ async function loadAdminDashboard() {
     }
     
     // Calculate chart data for last 7 days
-    const last7Days = visitorStats.dailyStats.slice(-7);
-    const maxVisitors = Math.max(...last7Days.map(d => d.unique), 1);
+    const last7Days = visitorStats.dailyStats && visitorStats.dailyStats.length > 0 
+        ? visitorStats.dailyStats.slice(-7) 
+        : [];
+    const maxVisitors = last7Days.length > 0 
+        ? Math.max(...last7Days.map(d => d.unique || 0), 1) 
+        : 1;
     
     document.getElementById('admin-dashboard').innerHTML = `
         <h3 style="color: var(--gold); margin-bottom: 30px; font-size: 28px;"><i class="fas fa-chart-bar"></i> Statistics</h3>
@@ -3990,6 +3995,245 @@ function renderOtherServices() {
 }
 
 // Admin: Load services management
+function loadAdminPromocodes() {
+    const container = document.getElementById('admin-promocodes');
+    
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h3 style="color: var(--gold); font-size: 24px;"><i class="fas fa-tag"></i> Promocode Management</h3>
+            <button class="btn btn-primary" onclick="showAddPromocodeModal()">
+                <i class="fas fa-plus"></i> Add Promocode
+            </button>
+        </div>
+        <div id="admin-promocodes-list"></div>
+    `;
+    
+    renderAdminPromocodesList();
+}
+
+async function renderAdminPromocodesList() {
+    const listContainer = document.getElementById('admin-promocodes-list');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/promocodes`);
+        const promocodes = await response.json();
+        
+        if (promocodes.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; color: #aaa; padding: 40px;">No promocodes yet</p>';
+            return;
+        }
+        
+        listContainer.innerHTML = `
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Discount</th>
+                            <th>Status</th>
+                            <th>Used</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${promocodes.map(promo => `
+                            <tr>
+                                <td><strong style="color: var(--gold);">${promo.code}</strong></td>
+                                <td>${promo.discountType === 'percentage' ? 'Percentage' : 'Fixed'}</td>
+                                <td>${promo.discountType === 'percentage' ? `${promo.discountValue}%` : `$${promo.discountValue}`}</td>
+                                <td>${promo.active ? '<span style="color: var(--success);">Active</span>' : '<span style="color: var(--danger);">Inactive</span>'}</td>
+                                <td>${promo.usedCount || 0}${promo.maxUses ? ` / ${promo.maxUses}` : ''}</td>
+                                <td>${promo.expiresAt ? new Date(promo.expiresAt).toLocaleDateString() : 'No expiry'}</td>
+                                <td>
+                                    <button class="btn btn-secondary btn-small" onclick="editPromocode(${promo.id})" style="margin-right: 5px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="deletePromocode(${promo.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (error) {
+        listContainer.innerHTML = '<p style="color: var(--danger);">Error loading promocodes</p>';
+    }
+}
+
+function showAddPromocodeModal() {
+    const modal = `
+        <div class="modal-overlay active" onclick="closeModal()">
+            <div class="modal" onclick="event.stopPropagation()">
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <div class="modal-title">Add Promocode</div>
+                <form onsubmit="submitPromocodeForm(false); return false;">
+                    <div class="form-group">
+                        <label>Promocode:</label>
+                        <input type="text" id="promocode-code" class="form-control" placeholder="SUMMER2024" required>
+                        <small style="color: #aaa;">Uppercase letters and numbers only</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Discount Type:</label>
+                        <select id="promocode-type" class="form-control" onchange="updatePromocodeType()">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount ($)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="promocode-value-label">Discount Value (%):</label>
+                        <input type="number" id="promocode-value" class="form-control" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="promocode-active" checked>
+                            Active
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiration Date (optional):</label>
+                        <input type="datetime-local" id="promocode-expires" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Uses (optional):</label>
+                        <input type="number" id="promocode-maxuses" class="form-control" min="1" placeholder="Leave empty for unlimited">
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            <i class="fas fa-save"></i> Save Promocode
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    document.getElementById('modals').innerHTML = modal;
+}
+
+function updatePromocodeType() {
+    const type = document.getElementById('promocode-type').value;
+    const label = document.getElementById('promocode-value-label');
+    if (label) {
+        label.textContent = type === 'percentage' ? 'Discount Value (%):' : 'Discount Value ($):';
+    }
+}
+
+async function submitPromocodeForm(isEdit, promocodeId) {
+    const code = document.getElementById('promocode-code').value.trim().toUpperCase();
+    const discountType = document.getElementById('promocode-type').value;
+    const discountValue = parseFloat(document.getElementById('promocode-value').value);
+    const active = document.getElementById('promocode-active').checked;
+    const expiresAt = document.getElementById('promocode-expires').value || null;
+    const maxUses = document.getElementById('promocode-maxuses').value || null;
+    
+    try {
+        const url = isEdit ? `${API_URL}/api/promocodes/${promocodeId}` : `${API_URL}/api/promocodes`;
+        const method = isEdit ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, discountType, discountValue, active, expiresAt, maxUses })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success || result.promocode) {
+            showAlert(`Promocode ${isEdit ? 'updated' : 'created'} successfully`);
+            closeModal();
+            renderAdminPromocodesList();
+        } else {
+            showAlert(result.error || 'Error saving promocode', 'error');
+        }
+    } catch (error) {
+        showAlert('Error saving promocode', 'error');
+    }
+}
+
+function editPromocode(id) {
+    fetch(`${API_URL}/api/promocodes`)
+        .then(r => r.json())
+        .then(promocodes => {
+            const promo = promocodes.find(p => p.id === id);
+            if (!promo) return;
+            
+            const modal = `
+                <div class="modal-overlay active" onclick="closeModal()">
+                    <div class="modal" onclick="event.stopPropagation()">
+                        <button class="modal-close" onclick="closeModal()">&times;</button>
+                        <div class="modal-title">Edit Promocode</div>
+                        <form onsubmit="submitPromocodeForm(true, ${promo.id}); return false;">
+                            <div class="form-group">
+                                <label>Promocode:</label>
+                                <input type="text" id="promocode-code" class="form-control" value="${promo.code}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Discount Type:</label>
+                                <select id="promocode-type" class="form-control" onchange="updatePromocodeType()">
+                                    <option value="percentage" ${promo.discountType === 'percentage' ? 'selected' : ''}>Percentage (%)</option>
+                                    <option value="fixed" ${promo.discountType === 'fixed' ? 'selected' : ''}>Fixed Amount ($)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label id="promocode-value-label">Discount Value:</label>
+                                <input type="number" id="promocode-value" class="form-control" value="${promo.discountValue}" step="0.01" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="promocode-active" ${promo.active ? 'checked' : ''}>
+                                    Active
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>Expiration Date (optional):</label>
+                                <input type="datetime-local" id="promocode-expires" class="form-control" value="${promo.expiresAt ? new Date(promo.expiresAt).toISOString().slice(0, 16) : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Max Uses (optional):</label>
+                                <input type="number" id="promocode-maxuses" class="form-control" value="${promo.maxUses || ''}" min="1" placeholder="Leave empty for unlimited">
+                            </div>
+                            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modals').innerHTML = modal;
+            updatePromocodeType();
+        });
+}
+
+async function deletePromocode(id) {
+    if (!confirm('Are you sure you want to delete this promocode?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/promocodes/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Promocode deleted');
+            renderAdminPromocodesList();
+        } else {
+            showAlert(result.error || 'Error deleting promocode', 'error');
+        }
+    } catch (error) {
+        showAlert('Error deleting promocode', 'error');
+    }
+}
+
 function loadAdminServices() {
     const container = document.getElementById('admin-services');
     container.innerHTML = `

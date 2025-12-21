@@ -663,11 +663,18 @@ function renderHomePage() {
 
     // Get featured/recommended products
     // First, try to get products marked as featured
+    // Check both boolean true and string "true" for backward compatibility
     let featured = products.filter(p => 
-        p.featured === true && 
+        (p.featured === true || p.featured === 'true') && 
         p.category !== 'MRZ' && 
         p.category !== 'Other services'
     );
+    
+    console.log('🔍 Featured products check:', {
+        totalProducts: products.length,
+        featuredCount: featured.length,
+        allFeatured: products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name, featured: p.featured, category: p.category }))
+    });
     
     // If no featured products, fall back to top downloads (backward compatibility)
     if (featured.length === 0) {
@@ -1958,9 +1965,11 @@ async function submitProductForm(isEdit = false, productId = null) {
     const selectedCountries = Array.from(countriesSelect.selectedOptions).map(option => option.value);
     formData.append('countries', JSON.stringify(selectedCountries));
     
-    // Get featured checkbox
+    // Get featured checkbox - FormData converts boolean to string, so send as string
     const featuredCheckbox = form.querySelector('input[name="featured"]');
-    formData.append('featured', featuredCheckbox ? featuredCheckbox.checked : false);
+    const isFeatured = featuredCheckbox && featuredCheckbox.checked;
+    formData.append('featured', isFeatured ? 'true' : 'false');
+    console.log('📤 Sending featured status:', isFeatured, 'for product', isEdit ? productId : 'new');
     
     // Get featured order
     const featuredOrderInput = form.querySelector('input[name="featuredOrder"]');
@@ -1985,8 +1994,19 @@ async function submitProductForm(isEdit = false, productId = null) {
             await loadData();
             renderAdminProductsList();
             renderProducts();
+            // Always refresh home page to show updated featured products
             renderHomePage();
             renderCategoryFilters();
+            
+            // Debug: log featured products after update
+            console.log('🔄 After product update, featured products:', 
+                products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name }))
+            );
+            
+            // Debug: log featured products after update
+            console.log('🔄 After product update, featured products:', 
+                products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name }))
+            );
         } else {
             showAlert('Error saving product', 'error');
         }

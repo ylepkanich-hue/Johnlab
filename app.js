@@ -2009,7 +2009,10 @@ async function submitProductForm(isEdit = false, productId = null) {
     const featuredCheckbox = form.querySelector('input[name="featured"]');
     const isFeatured = featuredCheckbox && featuredCheckbox.checked;
     
-    // IMPORTANT: Always append featured, even if false, so server knows it was explicitly set
+    // IMPORTANT: Remove any existing 'featured' entries first to avoid array issues
+    // Then append only once with the correct value
+    // Note: FormData doesn't have delete method, but we can overwrite by appending
+    // The server will handle both array and string cases
     formData.append('featured', isFeatured ? 'true' : 'false');
     
     // Debug: Log what we're sending

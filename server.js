@@ -1002,6 +1002,13 @@ app.put('/api/products/:id', upload.fields([
     { name: 'productFile', maxCount: 1 }
 ]), async (req, res) => {
     try {
+        console.log('📥 PUT /api/products/:id - Received data:', {
+            productId: req.params.id,
+            featured: req.body.featured,
+            featuredType: typeof req.body.featured,
+            allBodyKeys: Object.keys(req.body)
+        });
+        
         const products = await readData('products');
         const index = products.findIndex(p => p.id === parseInt(req.params.id));
         
@@ -1041,13 +1048,26 @@ app.put('/api/products/:id', upload.fields([
         }
         
         // Update featured status
+        // FormData sends values as strings, so we need to check for 'true' string
         if (req.body.featured !== undefined) {
             // Handle both string and boolean values from FormData
             const featuredValue = req.body.featured;
-            products[index].featured = featuredValue === 'true' || featuredValue === true || featuredValue === '1';
+            const isFeatured = featuredValue === 'true' || featuredValue === true || featuredValue === '1' || featuredValue === 1;
+            products[index].featured = isFeatured;
+            console.log('✅ Updated featured status:', {
+                productId: products[index].id,
+                productName: products[index].name,
+                receivedValue: featuredValue,
+                receivedType: typeof featuredValue,
+                isFeatured: isFeatured,
+                savedValue: products[index].featured
+            });
         } else {
-            // If not provided, keep existing value or set to false
-            products[index].featured = products[index].featured || false;
+            // If not provided, explicitly set to false (don't keep existing if checkbox was unchecked)
+            // But only if the request is coming from a form submission (has other fields)
+            if (req.body.name !== undefined) {
+                products[index].featured = false;
+            }
         }
         
         // Update featured order
@@ -1059,6 +1079,19 @@ app.put('/api/products/:id', upload.fields([
         }
 
         await writeData('products', products);
+        
+        // Verify the saved product by reading it back
+        const verifyProducts = await readData('products');
+        const verifyIndex = verifyProducts.findIndex(p => p.id === parseInt(req.params.id));
+        console.log('💾 Product saved, verification:', {
+            productId: products[index].id,
+            productName: products[index].name,
+            featured: products[index].featured,
+            featuredType: typeof products[index].featured,
+            savedFeatured: verifyIndex !== -1 ? verifyProducts[verifyIndex].featured : 'not found',
+            savedFeaturedType: verifyIndex !== -1 ? typeof verifyProducts[verifyIndex].featured : 'N/A'
+        });
+        
         res.json({ success: true, product: products[index] });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

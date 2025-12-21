@@ -851,11 +851,6 @@ function renderHomeCategories() {
         console.log('Categories with visible=false:', categories.filter(c => c.visible === false));
     }
     
-    // Detect mobile - use multiple methods for reliability
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isMobileWidth = window.innerWidth <= 768;
-    const isMobile = isMobileDevice || isMobileWidth;
-    
     container.innerHTML = mainCategories.map(cat => {
         // Don't show product count for MRZ and Other services categories
         let displayText = '';
@@ -869,148 +864,16 @@ function renderHomeCategories() {
             displayText = `${productCount} ${templateText}`;
         }
         
-        // ALWAYS add mobile styles - they will be overridden by CSS on desktop
         return `
-            <div class="category-card" onclick="viewCategory('${cat.name}')" style="padding: ${isMobile ? '20px 12px' : '30px'}; min-height: ${isMobile ? '140px' : 'auto'}; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                <div class="category-icon" style="font-size: ${isMobile ? '36px' : '48px'}; margin-bottom: ${isMobile ? '10px' : '15px'};">
+            <div class="category-card" onclick="viewCategory('${cat.name}')">
+                <div class="category-icon">
                     ${renderCategoryIcon(cat.icon)}
                 </div>
-                <h3 style="font-size: ${isMobile ? '15px' : '20px'}; margin-bottom: ${isMobile ? '6px' : '10px'}; line-height: 1.3; word-break: break-word;">${cat.name}</h3>
-                <p style="font-size: ${isMobile ? '11px' : '14px'}; line-height: 1.4; margin: 0;">${displayText}</p>
+                <h3>${cat.name}</h3>
+                <p>${displayText}</p>
             </div>
         `;
     }).join('');
-    
-    // ALWAYS set grid layout - CSS will override on desktop if needed
-    container.style.display = 'grid';
-    container.style.gridTemplateColumns = isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))';
-    container.style.gap = isMobile ? '15px' : '25px';
-    container.style.margin = isMobile ? '20px 0' : '40px 0';
-    
-    // Apply mobile styles directly via JavaScript to ensure they work
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-        const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        console.log('📱 Checking mobile:', { 
-            width: window.innerWidth, 
-            isMobile, 
-            userAgent: navigator.userAgent.substring(0, 50) 
-        });
-        
-        if (isMobile) {
-            console.log('📱 Applying mobile category styles...');
-            
-            // Force container styles using setProperty with important
-            container.style.setProperty('display', 'grid', 'important');
-            container.style.setProperty('grid-template-columns', 'repeat(2, 1fr)', 'important');
-            container.style.setProperty('gap', '15px', 'important');
-            container.style.setProperty('margin', '20px 0', 'important');
-            container.style.setProperty('width', '100%', 'important');
-            
-            const cards = container.querySelectorAll('.category-card');
-            console.log(`📱 Found ${cards.length} category cards`);
-            
-            cards.forEach((card, index) => {
-                // Apply styles with important flag
-                card.style.setProperty('padding', '20px 12px', 'important');
-                card.style.setProperty('min-height', '140px', 'important');
-                card.style.setProperty('display', 'flex', 'important');
-                card.style.setProperty('flex-direction', 'column', 'important');
-                card.style.setProperty('justify-content', 'center', 'important');
-                card.style.setProperty('align-items', 'center', 'important');
-                card.style.setProperty('text-align', 'center', 'important');
-                card.style.setProperty('box-sizing', 'border-box', 'important');
-                
-                const icon = card.querySelector('.category-icon');
-                const emoji = card.querySelector('.category-emoji');
-                const iconElement = icon || emoji;
-                
-                if (iconElement) {
-                    iconElement.style.setProperty('font-size', '36px', 'important');
-                    iconElement.style.setProperty('margin-bottom', '10px', 'important');
-                }
-                
-                const h3 = card.querySelector('h3');
-                if (h3) {
-                    h3.style.setProperty('font-size', '15px', 'important');
-                    h3.style.setProperty('margin-bottom', '6px', 'important');
-                    h3.style.setProperty('line-height', '1.3', 'important');
-                    h3.style.setProperty('word-break', 'break-word', 'important');
-                    h3.style.setProperty('overflow-wrap', 'break-word', 'important');
-                }
-                
-                const p = card.querySelector('p');
-                if (p) {
-                    p.style.setProperty('font-size', '11px', 'important');
-                    p.style.setProperty('line-height', '1.4', 'important');
-                    p.style.setProperty('margin', '0', 'important');
-                }
-            });
-            
-            console.log('✅ Mobile category styles applied to', cards.length, 'cards');
-        }
-    });
-    
-    // Also handle window resize
-    const handleResize = () => {
-        if (window.innerWidth <= 768) {
-            const cards = container.querySelectorAll('.category-card');
-            cards.forEach(card => {
-                card.style.padding = '20px 12px';
-                card.style.minHeight = '140px';
-                card.style.display = 'flex';
-                card.style.flexDirection = 'column';
-                card.style.justifyContent = 'center';
-                card.style.alignItems = 'center';
-                
-                const icon = card.querySelector('.category-icon, .category-emoji');
-                if (icon) icon.style.fontSize = '36px';
-                
-                const h3 = card.querySelector('h3');
-                if (h3) {
-                    h3.style.fontSize = '15px';
-                    h3.style.wordBreak = 'break-word';
-                }
-                
-                const p = card.querySelector('p');
-                if (p) p.style.fontSize = '11px';
-            });
-            container.style.gridTemplateColumns = 'repeat(2, 1fr)';
-            container.style.gap = '15px';
-        } else {
-            // Reset to default for desktop
-            const cards = container.querySelectorAll('.category-card');
-            cards.forEach(card => {
-                card.style.padding = '';
-                card.style.minHeight = '';
-                card.style.display = '';
-                card.style.flexDirection = '';
-                card.style.justifyContent = '';
-                card.style.alignItems = '';
-                
-                const icon = card.querySelector('.category-icon, .category-emoji');
-                if (icon) icon.style.fontSize = '';
-                
-                const h3 = card.querySelector('h3');
-                if (h3) {
-                    h3.style.fontSize = '';
-                    h3.style.wordBreak = '';
-                }
-                
-                const p = card.querySelector('p');
-                if (p) p.style.fontSize = '';
-            });
-            container.style.gridTemplateColumns = '';
-            container.style.gap = '';
-        }
-    };
-    
-    // Add resize listener if not already added
-    if (!window.categoryResizeHandlerAdded) {
-        window.addEventListener('resize', handleResize);
-        window.categoryResizeHandlerAdded = true;
-    }
 }
 
 function viewCategory(categoryName) {

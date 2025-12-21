@@ -970,8 +970,8 @@ app.post('/api/products', upload.fields([
             description: req.body.description,
             countries: req.body.countries ? (Array.isArray(req.body.countries) ? req.body.countries : JSON.parse(req.body.countries)) : [],
             downloads: 0,
-            featured: req.body.featured === 'true' || req.body.featured === true,
-            featuredOrder: req.body.featuredOrder ? parseInt(req.body.featuredOrder) : undefined,
+            featured: req.body.featured === 'true' || req.body.featured === true || req.body.featured === '1',
+            featuredOrder: req.body.featuredOrder && req.body.featuredOrder !== '' ? parseInt(req.body.featuredOrder) : undefined,
             createdAt: new Date().toISOString()
         };
 
@@ -1042,12 +1042,20 @@ app.put('/api/products/:id', upload.fields([
         
         // Update featured status
         if (req.body.featured !== undefined) {
-            products[index].featured = req.body.featured === 'true' || req.body.featured === true;
+            // Handle both string and boolean values from FormData
+            const featuredValue = req.body.featured;
+            products[index].featured = featuredValue === 'true' || featuredValue === true || featuredValue === '1';
+        } else {
+            // If not provided, keep existing value or set to false
+            products[index].featured = products[index].featured || false;
         }
         
         // Update featured order
-        if (req.body.featuredOrder !== undefined) {
-            products[index].featuredOrder = req.body.featuredOrder ? parseInt(req.body.featuredOrder) : undefined;
+        if (req.body.featuredOrder !== undefined && req.body.featuredOrder !== '') {
+            products[index].featuredOrder = parseInt(req.body.featuredOrder);
+        } else if (req.body.featuredOrder === '') {
+            // If empty string, remove featuredOrder
+            products[index].featuredOrder = undefined;
         }
 
         await writeData('products', products);

@@ -1491,19 +1491,40 @@
             
             .nav-buttons {
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
                 width: 100% !important;
                 justify-content: center !important;
+                align-items: stretch !important;
             }
             
-            .nav-buttons button,
+            .nav-buttons > * {
+                width: 100% !important;
+                min-width: 0 !important;
+                display: flex !important;
+            }
+            
+            .nav-buttons button {
+                width: 100% !important;
+                font-size: 13px !important;
+                padding: 0 !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-width: 0 !important;
+                min-height: 50px !important;
+                height: 50px !important;
+                max-height: 50px !important;
+                display: flex !important;
+                border-radius: 10px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+            
             .nav-buttons .language-selector {
                 width: 100% !important;
-                font-size: 12px !important;
-                padding: 10px 8px !important;
-                justify-content: center !important;
-                min-width: 0 !important;
+                display: flex !important;
+                min-height: 50px !important;
+                height: 50px !important;
             }
             
             .nav-buttons button span {
@@ -1512,21 +1533,40 @@
             
             .nav-buttons button i {
                 margin-right: 0 !important;
-                font-size: 16px !important;
+                font-size: 18px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            
+            .nav-buttons .language-selector select {
+                width: 100% !important;
+                min-height: 50px !important;
+                height: 50px !important;
+                padding: 12px 35px 12px 15px !important;
+                font-size: 13px !important;
+                border-radius: 10px !important;
+                box-sizing: border-box !important;
             }
             
             .nav-buttons #user-account-buttons,
             .nav-buttons #guest-account-buttons {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
+                gap: 10px !important;
                 width: 100% !important;
-                grid-column: span 3 !important;
+                grid-column: span 2 !important;
+                align-items: stretch !important;
             }
             
             .nav-buttons #user-account-buttons button,
             .nav-buttons #guest-account-buttons button {
                 width: 100% !important;
+                min-height: 50px !important;
+                height: 50px !important;
+                max-height: 50px !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             
             .products-grid {

@@ -874,6 +874,52 @@ function renderHomeCategories() {
             </div>
         `;
     }).join('');
+    
+    // FORCE mobile styles - apply immediately after rendering
+    const applyMobileStyles = () => {
+        const width = window.innerWidth;
+        const isMobile = width <= 768;
+        
+        if (isMobile) {
+            // Force container
+            container.style.cssText = 'display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin: 20px 0 !important;';
+            
+            // Force each card
+            const cards = container.querySelectorAll('.category-card');
+            cards.forEach(card => {
+                card.style.cssText = 'padding: 15px 10px !important; min-height: 120px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; text-align: center !important;';
+                
+                const icon = card.querySelector('.category-icon, .category-emoji');
+                if (icon) {
+                    icon.style.cssText = 'font-size: 32px !important; margin-bottom: 8px !important;';
+                }
+                
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.style.cssText = 'font-size: 14px !important; margin-bottom: 4px !important; line-height: 1.2 !important; word-break: break-word !important;';
+                }
+                
+                const p = card.querySelector('p');
+                if (p) {
+                    p.style.cssText = 'font-size: 10px !important; line-height: 1.3 !important; margin: 0 !important;';
+                }
+            });
+        }
+    };
+    
+    // Apply immediately
+    applyMobileStyles();
+    
+    // Also apply on resize
+    const resizeHandler = () => applyMobileStyles();
+    if (!window.categoryMobileHandlerAdded) {
+        window.addEventListener('resize', resizeHandler);
+        window.categoryMobileHandlerAdded = true;
+    }
+    
+    // Apply again after delays to ensure DOM is ready
+    setTimeout(applyMobileStyles, 100);
+    setTimeout(applyMobileStyles, 500);
 }
 
 function viewCategory(categoryName) {

@@ -763,7 +763,15 @@ function getStoreCategories() {
 
 function renderHomeCategories() {
     const container = document.getElementById('home-categories');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ home-categories container not found!');
+        return;
+    }
+    
+    // Ensure container has the categories-grid class
+    if (!container.classList.contains('categories-grid')) {
+        container.classList.add('categories-grid');
+    }
     
     // Show all visible categories on home page (including MRZ for navigation, but exclude Barcode Generator)
     // visible defaults to true if not set (for backward compatibility)
@@ -812,44 +820,69 @@ function renderHomeCategories() {
     }).join('');
     
     // Apply mobile styles directly via JavaScript to ensure they work
-    if (window.innerWidth <= 768) {
-        const cards = container.querySelectorAll('.category-card');
-        cards.forEach(card => {
-            card.style.padding = '20px 12px';
-            card.style.minHeight = '140px';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.justifyContent = 'center';
-            card.style.alignItems = 'center';
-            card.style.textAlign = 'center';
-            
-            const icon = card.querySelector('.category-icon, .category-emoji');
-            if (icon) {
-                icon.style.fontSize = '36px';
-                icon.style.marginBottom = '10px';
-            }
-            
-            const h3 = card.querySelector('h3');
-            if (h3) {
-                h3.style.fontSize = '15px';
-                h3.style.marginBottom = '6px';
-                h3.style.lineHeight = '1.3';
-                h3.style.wordBreak = 'break-word';
-            }
-            
-            const p = card.querySelector('p');
-            if (p) {
-                p.style.fontSize = '11px';
-                p.style.lineHeight = '1.4';
-                p.style.margin = '0';
-            }
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+        const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        console.log('📱 Checking mobile:', { 
+            width: window.innerWidth, 
+            isMobile, 
+            userAgent: navigator.userAgent.substring(0, 50) 
         });
         
-        // Set grid to 2 columns
-        container.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        container.style.gap = '15px';
-        container.style.margin = '20px 0';
-    }
+        if (isMobile) {
+            console.log('📱 Applying mobile category styles...');
+            
+            // Force container styles using setProperty with important
+            container.style.setProperty('display', 'grid', 'important');
+            container.style.setProperty('grid-template-columns', 'repeat(2, 1fr)', 'important');
+            container.style.setProperty('gap', '15px', 'important');
+            container.style.setProperty('margin', '20px 0', 'important');
+            container.style.setProperty('width', '100%', 'important');
+            
+            const cards = container.querySelectorAll('.category-card');
+            console.log(`📱 Found ${cards.length} category cards`);
+            
+            cards.forEach((card, index) => {
+                // Apply styles with important flag
+                card.style.setProperty('padding', '20px 12px', 'important');
+                card.style.setProperty('min-height', '140px', 'important');
+                card.style.setProperty('display', 'flex', 'important');
+                card.style.setProperty('flex-direction', 'column', 'important');
+                card.style.setProperty('justify-content', 'center', 'important');
+                card.style.setProperty('align-items', 'center', 'important');
+                card.style.setProperty('text-align', 'center', 'important');
+                card.style.setProperty('box-sizing', 'border-box', 'important');
+                
+                const icon = card.querySelector('.category-icon');
+                const emoji = card.querySelector('.category-emoji');
+                const iconElement = icon || emoji;
+                
+                if (iconElement) {
+                    iconElement.style.setProperty('font-size', '36px', 'important');
+                    iconElement.style.setProperty('margin-bottom', '10px', 'important');
+                }
+                
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.style.setProperty('font-size', '15px', 'important');
+                    h3.style.setProperty('margin-bottom', '6px', 'important');
+                    h3.style.setProperty('line-height', '1.3', 'important');
+                    h3.style.setProperty('word-break', 'break-word', 'important');
+                    h3.style.setProperty('overflow-wrap', 'break-word', 'important');
+                }
+                
+                const p = card.querySelector('p');
+                if (p) {
+                    p.style.setProperty('font-size', '11px', 'important');
+                    p.style.setProperty('line-height', '1.4', 'important');
+                    p.style.setProperty('margin', '0', 'important');
+                }
+            });
+            
+            console.log('✅ Mobile category styles applied to', cards.length, 'cards');
+        }
+    });
     
     // Also handle window resize
     const handleResize = () => {

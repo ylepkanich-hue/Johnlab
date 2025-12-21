@@ -465,7 +465,21 @@ async function loadData() {
         orders = await ordersRes.json();
         
         // Debug: log featured products after loading
-        const featuredProducts = products.filter(p => p.featured === true || p.featured === 'true');
+        // Check for featured in multiple ways to catch all cases
+        const featuredProducts = products.filter(p => {
+            const featured = p.featured;
+            return featured === true || featured === 'true' || featured === 1 || featured === '1';
+        });
+        
+        // Also check a sample product to see what featured values exist
+        const sampleProducts = products.slice(0, 5).map(p => ({
+            id: p.id,
+            name: p.name,
+            featured: p.featured,
+            featuredType: typeof p.featured,
+            hasFeatured: 'featured' in p
+        }));
+        
         console.log('📦 Products loaded:', {
             total: products.length,
             featuredCount: featuredProducts.length,
@@ -474,7 +488,8 @@ async function loadData() {
                 name: p.name, 
                 featured: p.featured, 
                 featuredType: typeof p.featured 
-            }))
+            })),
+            sampleProducts: sampleProducts
         });
         
         // Ensure all categories have order and visible fields
@@ -677,17 +692,28 @@ function renderHomePage() {
 
     // Get featured/recommended products
     // First, try to get products marked as featured
-    // Check both boolean true and string "true" for backward compatibility
-    let featured = products.filter(p => 
-        (p.featured === true || p.featured === 'true') && 
-        p.category !== 'MRZ' && 
-        p.category !== 'Other services'
-    );
+    // Check multiple formats: true, 'true', 1, '1'
+    let featured = products.filter(p => {
+        const isFeatured = p.featured === true || p.featured === 'true' || p.featured === 1 || p.featured === '1';
+        const validCategory = p.category !== 'MRZ' && p.category !== 'Other services';
+        return isFeatured && validCategory;
+    });
+    
+    // Debug: check all products with featured field
+    const allWithFeatured = products.filter(p => 'featured' in p).map(p => ({
+        id: p.id,
+        name: p.name,
+        featured: p.featured,
+        featuredType: typeof p.featured,
+        category: p.category
+    }));
     
     console.log('🔍 Featured products check:', {
         totalProducts: products.length,
         featuredCount: featured.length,
-        allFeatured: products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name, featured: p.featured, category: p.category }))
+        allFeatured: featured.map(p => ({ id: p.id, name: p.name, featured: p.featured, category: p.category })),
+        productsWithFeaturedField: allWithFeatured,
+        sampleFeaturedValues: products.slice(0, 10).map(p => ({ id: p.id, name: p.name, featured: p.featured, hasFeatured: 'featured' in p }))
     });
     
     // If no featured products, fall back to top downloads (backward compatibility)
@@ -1990,7 +2016,6 @@ async function submitProductForm(isEdit = false, productId = null) {
         productId: isEdit ? productId : 'new',
         formDataValue: isFeatured ? 'true' : 'false'
     });
-    console.log('📤 Sending featured status:', isFeatured, 'for product', isEdit ? productId : 'new');
     
     // Get featured order
     const featuredOrderInput = form.querySelector('input[name="featuredOrder"]');

@@ -795,7 +795,8 @@ async function initData() {
                 uniqueIps: [],
                 dailyStats: {},
                 lastCleanup: new Date().toISOString().split('T')[0]
-            }
+            },
+            promocodes: []
         };
 
         for (const [key, data] of Object.entries(initialData)) {
@@ -1301,7 +1302,7 @@ function isValidEmail(email) {
 // Create order
 app.post('/api/orders', async (req, res) => {
     try {
-        const { email, telegram, items, total, wallet } = req.body;
+        const { email, telegram, items, total, wallet, promocode } = req.body;
         
         if (!email || !isValidEmail(email)) {
             return res.status(400).json({ success: false, error: 'Valid email is required' });
@@ -1317,11 +1318,56 @@ app.post('/api/orders', async (req, res) => {
         
         const orders = await readData('orders');
         
+        // Validate and apply promocode if provided
+        let finalTotal = total;
+        let appliedPromocode = null;
+        let discountAmount = 0;
+        
+        if (promocode) {
+            const promocodes = await readData('promocodes') || [];
+            const foundPromocode = promocodes.find(p => 
+                p.code.toLowerCase() === promocode.toLowerCase() && 
+                p.active === true
+            );
+            
+            if (foundPromocode) {
+                // Check expiration
+                if (!foundPromocode.expiresAt || new Date(foundPromocode.expiresAt) >= new Date()) {
+                    // Check usage limit
+                    if (!foundPromocode.maxUses || foundPromocode.usedCount < foundPromocode.maxUses) {
+                        // Calculate discount
+                        if (foundPromocode.discountType === 'percentage') {
+                            discountAmount = (total * foundPromocode.discountValue) / 100;
+                        } else if (foundPromocode.discountType === 'fixed') {
+                            discountAmount = foundPromocode.discountValue;
+                        }
+                        
+                        // Don't allow discount more than total
+                        if (discountAmount > total) {
+                            discountAmount = total;
+                        }
+                        
+                        finalTotal = total - discountAmount;
+                        appliedPromocode = {
+                            code: foundPromocode.code,
+                            discountType: foundPromocode.discountType,
+                            discountValue: foundPromocode.discountValue,
+                            discountAmount: discountAmount
+                        };
+                        
+                        // Increment usage count
+                        foundPromocode.usedCount = (foundPromocode.usedCount || 0) + 1;
+                        await writeData('promocodes', promocodes);
+                    }
+                }
+            }
+        }
+        
         const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
         
         // Generate unique amount with different cents for payment identification
         // This ensures even if multiple orders have the same base amount, they'll have unique exact amounts
-        const uniqueAmount = paymentChecker.startMonitoring(orderId, total, CONFIG.WALLET_ADDRESS, CONFIG.PAYMENT_TIMEOUT);
+        const uniqueAmount = paymentChecker.startMonitoring(orderId, finalTotal, CONFIG.WALLET_ADDRESS, CONFIG.PAYMENT_TIMEOUT);
         
         // Clean telegram username (remove @ if present)
         const cleanTelegram = telegram.replace(/^@/, '').trim();
@@ -1333,6 +1379,8 @@ app.post('/api/orders', async (req, res) => {
             customerWallet: wallet || '', // Optional, kept for backward compatibility
             items,
             baseAmount: total,
+            discountAmount: discountAmount,
+            promocode: appliedPromocode,
             exactAmount: uniqueAmount,
             status: 'pending',
             createdAt: new Date().toISOString(),
@@ -1950,6 +1998,160 @@ app.post('/api/upload-favicon', upload.single('favicon'), async (req, res) => {
         res.json({ success: true, faviconUrl });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== PROMOCODES API =====
+
+// Get all promocodes
+app.get('/api/promocodes', async (req, res) => {
+    try {
+        const promocodes = await readData('promocodes') || [];
+        res.json(promocodes);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Validate promocode
+app.post('/api/promocodes/validate', async (req, res) => {
+    try {
+        const { code, total } = req.body;
+        const promocodes = await readData('promocodes') || [];
+        const promocode = promocodes.find(p => 
+            p.code.toLowerCase() === code.toLowerCase() && 
+            p.active === true
+        );
+        
+        if (!promocode) {
+            return res.json({ valid: false, error: 'Invalid or inactive promocode' });
+        }
+        
+        // Check expiration
+        if (promocode.expiresAt) {
+            const expiresDate = new Date(promocode.expiresAt);
+            if (expiresDate < new Date()) {
+                return res.json({ valid: false, error: 'Promocode has expired' });
+            }
+        }
+        
+        // Check usage limit
+        if (promocode.maxUses && promocode.usedCount >= promocode.maxUses) {
+            return res.json({ valid: false, error: 'Promocode usage limit reached' });
+        }
+        
+        // Calculate discount
+        let discountAmount = 0;
+        if (promocode.discountType === 'percentage') {
+            discountAmount = (total * promocode.discountValue) / 100;
+        } else if (promocode.discountType === 'fixed') {
+            discountAmount = promocode.discountValue;
+        }
+        
+        // Don't allow discount more than total
+        if (discountAmount > total) {
+            discountAmount = total;
+        }
+        
+        const finalAmount = total - discountAmount;
+        
+        res.json({
+            valid: true,
+            promocode: {
+                id: promocode.id,
+                code: promocode.code,
+                discountType: promocode.discountType,
+                discountValue: promocode.discountValue
+            },
+            discountAmount: parseFloat(discountAmount.toFixed(2)),
+            finalAmount: parseFloat(finalAmount.toFixed(2))
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add promocode
+app.post('/api/promocodes', async (req, res) => {
+    try {
+        const promocodes = await readData('promocodes') || [];
+        
+        const newPromocode = {
+            id: promocodes.length > 0 ? Math.max(...promocodes.map(p => p.id)) + 1 : 1,
+            code: req.body.code.toUpperCase().trim(),
+            discountType: req.body.discountType || 'percentage', // 'percentage' or 'fixed'
+            discountValue: parseFloat(req.body.discountValue) || 0,
+            active: req.body.active !== undefined ? req.body.active : true,
+            expiresAt: req.body.expiresAt || null,
+            maxUses: req.body.maxUses || null,
+            usedCount: 0,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Check if code already exists
+        if (promocodes.some(p => p.code.toLowerCase() === newPromocode.code.toLowerCase())) {
+            return res.status(400).json({ error: 'Promocode already exists' });
+        }
+        
+        promocodes.push(newPromocode);
+        await writeData('promocodes', promocodes);
+        res.json({ success: true, promocode: newPromocode });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update promocode
+app.put('/api/promocodes/:id', async (req, res) => {
+    try {
+        const promocodes = await readData('promocodes') || [];
+        const index = promocodes.findIndex(p => p.id === parseInt(req.params.id));
+        
+        if (index === -1) {
+            return res.status(404).json({ error: 'Promocode not found' });
+        }
+        
+        // Check if code already exists (excluding current)
+        if (req.body.code) {
+            const codeExists = promocodes.some((p, i) => 
+                i !== index && p.code.toLowerCase() === req.body.code.toLowerCase()
+            );
+            if (codeExists) {
+                return res.status(400).json({ error: 'Promocode already exists' });
+            }
+        }
+        
+        promocodes[index] = {
+            ...promocodes[index],
+            code: req.body.code ? req.body.code.toUpperCase().trim() : promocodes[index].code,
+            discountType: req.body.discountType || promocodes[index].discountType,
+            discountValue: req.body.discountValue !== undefined ? parseFloat(req.body.discountValue) : promocodes[index].discountValue,
+            active: req.body.active !== undefined ? req.body.active : promocodes[index].active,
+            expiresAt: req.body.expiresAt !== undefined ? req.body.expiresAt : promocodes[index].expiresAt,
+            maxUses: req.body.maxUses !== undefined ? req.body.maxUses : promocodes[index].maxUses
+        };
+        
+        await writeData('promocodes', promocodes);
+        res.json({ success: true, promocode: promocodes[index] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete promocode
+app.delete('/api/promocodes/:id', async (req, res) => {
+    try {
+        const promocodes = await readData('promocodes') || [];
+        const filtered = promocodes.filter(p => p.id !== parseInt(req.params.id));
+        
+        if (filtered.length === promocodes.length) {
+            return res.status(404).json({ error: 'Promocode not found' });
+        }
+        
+        await writeData('promocodes', filtered);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

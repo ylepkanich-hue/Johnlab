@@ -810,6 +810,106 @@ function renderHomeCategories() {
             </div>
         `;
     }).join('');
+    
+    // Apply mobile styles directly via JavaScript to ensure they work
+    if (window.innerWidth <= 768) {
+        const cards = container.querySelectorAll('.category-card');
+        cards.forEach(card => {
+            card.style.padding = '20px 12px';
+            card.style.minHeight = '140px';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.justifyContent = 'center';
+            card.style.alignItems = 'center';
+            card.style.textAlign = 'center';
+            
+            const icon = card.querySelector('.category-icon, .category-emoji');
+            if (icon) {
+                icon.style.fontSize = '36px';
+                icon.style.marginBottom = '10px';
+            }
+            
+            const h3 = card.querySelector('h3');
+            if (h3) {
+                h3.style.fontSize = '15px';
+                h3.style.marginBottom = '6px';
+                h3.style.lineHeight = '1.3';
+                h3.style.wordBreak = 'break-word';
+            }
+            
+            const p = card.querySelector('p');
+            if (p) {
+                p.style.fontSize = '11px';
+                p.style.lineHeight = '1.4';
+                p.style.margin = '0';
+            }
+        });
+        
+        // Set grid to 2 columns
+        container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        container.style.gap = '15px';
+        container.style.margin = '20px 0';
+    }
+    
+    // Also handle window resize
+    const handleResize = () => {
+        if (window.innerWidth <= 768) {
+            const cards = container.querySelectorAll('.category-card');
+            cards.forEach(card => {
+                card.style.padding = '20px 12px';
+                card.style.minHeight = '140px';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.justifyContent = 'center';
+                card.style.alignItems = 'center';
+                
+                const icon = card.querySelector('.category-icon, .category-emoji');
+                if (icon) icon.style.fontSize = '36px';
+                
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.style.fontSize = '15px';
+                    h3.style.wordBreak = 'break-word';
+                }
+                
+                const p = card.querySelector('p');
+                if (p) p.style.fontSize = '11px';
+            });
+            container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            container.style.gap = '15px';
+        } else {
+            // Reset to default for desktop
+            const cards = container.querySelectorAll('.category-card');
+            cards.forEach(card => {
+                card.style.padding = '';
+                card.style.minHeight = '';
+                card.style.display = '';
+                card.style.flexDirection = '';
+                card.style.justifyContent = '';
+                card.style.alignItems = '';
+                
+                const icon = card.querySelector('.category-icon, .category-emoji');
+                if (icon) icon.style.fontSize = '';
+                
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.style.fontSize = '';
+                    h3.style.wordBreak = '';
+                }
+                
+                const p = card.querySelector('p');
+                if (p) p.style.fontSize = '';
+            });
+            container.style.gridTemplateColumns = '';
+            container.style.gap = '';
+        }
+    };
+    
+    // Add resize listener if not already added
+    if (!window.categoryResizeHandlerAdded) {
+        window.addEventListener('resize', handleResize);
+        window.categoryResizeHandlerAdded = true;
+    }
 }
 
 function viewCategory(categoryName) {

@@ -1580,8 +1580,29 @@ function showAdminTab(tabName, button) {
     }
 }
 
-function loadAdminDashboard() {
+async function loadAdminDashboard() {
     const totalRevenue = orders.filter(o => o.status === 'paid').reduce((sum, o) => sum + o.baseAmount, 0);
+    
+    // Load visitor statistics
+    let visitorStats = {
+        uniqueVisitors: settings.totalVisitors || 0,
+        todayUnique: 0,
+        todayTotal: 0,
+        dailyStats: []
+    };
+    
+    try {
+        const response = await fetch(`${API_URL}/api/visitors/stats`);
+        if (response.ok) {
+            visitorStats = await response.json();
+        }
+    } catch (error) {
+        console.error('Error loading visitor stats:', error);
+    }
+    
+    // Calculate chart data for last 7 days
+    const last7Days = visitorStats.dailyStats.slice(-7);
+    const maxVisitors = Math.max(...last7Days.map(d => d.unique), 1);
     
     document.getElementById('admin-dashboard').innerHTML = `
         <h3 style="color: var(--gold); margin-bottom: 30px; font-size: 28px;"><i class="fas fa-chart-bar"></i> Statistics</h3>
@@ -1601,6 +1622,63 @@ function loadAdminDashboard() {
             <div class="stat-card">
                 <span class="stat-number">${products.reduce((sum, p) => sum + (p.downloads || 0), 0)}</span>
                 <span class="stat-label">Total Downloads</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px;">
+            <h3 style="color: var(--gold); margin-bottom: 20px; font-size: 24px;"><i class="fas fa-users"></i> Unique Visitors</h3>
+            <div class="stats-grid">
+                <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <span class="stat-number" style="font-size: 48px;">${visitorStats.uniqueVisitors}</span>
+                    <span class="stat-label">Total Unique Visitors</span>
+                    <small style="display: block; margin-top: 10px; color: rgba(255,255,255,0.8);">Based on IP addresses</small>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <span class="stat-number" style="font-size: 48px;">${visitorStats.todayUnique}</span>
+                    <span class="stat-label">Unique Today</span>
+                    <small style="display: block; margin-top: 10px; color: rgba(255,255,255,0.8);">New visitors today</small>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <span class="stat-number" style="font-size: 48px;">${visitorStats.todayTotal}</span>
+                    <span class="stat-label">Total Visits Today</span>
+                    <small style="display: block; margin-top: 10px; color: rgba(255,255,255,0.8);">All visits today</small>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; background: var(--gray); padding: 25px; border-radius: 15px; border: 1px solid var(--gold);">
+                <h4 style="color: var(--gold); margin-bottom: 20px; font-size: 18px;"><i class="fas fa-chart-line"></i> Last 7 Days</h4>
+                <div style="display: flex; align-items: flex-end; gap: 10px; height: 200px; margin-bottom: 15px;">
+                    ${last7Days.map(day => {
+                        const height = (day.unique / maxVisitors) * 100;
+                        const date = new Date(day.date);
+                        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                        return `
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;">
+                                <div style="flex: 1; display: flex; align-items: flex-end; width: 100%;">
+                                    <div style="width: 100%; background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%); border-radius: 8px 8px 0 0; height: ${height}%; min-height: ${day.unique > 0 ? '5px' : '0'}; position: relative;" title="${day.date}: ${day.unique} unique, ${day.total} total">
+                                        <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); color: var(--gold); font-size: 12px; font-weight: bold; white-space: nowrap;">${day.unique}</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px; color: #aaa; font-size: 11px; text-align: center;">${dayName}</div>
+                                <div style="color: #777; font-size: 10px; text-align: center;">${date.getDate()}/${date.getMonth() + 1}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--gray-light);">
+                    <div style="text-align: center;">
+                        <div style="color: var(--gold); font-size: 20px; font-weight: bold;">${last7Days.reduce((sum, d) => sum + d.unique, 0)}</div>
+                        <div style="color: #aaa; font-size: 12px;">Unique (7 days)</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--gold); font-size: 20px; font-weight: bold;">${last7Days.reduce((sum, d) => sum + d.total, 0)}</div>
+                        <div style="color: #aaa; font-size: 12px;">Total Visits (7 days)</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: var(--gold); font-size: 20px; font-weight: bold;">${last7Days.length > 0 ? (last7Days.reduce((sum, d) => sum + d.unique, 0) / last7Days.length).toFixed(1) : 0}</div>
+                        <div style="color: #aaa; font-size: 12px;">Avg Unique/Day</div>
+                    </div>
+                </div>
             </div>
         </div>
     `;

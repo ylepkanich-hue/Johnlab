@@ -661,11 +661,30 @@ function renderHomePage() {
     // Ensure hero text is updated after rendering
     updateSiteSettings();
 
-    // Exclude MRZ and Other services category products from featured products
-    const featured = [...products]
-        .filter(p => p.category !== 'MRZ' && p.category !== 'Other services')
+    // Get featured/recommended products
+    // First, try to get products marked as featured
+    let featured = products.filter(p => 
+        p.featured === true && 
+        p.category !== 'MRZ' && 
+        p.category !== 'Other services'
+    );
+    
+    // If no featured products, fall back to top downloads (backward compatibility)
+    if (featured.length === 0) {
+        featured = [...products]
+            .filter(p => p.category !== 'MRZ' && p.category !== 'Other services')
         .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
         .slice(0, 3);
+    } else {
+        // Sort featured products by order if available, otherwise by id
+        featured.sort((a, b) => {
+            const orderA = a.featuredOrder !== undefined ? a.featuredOrder : a.id;
+            const orderB = b.featuredOrder !== undefined ? b.featuredOrder : b.id;
+            return orderA - orderB;
+        });
+        // Limit to max 6 featured products
+        featured = featured.slice(0, 6);
+    }
     
     document.getElementById('featured-products').innerHTML = featured.map(renderProductCard).join('');
 }
@@ -1055,9 +1074,9 @@ function searchProducts() {
     // Exclude MRZ and Other services category products from search results
     const filtered = products.filter(p => 
         p.category !== 'MRZ' && p.category !== 'Other services' && (
-            p.name.toLowerCase().includes(searchTerm) || 
-            p.description.toLowerCase().includes(searchTerm) ||
-            p.category.toLowerCase().includes(searchTerm)
+        p.name.toLowerCase().includes(searchTerm) || 
+        p.description.toLowerCase().includes(searchTerm) ||
+        p.category.toLowerCase().includes(searchTerm)
         )
     );
     
@@ -1603,7 +1622,7 @@ function showAdminPanel() {
     if (dashboardButton) {
         showAdminTab('dashboard', dashboardButton);
     } else {
-        showAdminTab('dashboard');
+    showAdminTab('dashboard');
     }
 }
 
@@ -1825,7 +1844,10 @@ function renderAdminProductsList() {
                                     </div>`
                                 }
                             </td>
-                            <td>${product.name}</td>
+                            <td>
+                                ${product.name}
+                                ${product.featured ? '<span style="color: var(--gold); margin-left: 8px;" title="Featured on home page"><i class="fas fa-star"></i></span>' : ''}
+                            </td>
                             <td style="color: var(--gold); font-weight: 700;">$${product.price}</td>
                             <td>${product.category}</td>
                             <td>${product.downloads || 0}</td>
@@ -1899,6 +1921,18 @@ function showAddProductModal() {
                         <input type="text" name="downloadPassword" class="form-control" placeholder="JohnSaysThankYou" value="JohnSaysThankYou">
                         <small style="color: #aaa; display: block; margin-top: 5px;">Password for the archive. Default: "JohnSaysThankYou"</small>
                     </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="featured" onchange="document.getElementById('featured-order-group-add').style.display = this.checked ? 'block' : 'none';">
+                            <span style="color: var(--gold); font-weight: 600;"><i class="fas fa-star"></i> Featured on Home Page</span>
+                        </label>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Show this product in "Featured Templates" section on home page</small>
+                    </div>
+                    <div class="form-group" style="display: none;" id="featured-order-group-add">
+                        <label>Featured Order (1-6):</label>
+                        <input type="number" name="featuredOrder" class="form-control" min="1" max="6" placeholder="Leave empty for auto">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Order in which this product appears in featured section (1 = first, 6 = last)</small>
+                    </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
                         <button type="button" class="btn btn-primary" onclick="submitProductForm()" style="flex: 1;">
                             <i class="fas fa-plus"></i> Add Product
@@ -1923,6 +1957,16 @@ async function submitProductForm(isEdit = false, productId = null) {
     const countriesSelect = document.getElementById(isEdit ? 'edit-product-countries' : 'product-countries');
     const selectedCountries = Array.from(countriesSelect.selectedOptions).map(option => option.value);
     formData.append('countries', JSON.stringify(selectedCountries));
+    
+    // Get featured checkbox
+    const featuredCheckbox = form.querySelector('input[name="featured"]');
+    formData.append('featured', featuredCheckbox ? featuredCheckbox.checked : false);
+    
+    // Get featured order
+    const featuredOrderInput = form.querySelector('input[name="featuredOrder"]');
+    if (featuredOrderInput && featuredOrderInput.value) {
+        formData.append('featuredOrder', parseInt(featuredOrderInput.value));
+    }
     
     try {
         const url = isEdit ? `${API_URL}/api/products/${productId}` : `${API_URL}/api/products`;
@@ -2010,6 +2054,18 @@ function editProduct(productId) {
                         <label>Archive Password:</label>
                         <input type="text" name="downloadPassword" class="form-control" value="${product.downloadPassword || 'JohnSaysThankYou'}" placeholder="JohnSaysThankYou">
                         <small style="color: #aaa; display: block; margin-top: 5px;">Password for the archive. Default: "JohnSaysThankYou"</small>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="featured" ${product.featured ? 'checked' : ''} onchange="document.getElementById('featured-order-group-edit').style.display = this.checked ? 'block' : 'none';">
+                            <span style="color: var(--gold); font-weight: 600;"><i class="fas fa-star"></i> Featured on Home Page</span>
+                        </label>
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Show this product in "Featured Templates" section on home page</small>
+                    </div>
+                    <div class="form-group" style="${product.featured ? '' : 'display: none;'}" id="featured-order-group-edit">
+                        <label>Featured Order (1-6):</label>
+                        <input type="number" name="featuredOrder" class="form-control" value="${product.featuredOrder || ''}" min="1" max="6" placeholder="Leave empty for auto">
+                        <small style="color: #aaa; display: block; margin-top: 5px;">Order in which this product appears in featured section (1 = first, 6 = last)</small>
                     </div>
                     <div style="display: flex; gap: 15px; margin-top: 30px;">
                         <button type="button" class="btn btn-primary" onclick="submitProductForm(true, ${product.id})" style="flex: 1;">
@@ -2807,9 +2863,9 @@ function loadAdminContacts() {
                 <small style="color: #aaa; display: block; margin-top: 8px;">Use a clear, high-resolution image. Square images look best.</small>
             </div>
             <div style="grid-column: span 2;">
-                <button type="button" class="btn btn-primary" onclick="saveContactSettings()" style="width: 100%; padding: 15px;">
-                    <i class="fas fa-save"></i> Save Contact Info
-                </button>
+            <button type="button" class="btn btn-primary" onclick="saveContactSettings()" style="width: 100%; padding: 15px;">
+                <i class="fas fa-save"></i> Save Contact Info
+            </button>
             </div>
         </form>
     `;

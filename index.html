@@ -203,6 +203,14 @@
         }
 
         /* === NAVIGATION === */
+        .nav-toggle-wrapper {
+            position: relative;
+        }
+        
+        .nav-toggle-btn {
+            display: none;
+        }
+        
         .nav-buttons {
             display: flex;
             gap: 10px;
@@ -1489,13 +1497,55 @@
                 width: 100%;
             }
             
+            .nav-toggle-wrapper {
+                position: relative;
+                width: 100%;
+            }
+            
+            .nav-toggle-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 50px !important;
+                height: 50px !important;
+                background: var(--black-lighter) !important;
+                border: 2px solid var(--gray) !important;
+                border-radius: 10px !important;
+                color: var(--gold) !important;
+                font-size: 20px !important;
+                cursor: pointer !important;
+                margin: 0 auto 10px !important;
+                transition: all 0.3s !important;
+            }
+            
+            .nav-toggle-btn:hover {
+                border-color: var(--gold) !important;
+                box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+            }
+            
+            .nav-toggle-btn.active {
+                background: var(--gold) !important;
+                color: var(--black) !important;
+                border-color: var(--gold) !important;
+            }
+            
             .nav-buttons {
-                display: grid !important;
+                display: none !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
                 width: 100% !important;
                 justify-content: center !important;
                 align-items: stretch !important;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out, padding 0.3s ease-out !important;
+                padding: 0 !important;
+            }
+            
+            .nav-buttons.expanded {
+                display: grid !important;
+                max-height: 1000px !important;
+                padding: 0 !important;
             }
             
             .nav-buttons > * {
@@ -1549,11 +1599,17 @@
                 box-sizing: border-box !important;
             }
             
-            .nav-buttons #user-account-buttons,
-            .nav-buttons #guest-account-buttons {
+            .nav-buttons #user-account-buttons {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
+                width: 100% !important;
+                grid-column: span 2 !important;
+                align-items: stretch !important;
+            }
+            
+            .nav-buttons #guest-account-buttons {
+                display: flex !important;
                 width: 100% !important;
                 grid-column: span 2 !important;
                 align-items: stretch !important;
@@ -1888,41 +1944,43 @@
                     </button>
                 </div>
 
-                <div class="nav-buttons">
-                    <div class="language-selector">
-                        <select id="language-selector">
-                            <option value="en">EN</option>
-                            <option value="uk">UK</option>
-                        </select>
+                <div class="nav-toggle-wrapper">
+                    <button class="nav-toggle-btn" id="nav-toggle-btn" onclick="toggleNavButtons()">
+                        <i class="fas fa-bars" id="nav-toggle-icon"></i>
+                    </button>
+                    <div class="nav-buttons" id="nav-buttons">
+                        <div class="language-selector">
+                            <select id="language-selector">
+                                <option value="en">EN</option>
+                                <option value="uk">UK</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" onclick="showSection('home')">
+                            <i class="fas fa-home"></i> <span data-i18n="navHome">Home</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSection('products')">
+                            <i class="fas fa-store"></i> <span data-i18n="navShop">Shop</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSection('cart')">
+                            <i class="fas fa-shopping-cart"></i> <span data-i18n="navCart">Cart</span> (<span id="cart-count">0</span>)
+                        </button>
+                        <div id="user-account-buttons" style="display: none; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="showSection('account')">
+                                <i class="fas fa-user"></i> <span data-i18n="myAccount">My Account</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="userLogout()">
+                                <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span>
+                            </button>
+                        </div>
+                        <div id="guest-account-buttons" style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="showSection('login')">
+                                <i class="fas fa-sign-in-alt"></i> <span data-i18n="login">Login</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-secondary" onclick="showSection('contacts')">
+                            <i class="fas fa-address-card"></i> <span data-i18n="navContact">Contact</span>
+                        </button>
                     </div>
-                    <button class="btn btn-secondary" onclick="showSection('home')">
-                        <i class="fas fa-home"></i> <span data-i18n="navHome">Home</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="showSection('products')">
-                        <i class="fas fa-store"></i> <span data-i18n="navShop">Shop</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="showSection('cart')">
-                        <i class="fas fa-shopping-cart"></i> <span data-i18n="navCart">Cart</span> (<span id="cart-count">0</span>)
-                    </button>
-                    <div id="user-account-buttons" style="display: none; gap: 10px;">
-                        <button class="btn btn-secondary" onclick="showSection('account')">
-                            <i class="fas fa-user"></i> <span data-i18n="myAccount">My Account</span>
-                        </button>
-                        <button class="btn btn-secondary" onclick="userLogout()">
-                            <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span>
-                        </button>
-                    </div>
-                    <div id="guest-account-buttons" style="display: flex; gap: 10px;">
-                        <button class="btn btn-secondary" onclick="showSection('login')">
-                            <i class="fas fa-sign-in-alt"></i> <span data-i18n="login">Login</span>
-                        </button>
-                        <button class="btn btn-primary" onclick="showSection('register')">
-                            <i class="fas fa-user-plus"></i> <span data-i18n="register">Register</span>
-                        </button>
-                    </div>
-                    <button class="btn btn-secondary" onclick="showSection('contacts')">
-                        <i class="fas fa-address-card"></i> <span data-i18n="navContact">Contact</span>
-                    </button>
                 </div>
             </div>
         </header>

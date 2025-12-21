@@ -863,16 +863,31 @@ function renderHomeCategories() {
             const templateText = productCount === 1 ? t('templates').slice(0, -1) : t('templates');
             displayText = `${productCount} ${templateText}`;
         }
+        // Add mobile-responsive inline styles directly in HTML
+        const isMobile = window.innerWidth <= 768;
+        const mobileStyles = isMobile ? 'style="padding: 20px 12px !important; min-height: 140px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; text-align: center !important;"' : '';
+        const iconMobileStyle = isMobile ? 'style="font-size: 36px !important; margin-bottom: 10px !important;"' : '';
+        const h3MobileStyle = isMobile ? 'style="font-size: 15px !important; margin-bottom: 6px !important; line-height: 1.3 !important; word-break: break-word !important;"' : '';
+        const pMobileStyle = isMobile ? 'style="font-size: 11px !important; line-height: 1.4 !important; margin: 0 !important;"' : '';
+        
         return `
-            <div class="category-card" onclick="viewCategory('${cat.name}')">
-                <div class="category-icon">
+            <div class="category-card" onclick="viewCategory('${cat.name}')" ${mobileStyles}>
+                <div class="category-icon" ${iconMobileStyle}>
                     ${renderCategoryIcon(cat.icon)}
                 </div>
-                <h3>${cat.name}</h3>
-                <p>${displayText}</p>
+                <h3 ${h3MobileStyle}>${cat.name}</h3>
+                <p ${pMobileStyle}>${displayText}</p>
             </div>
         `;
     }).join('');
+    
+    // Force grid layout for mobile - apply immediately
+    if (window.innerWidth <= 768) {
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        container.style.gap = '15px';
+        container.style.margin = '20px 0';
+    }
     
     // Apply mobile styles directly via JavaScript to ensure they work
     // Use requestAnimationFrame to ensure DOM is ready

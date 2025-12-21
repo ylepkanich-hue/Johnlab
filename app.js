@@ -446,6 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ===== DATA LOADING =====
 async function loadData() {
+    console.log('📥 Loading data from server...');
     try {
         // Add cache-busting timestamp to ensure fresh data from server
         const cacheBuster = `?t=${Date.now()}`;
@@ -462,6 +463,19 @@ async function loadData() {
         settings = await settingsRes.json();
         contacts = await contactsRes.json();
         orders = await ordersRes.json();
+        
+        // Debug: log featured products after loading
+        const featuredProducts = products.filter(p => p.featured === true || p.featured === 'true');
+        console.log('📦 Products loaded:', {
+            total: products.length,
+            featuredCount: featuredProducts.length,
+            featuredProducts: featuredProducts.map(p => ({ 
+                id: p.id, 
+                name: p.name, 
+                featured: p.featured, 
+                featuredType: typeof p.featured 
+            }))
+        });
         
         // Ensure all categories have order and visible fields
         categories = categories.map(cat => ({
@@ -1969,6 +1983,13 @@ async function submitProductForm(isEdit = false, productId = null) {
     const featuredCheckbox = form.querySelector('input[name="featured"]');
     const isFeatured = featuredCheckbox && featuredCheckbox.checked;
     formData.append('featured', isFeatured ? 'true' : 'false');
+    console.log('📤 Sending featured status:', {
+        isFeatured: isFeatured,
+        checkboxExists: !!featuredCheckbox,
+        checkboxChecked: featuredCheckbox ? featuredCheckbox.checked : null,
+        productId: isEdit ? productId : 'new',
+        formDataValue: isFeatured ? 'true' : 'false'
+    });
     console.log('📤 Sending featured status:', isFeatured, 'for product', isEdit ? productId : 'new');
     
     // Get featured order

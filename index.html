@@ -1495,39 +1495,70 @@
             }
             
             /* Categories grid адаптація для мобільних */
+            #home-categories.categories-grid,
             .categories-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 15px !important;
+                margin: 20px 0 !important;
             }
             
+            #home-categories .category-card,
+            .categories-grid .category-card,
             .category-card {
-                padding: 20px 15px !important;
+                padding: 20px 12px !important;
                 min-height: 140px !important;
+                max-height: none !important;
+                height: auto !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: center !important;
                 align-items: center !important;
+                text-align: center !important;
             }
             
-            .category-icon {
+            #home-categories .category-icon,
+            .categories-grid .category-icon,
+            .category-card .category-icon {
                 font-size: 36px !important;
                 margin-bottom: 10px !important;
+                width: auto !important;
+                height: auto !important;
             }
             
-            .category-emoji {
+            #home-categories .category-emoji,
+            .categories-grid .category-emoji,
+            .category-card .category-emoji {
                 font-size: 36px !important;
+                line-height: 1 !important;
+                display: inline-block !important;
             }
             
+            #home-categories .category-card h3,
+            .categories-grid .category-card h3,
             .category-card h3 {
-                font-size: 16px !important;
-                margin-bottom: 8px !important;
+                font-size: 15px !important;
+                margin-bottom: 6px !important;
                 line-height: 1.3 !important;
                 word-break: break-word !important;
+                overflow-wrap: break-word !important;
+                hyphens: auto !important;
             }
             
+            #home-categories .category-card p,
+            .categories-grid .category-card p,
             .category-card p {
-                font-size: 12px !important;
+                font-size: 11px !important;
                 line-height: 1.4 !important;
+                margin: 0 !important;
+            }
+            
+            /* Ensure categories grid is visible and properly styled */
+            #home-categories {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 15px !important;
+                margin: 20px 0 !important;
+                width: 100% !important;
             }
             
             /* Modal адаптація для мобільних */

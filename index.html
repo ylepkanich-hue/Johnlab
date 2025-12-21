@@ -1716,9 +1716,11 @@
                 grid-template-columns: 1fr;
             }
         }
+    </style>
+    <style>
         /* === MOBILE CATEGORIES - FORCE STYLES === */
-        /* These styles are injected to ensure mobile categories work */
-        @media (max-width: 768px) {
+        /* These styles MUST work - added as separate style block */
+        @media screen and (max-width: 768px) {
             #home-categories.categories-grid,
             #home-categories {
                 display: grid !important;
@@ -1769,6 +1771,37 @@
                 font-size: 11px !important;
                 line-height: 1.4 !important;
                 margin: 0 !important;
+            }
+        }
+    </style>
+    <style id="mobile-categories-fix">
+        /* ULTIMATE MOBILE FIX - This MUST work */
+        @media (max-width: 768px) {
+            #home-categories {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                margin: 20px 0 !important;
+            }
+            #home-categories .category-card {
+                padding: 15px 10px !important;
+                min-height: 120px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            #home-categories .category-icon,
+            #home-categories .category-emoji {
+                font-size: 32px !important;
+                margin-bottom: 8px !important;
+            }
+            #home-categories .category-card h3 {
+                font-size: 14px !important;
+                margin-bottom: 4px !important;
+            }
+            #home-categories .category-card p {
+                font-size: 10px !important;
             }
         }
     </style>

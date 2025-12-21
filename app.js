@@ -2008,13 +2008,18 @@ async function submitProductForm(isEdit = false, productId = null) {
     // Get featured checkbox - FormData converts boolean to string, so send as string
     const featuredCheckbox = form.querySelector('input[name="featured"]');
     const isFeatured = featuredCheckbox && featuredCheckbox.checked;
+    
+    // IMPORTANT: Always append featured, even if false, so server knows it was explicitly set
     formData.append('featured', isFeatured ? 'true' : 'false');
+    
+    // Debug: Log what we're sending
     console.log('📤 Sending featured status:', {
         isFeatured: isFeatured,
         checkboxExists: !!featuredCheckbox,
         checkboxChecked: featuredCheckbox ? featuredCheckbox.checked : null,
         productId: isEdit ? productId : 'new',
-        formDataValue: isFeatured ? 'true' : 'false'
+        formDataValue: isFeatured ? 'true' : 'false',
+        formDataEntries: Array.from(formData.entries()).filter(([key]) => key === 'featured' || key === 'name' || key === 'price').map(([key, value]) => ({ key, value }))
     });
     
     // Get featured order
@@ -2037,19 +2042,26 @@ async function submitProductForm(isEdit = false, productId = null) {
         if (result.success) {
             showAlert(isEdit ? 'Product updated successfully!' : 'Product added successfully!');
             closeModal();
+            // Reload data from server to get updated featured status
             await loadData();
+            
+            // Debug: Check what we got from server
+            const featuredAfterLoad = products.filter(p => {
+                const feat = p.featured;
+                return feat === true || feat === 'true' || feat === 1 || feat === '1';
+            });
+            console.log('🔄 After loadData, featured products:', featuredAfterLoad.map(p => ({ 
+                id: p.id, 
+                name: p.name, 
+                featured: p.featured,
+                featuredType: typeof p.featured 
+            })));
+            
             renderAdminProductsList();
             renderProducts();
             // Always refresh home page to show updated featured products
             renderHomePage();
             renderCategoryFilters();
-            
-            // Debug: log featured products after update
-            console.log('🔄 After product update, featured products:', 
-                products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name }))
-            );
-            
-            // Debug: log featured products after update
             console.log('🔄 After product update, featured products:', 
                 products.filter(p => p.featured === true || p.featured === 'true').map(p => ({ id: p.id, name: p.name }))
             );

@@ -1052,26 +1052,34 @@ app.put('/api/products/:id', upload.fields([
         }
         
         // Update featured status
-        // FormData sends values as strings, so we need to check for 'true' string
-        // ALWAYS update featured, even if undefined (to handle unchecked checkboxes)
-        const featuredValue = req.body.featured;
+        // FormData can send featured as array ['on', 'true'] when checkbox is checked
+        // or as string 'true'/'false' when we append it manually
+        // Handle both cases
+        let featuredValue = req.body.featured;
         console.log('🔍 Processing featured:', {
             featuredValue: featuredValue,
             featuredType: typeof featuredValue,
+            isArray: Array.isArray(featuredValue),
             featuredInBody: 'featured' in req.body,
             bodyKeys: Object.keys(req.body),
             beforeUpdate: products[index].featured
         });
         
+        // If featured is an array (e.g., ['on', 'true']), check if it contains 'true' or 'on'
+        if (Array.isArray(featuredValue)) {
+            featuredValue = featuredValue.includes('true') || featuredValue.includes('on') ? 'true' : 'false';
+            console.log('🔄 Converted array to string:', featuredValue);
+        }
+        
         if (featuredValue !== undefined && featuredValue !== null) {
             // Handle both string and boolean values from FormData
-            const isFeatured = featuredValue === 'true' || featuredValue === true || featuredValue === '1' || featuredValue === 1;
+            const isFeatured = featuredValue === 'true' || featuredValue === true || featuredValue === '1' || featuredValue === 1 || featuredValue === 'on';
             products[index].featured = isFeatured;
             console.log('✅ Updated featured status:', {
                 productId: products[index].id,
                 productName: products[index].name,
-                receivedValue: featuredValue,
-                receivedType: typeof featuredValue,
+                receivedValue: req.body.featured, // Original value
+                processedValue: featuredValue, // After array handling
                 isFeatured: isFeatured,
                 savedValue: products[index].featured,
                 savedType: typeof products[index].featured

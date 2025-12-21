@@ -773,6 +773,61 @@ function renderHomeCategories() {
         container.classList.add('categories-grid');
     }
     
+    // Inject mobile styles directly into the page as a <style> tag
+    // This ensures they always apply, even if CSS media queries fail
+    if (!document.getElementById('mobile-category-styles')) {
+        const style = document.createElement('style');
+        style.id = 'mobile-category-styles';
+        style.textContent = `
+            @media (max-width: 768px) {
+                #home-categories.categories-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 15px !important;
+                    margin: 20px 0 !important;
+                    width: 100% !important;
+                }
+                
+                #home-categories .category-card {
+                    padding: 20px 12px !important;
+                    min-height: 140px !important;
+                    max-height: none !important;
+                    height: auto !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    text-align: center !important;
+                    box-sizing: border-box !important;
+                }
+                
+                #home-categories .category-card .category-icon,
+                #home-categories .category-card .category-emoji {
+                    font-size: 36px !important;
+                    margin-bottom: 10px !important;
+                    width: auto !important;
+                    height: auto !important;
+                }
+                
+                #home-categories .category-card h3 {
+                    font-size: 15px !important;
+                    margin-bottom: 6px !important;
+                    line-height: 1.3 !important;
+                    word-break: break-word !important;
+                    overflow-wrap: break-word !important;
+                    hyphens: auto !important;
+                }
+                
+                #home-categories .category-card p {
+                    font-size: 11px !important;
+                    line-height: 1.4 !important;
+                    margin: 0 !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     // Show all visible categories on home page (including MRZ for navigation, but exclude Barcode Generator)
     // visible defaults to true if not set (for backward compatibility)
     // Sort by order field if available, otherwise by id

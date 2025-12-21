@@ -398,6 +398,58 @@ function updateLanguageSelector() {
 }
 
 // ===== INITIALIZATION =====
+// ===== NAVIGATION TOGGLE =====
+let navButtonsExpanded = false;
+let lastScrollTop = 0;
+
+function toggleNavButtons() {
+    const navButtons = document.getElementById('nav-buttons');
+    const toggleBtn = document.getElementById('nav-toggle-btn');
+    const toggleIcon = document.getElementById('nav-toggle-icon');
+    
+    if (!navButtons || !toggleBtn) return;
+    
+    navButtonsExpanded = !navButtonsExpanded;
+    
+    if (navButtonsExpanded) {
+        navButtons.classList.add('expanded');
+        toggleBtn.classList.add('active');
+        toggleIcon.classList.remove('fa-bars');
+        toggleIcon.classList.add('fa-times');
+    } else {
+        navButtons.classList.remove('expanded');
+        toggleBtn.classList.remove('active');
+        toggleIcon.classList.remove('fa-times');
+        toggleIcon.classList.add('fa-bars');
+    }
+}
+
+// Auto-collapse on scroll down
+function handleNavScroll() {
+    if (window.innerWidth > 768) return; // Only on mobile
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const navButtons = document.getElementById('nav-buttons');
+    const toggleBtn = document.getElementById('nav-toggle-btn');
+    const toggleIcon = document.getElementById('nav-toggle-icon');
+    
+    if (!navButtons || !toggleBtn) return;
+    
+    // Collapse if scrolling down
+    if (scrollTop > lastScrollTop && scrollTop > 100 && navButtonsExpanded) {
+        navButtons.classList.remove('expanded');
+        toggleBtn.classList.remove('active');
+        toggleIcon.classList.remove('fa-times');
+        toggleIcon.classList.add('fa-bars');
+        navButtonsExpanded = false;
+    }
+    
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+}
+
+// Add scroll listener
+window.addEventListener('scroll', handleNavScroll, { passive: true });
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Set initial language
     document.documentElement.lang = currentLanguage;
